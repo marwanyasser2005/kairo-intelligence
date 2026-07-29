@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build --configLoader runner",
+    "build": "vite build --configLoader runner && vite build --config vite.sites.config.ts --configLoader runner && node scripts/prepareSitesBuild.mjs",
     "start": "tsx server.ts --prod",
     "preview": "tsx server.ts --prod",
     "typecheck": "tsc --noEmit",
