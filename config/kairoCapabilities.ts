@@ -114,7 +114,10 @@ export const audienceProfiles: AudienceProfile[] = [
 export const kairoCapabilities: KairoCapability[] = [
   {
     id: 'foresight',
-    title: { ar: 'الاستباق البيئي', en: 'Environmental foresight' },
+    title: {
+      ar: 'KAIRO SIGNALS · الاستباق البيئي',
+      en: 'KAIRO SIGNALS · Environmental foresight',
+    },
     shortDescription: {
       ar: 'يتابع اتجاهات الهواء ومؤشرات مخاطر المياه حسب الموقع قبل تصاعد الأثر.',
       en: 'Tracks air trends and location-aware water-risk indicators before impacts escalate.',

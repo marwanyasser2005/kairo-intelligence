@@ -31,7 +31,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
-import { KairoBrandMark, KairoBrandSymbol } from '../components/KairoBrand';
+import { KairoBrandSymbol } from '../components/KairoBrand';
 import {
   audienceProfiles,
   getAudienceProfile,
@@ -139,8 +139,8 @@ const Home: React.FC = () => {
       Icon: LockKeyhole,
       title: isAr ? 'خصوصية باختيار المستخدم' : 'Consent-led privacy',
       text: isAr
-        ? 'الموقع والميكروفون لا يعملان إلا بإذن واضح ومحدد الغرض.'
-        : 'Location and microphone access only run with clear, purpose-specific consent.',
+        ? 'الموقع لا يعمل إلا بإذن واضح؛ الكاميرا والميكروفون خصائص قادمة وغير مستخدمة حاليًا.'
+        : 'Location is consent-based; camera and microphone are upcoming and not currently used.',
     },
     {
       Icon: Check,
@@ -184,7 +184,11 @@ const Home: React.FC = () => {
               </div>
 
               <h1
-                className={`max-w-4xl text-[clamp(3rem,7vw,7rem)] font-semibold leading-[0.97] tracking-[-0.055em] ${textMain}`}
+                className={`max-w-4xl text-[clamp(3rem,7vw,7rem)] font-semibold ${
+                  isAr
+                    ? 'leading-[1.16] tracking-normal'
+                    : 'leading-[0.97] tracking-[-0.055em]'
+                } ${textMain}`}
               >
                 <span className="kairo-gradient-text">
                   {isAr
@@ -211,15 +215,15 @@ const Home: React.FC = () => {
                     }`}
                   />
                 </Link>
-                <a
-                  href="#capabilities"
+                <Link
+                  to="/dashboard"
                   className={`btn-tactile inline-flex min-h-14 items-center justify-center gap-3 rounded-full border px-7 text-sm font-bold backdrop-blur-xl ${border} ${textMain} ${
                     isLight ? 'bg-white/65 hover:bg-white' : 'bg-white/[0.045] hover:bg-white/[0.08]'
                   }`}
                 >
                   <Leaf className="h-4 w-4 text-kairo-green" />
                   {isAr ? 'استكشف كل الخواص' : 'Explore every capability'}
-                </a>
+                </Link>
               </div>
 
               <div className={`mt-12 grid max-w-3xl grid-cols-3 border-t pt-7 ${border}`}>
@@ -246,45 +250,49 @@ const Home: React.FC = () => {
             >
               <div className="absolute -inset-10 rounded-full bg-kairo-green/[0.07] blur-3xl" />
               <div className="kairo-glass relative overflow-hidden rounded-[2.2rem] p-5 shadow-glow sm:p-7">
-                <div className={`flex items-center justify-between border-b pb-5 ${border}`}>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
-                      <KairoBrandSymbol className="h-9 aspect-square" decorative />
+                <div className={`flex items-center justify-between gap-4 border-b pb-5 ${border}`}>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-kairo-green/10 p-1 text-kairo-green">
+                      <KairoBrandSymbol className="h-full aspect-square" decorative />
                     </div>
-                    <div>
-                      <p className={`text-sm font-black ${textMain}`}>
+                    <div className="min-w-0">
+                      <p className={`text-[13px] font-black leading-6 sm:text-sm ${textMain}`}>
                         {isAr ? 'خريطة Kairo البيئية' : 'Kairo environmental map'}
                       </p>
-                      <p className={`mt-0.5 text-[11px] ${textSub}`}>
+                      <p className={`text-[11px] leading-5 ${textSub}`}>
                         {isAr ? 'من القياس إلى الإجراء' : 'From context to action'}
                       </p>
                     </div>
                   </div>
-                  <span className="rounded-full bg-kairo-green/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-kairo-green">
+                  <span className="shrink-0 rounded-full bg-kairo-green/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-kairo-green">
                     {isAr ? 'متكامل' : 'Unified'}
                   </span>
                 </div>
 
-                <div className="relative my-6 grid grid-cols-2 gap-3">
-                  {kairoCapabilities.slice(0, 6).map((capability) => {
+                <div className="my-6 grid grid-cols-[minmax(0,1fr)_4.5rem_minmax(0,1fr)] grid-rows-3 gap-2.5 sm:grid-cols-[minmax(0,1fr)_5.5rem_minmax(0,1fr)] sm:gap-3">
+                  {kairoCapabilities.slice(0, 6).map((capability, index) => {
                     const Icon = capabilityIcons[capability.id];
                     return (
                       <div
                         key={capability.id}
-                        className={`rounded-2xl border p-4 ${border} ${
+                        style={{
+                          gridColumn: index % 2 === 0 ? 1 : 3,
+                          gridRow: Math.floor(index / 2) + 1,
+                        }}
+                        className={`flex min-h-[76px] min-w-0 flex-col justify-center rounded-2xl border p-3 sm:min-h-[82px] sm:p-4 ${border} ${
                           isLight ? 'bg-white/70' : 'bg-black/20'
                         }`}
                       >
                         <Icon className="h-4 w-4 text-kairo-green" />
-                        <p className={`mt-3 text-xs font-extrabold ${textMain}`}>
+                        <p className={`mt-2 text-[10px] font-extrabold leading-4 sm:text-xs sm:leading-5 ${textMain}`}>
                           {localize(capability.title, currentLanguage)}
                         </p>
                       </div>
                     );
                   })}
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <div className="col-start-2 row-span-3 row-start-1 flex items-center justify-center">
                     <div
-                      className={`flex h-24 w-24 items-center justify-center rounded-[1.75rem] border p-2.5 backdrop-blur-xl ${border} ${
+                      className={`flex h-[4.1rem] w-[4.1rem] items-center justify-center rounded-[1.35rem] border p-2 backdrop-blur-xl sm:h-[4.75rem] sm:w-[4.75rem] sm:rounded-[1.55rem] ${border} ${
                         isLight
                           ? 'bg-white/95 shadow-[0_18px_50px_rgba(10,60,45,.14)]'
                           : 'bg-[#0a1713]/95 shadow-[0_18px_60px_rgba(0,0,0,.34)]'

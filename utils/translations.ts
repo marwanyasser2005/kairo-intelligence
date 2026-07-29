@@ -76,7 +76,7 @@ export const translations = {
         food: "Food Waste Simulator",
         energy: "Energy Intelligence",
         transport: "Mobility Impact",
-        exposure: "Urban Exposure",
+        exposure: "Air Quality & Urban Exposure",
         ewaste: "ReKairo E-Waste",
         mini: "Baseline Input"
       }
@@ -828,7 +828,7 @@ export const translations = {
         food: "محاكي هدر الأكل",
         energy: "ذكاء استهلاك الكهربا",
         transport: "أثرك في الزحمة",
-        exposure: "المخاطر حواليك",
+        exposure: "جودة الهواء والتعرض الحضري",
         ewaste: "إلكترونياتك القديمة",
         mini: "البيانات الأساسية"
       }

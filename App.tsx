@@ -200,9 +200,10 @@ const AnimatedRoutes: React.FC<AnimatedRoutesProps> = ({
                       onSystemReset={handleSystemReset}
                   />
                 } />
-                                <Route path="/action" element={<ClimateAction results={results} userProgress={userProgress} setUserProgress={setUserProgress} />} />
+                <Route path="/action" element={<ClimateAction results={results} userProgress={userProgress} setUserProgress={setUserProgress} />} />
                 <Route path="/scenarios" element={<CompareScenarios />} />
                 <Route path="/features" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/capabilities" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/impact" element={<Impact />} />
                 <Route path="/learn" element={<Learn />} />
                 <Route path="/about" element={<About />} />

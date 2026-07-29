@@ -1,7 +1,7 @@
 // Browser-safe AI client. All provider requests go through the same-origin
 // server gateway, so provider API keys never enter the Vite bundle or browser.
 
-export const DEFAULT_AI_MODEL = 'gemini-3.1-flash-lite';
+export const DEFAULT_AI_MODEL = 'gemini-3.5-flash';
 
 interface GatewayMessage {
     role: 'system' | 'user' | 'assistant';
@@ -228,8 +228,18 @@ export class AIClient {
                             typeof messageArgs === 'string'
                                 ? messageArgs
                                 : String(messageArgs?.message ?? '');
+                        const liveContext =
+                            typeof messageArgs?.context === 'string'
+                                ? messageArgs.context.trim()
+                                : '';
                         const response = await callGateway({
-                            messages: [...history, { role: 'user', content: message }],
+                            messages: [
+                                ...history,
+                                ...(liveContext
+                                    ? [{ role: 'system' as const, content: liveContext }]
+                                    : []),
+                                { role: 'user', content: message },
+                            ],
                             systemInstruction,
                         });
                         history.push({ role: 'user', content: message });

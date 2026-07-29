@@ -48,7 +48,6 @@ import {
 import {
   collectDeviceSignals,
   requestPreciseLocation,
-  scanPipeAcoustics,
   type DeviceSignalSnapshot,
   type PreciseLocation,
 } from '../services/deviceSignals';
@@ -112,7 +111,6 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
   const [profile, setProfile] = useState<WaterNetworkProfile>(DEFAULT_PROFILE);
   const [loadingForecast, setLoadingForecast] = useState(true);
   const [locating, setLocating] = useState(false);
-  const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const lastCloudSnapshot = useRef<string | null>(null);
 
@@ -226,8 +224,6 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
             network: deviceSignals.network,
             battery: deviceSignals.battery,
             geolocationPermission: deviceSignals.geolocation.permission,
-            microphonePermission: deviceSignals.microphone.permission,
-            cameraPermission: deviceSignals.camera.permission,
           }
         : null,
     };
@@ -274,24 +270,6 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
       longitude: CAIRO_COORDINATES.longitude,
     };
     void loadForecast(coordinates.latitude, coordinates.longitude);
-  };
-
-  const handleAcousticScan = async () => {
-    setScanning(true);
-    setError(null);
-    try {
-      const result = await scanPipeAcoustics();
-      setProfile((current) => ({ ...current, acousticScore: result.score }));
-      setDeviceSignals(await collectDeviceSignals());
-    } catch {
-      setError(
-        isArabic
-          ? 'لم يكتمل الفحص الصوتي. اسمح بالميكروفون وضع الجهاز قريبًا من نقطة الأنبوب.'
-          : 'Acoustic screening did not complete. Allow microphone access and place the device near the pipe access point.',
-      );
-    } finally {
-      setScanning(false);
-    }
   };
 
   const coordinates = snapshot?.coordinates ?? CAIRO_COORDINATES;
@@ -734,27 +712,22 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
                     <Mic className="mt-0.5 h-5 w-5 text-emerald-500" />
                     <div>
                       <div className="text-sm font-bold">
-                        {isArabic ? 'فحص صوتي موضعي اختياري' : 'Optional local acoustic screen'}
+                        {isArabic ? 'الفحص الصوتي الموضعي' : 'Local acoustic screening'}
                       </div>
                       <p className="mt-1 text-xs leading-5 text-slate-500">
                         {isArabic
-                          ? '5 ثوانٍ من التحليل على الجهاز؛ لا يُحفظ أو يُرسل أي تسجيل.'
-                          : 'Five seconds of on-device analysis; no recording is stored or uploaded.'}
+                          ? 'خاصية قادمة قيد التطوير والتحقق؛ الميكروفون غير مستخدم في حساب المؤشر الحالي.'
+                          : 'Coming soon and under validation; the microphone is not used in the current score.'}
                       </p>
                     </div>
                   </div>
                   <Button
-                    variant={profile.acousticScore === null ? 'secondary' : 'outline'}
+                    variant="secondary"
                     size="sm"
-                    isPending={scanning}
-                    onPress={handleAcousticScan}
+                    isDisabled
                   >
                     <Mic className="h-4 w-4" />
-                    {profile.acousticScore === null
-                      ? isArabic
-                        ? 'ابدأ الفحص'
-                        : 'Start screen'
-                      : `${profile.acousticScore}/100`}
+                    {isArabic ? 'قريبًا' : 'Coming soon'}
                   </Button>
                 </div>
               </div>
@@ -860,13 +833,13 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
               <DeviceCapability
                 icon={<Mic />}
                 title={isArabic ? 'الميكروفون' : 'Microphone'}
-                state={permissionText(deviceSignals?.microphone.permission, isArabic)}
+                state={isArabic ? 'قريبًا · قيد التطوير' : 'Coming soon · in development'}
                 purpose={
                   isArabic
-                    ? 'فحص استكشافي قريب من الأنبوب؛ معالجة محلية فقط.'
-                    : 'Near-pipe screening; local processing only.'
+                    ? 'مخطط لفحص استكشافي محلي بعد اكتمال التحقق؛ لا يدخل حاليًا في أي قرار.'
+                    : 'Planned for locally processed screening after validation; not used in current decisions.'
                 }
-                active={profile.acousticScore !== null}
+                active={false}
               />
               <DeviceCapability
                 icon={<Wifi />}
@@ -907,11 +880,11 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
               <DeviceCapability
                 icon={<Camera />}
                 title={isArabic ? 'الكاميرا' : 'Camera'}
-                state={permissionText(deviceSignals?.camera.permission, isArabic)}
+                state={isArabic ? 'قريبًا · قيد التطوير' : 'Coming soon · in development'}
                 purpose={
                   isArabic
-                    ? 'توثيق بصري اختياري للبلاغ؛ لا تدخل في حساب المخاطر.'
-                    : 'Optional incident evidence; excluded from the risk score.'
+                    ? 'مخطط لتوثيق البلاغات اختياريًا بعد اكتمال الخصوصية والتحقق؛ غير مستخدمة حاليًا.'
+                    : 'Planned for optional incident evidence after privacy and validation work; not currently used.'
                 }
                 active={false}
               />
@@ -948,8 +921,8 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
               title={isArabic ? 'الخصوصية والحدود' : 'Privacy and limits'}
               text={
                 isArabic
-                  ? 'الموقع والميكروفون لا يعملان إلا بإذن. الصوت يُحلل لحظيًا على الجهاز ولا يُخزن. لا يُستخدم GPS وحده لإثبات تسريب.'
-                  : 'Location and microphone require consent. Audio is processed transiently on-device and never stored. GPS alone never confirms a leak.'
+                  ? 'الموقع لا يعمل إلا بإذن ولا يُستخدم GPS وحده لإثبات تسريب. الكاميرا والميكروفون خصائص قادمة وغير مستخدمة أو مخزنة ضمن قرارات Kairo الحالية.'
+                  : 'Location requires consent and GPS alone never confirms a leak. Camera and microphone are upcoming and are not used or stored in current Kairo decisions.'
               }
             />
           </div>

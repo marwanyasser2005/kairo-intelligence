@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@heroui/react';
-import { Menu, X, ChevronDown, Droplet, Utensils, Wind, Recycle, Moon, Sun, Zap, Truck, FlaskConical, Map as MapIcon, LayoutDashboard } from 'lucide-react';
+import { Menu, X, ChevronDown, Droplet, Utensils, Wind, Recycle, Moon, Sun, Zap, Truck, FlaskConical, Map as MapIcon, LayoutDashboard, RadioTower } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../contexts/AppContext';
 import { KairoBrandMark } from './KairoBrand';
@@ -48,6 +48,14 @@ const Navbar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
   
   const systems = [
+    {
+      label:
+        language === 'ar'
+          ? 'KAIRO SIGNALS · الاستباق البيئي'
+          : 'KAIRO SIGNALS · Environmental foresight',
+      path: "/monitor",
+      icon: <RadioTower className="w-4 h-4"/>,
+    },
     { label: t.nav.systemsList.scenarios, path: "/scenarios", icon: <FlaskConical className="w-4 h-4"/> },
     { label: t.nav.systemsList.water, path: "/systems/water-scarcity", icon: <Droplet className="w-4 h-4"/> },
     { label: t.nav.systemsList.food, path: "/systems/food-security", icon: <Utensils className="w-4 h-4"/> },
@@ -106,7 +114,7 @@ const Navbar: React.FC = () => {
 
           {/* Systems Dropdown */}
           <div className="relative ms-1 block" onMouseEnter={() => setSystemsOpen(true)} onMouseLeave={() => setSystemsOpen(false)}>
-              <button className={`px-4 py-2 text-sm font-bold rounded-full transition-all flex items-center gap-1.5 ${location.pathname.includes('/systems') || location.pathname === '/energy' || location.pathname === '/transport' ? (isLight ? 'bg-gray-100 text-black' : 'bg-white/10 text-white') : (isLight ? 'text-gray-500 hover:text-black hover:bg-gray-50' : 'text-gray-400 hover:text-white hover:bg-white/5')}`}>
+              <button className={`px-4 py-2 text-sm font-bold rounded-full transition-all flex items-center gap-1.5 ${location.pathname.includes('/systems') || ['/energy', '/transport', '/monitor', '/scenarios'].includes(location.pathname) ? (isLight ? 'bg-gray-100 text-black' : 'bg-white/10 text-white') : (isLight ? 'text-gray-500 hover:text-black hover:bg-gray-50' : 'text-gray-400 hover:text-white hover:bg-white/5')}`}>
                   {t.nav.systems} <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${systemsOpen ? 'rotate-180' : ''}`} />
               </button>
               <AnimatePresence>
@@ -116,7 +124,7 @@ const Navbar: React.FC = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className={`absolute top-full ${dir === 'rtl' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} mt-2 w-64 rounded-2xl shadow-2xl overflow-hidden py-2 border ${isLight ? 'bg-white border-gray-200' : 'bg-[#0a0a0a] border-white/10'}`}
+                        className={`absolute top-full ${dir === 'rtl' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} mt-2 w-72 rounded-2xl shadow-2xl overflow-hidden py-2 border ${isLight ? 'bg-white border-gray-200' : 'bg-[#0a0a0a] border-white/10'}`}
                       >
                           {systems.map((sys) => (
                               <Link 
@@ -267,7 +275,7 @@ const Navbar: React.FC = () => {
                                         className={`flex items-center gap-3 p-4 rounded-xl text-sm font-medium transition-colors ${isLight ? 'bg-gray-50 text-gray-700 border border-gray-100 hover:bg-gray-100' : 'bg-white/5 text-gray-300 border border-white/5 hover:bg-white/10'}`}
                                     >
                                         <div className={`p-2 rounded-lg ${isLight ? 'bg-white shadow-sm' : 'bg-black/50'} text-indigo-500`}>{sys.icon}</div>
-                                        <span className="font-bold text-sm truncate">{sys.label}</span>
+                                        <span className="text-start text-sm font-bold leading-5">{sys.label}</span>
                                     </Link>
                                 ))}
                             </div>

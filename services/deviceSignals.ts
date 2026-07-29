@@ -92,23 +92,7 @@ export const collectDeviceSignals = async (): Promise<DeviceSignalSnapshot> => {
     deviceNavigator.webkitConnection;
 
   const mediaSupported = Boolean(navigator.mediaDevices?.getUserMedia);
-  const [geoPermission, microphonePermission, cameraPermission] = await Promise.all([
-    getPermission('geolocation'),
-    getPermission('microphone'),
-    getPermission('camera'),
-  ]);
-
-  let microphoneCount: number | null = null;
-  let cameraCount: number | null = null;
-  if (navigator.mediaDevices?.enumerateDevices) {
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      microphoneCount = devices.filter((device) => device.kind === 'audioinput').length;
-      cameraCount = devices.filter((device) => device.kind === 'videoinput').length;
-    } catch {
-      // Device labels and counts can remain unavailable until the user grants permission.
-    }
-  }
+  const geoPermission = await getPermission('geolocation');
 
   let batteryLevel: number | null = null;
   let charging: boolean | null = null;
@@ -136,13 +120,13 @@ export const collectDeviceSignals = async (): Promise<DeviceSignalSnapshot> => {
     },
     microphone: {
       supported: mediaSupported,
-      permission: microphonePermission,
-      deviceCount: microphoneCount,
+      permission: 'unknown',
+      deviceCount: null,
     },
     camera: {
       supported: mediaSupported,
-      permission: cameraPermission,
-      deviceCount: cameraCount,
+      permission: 'unknown',
+      deviceCount: null,
     },
     network: {
       effectiveType: connection?.effectiveType ?? null,

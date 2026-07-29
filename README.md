@@ -26,7 +26,7 @@ the browser bundle.
    The defaults route workloads across free models that were verified for this
    project:
 
-   - text/chat: `gemini-3.1-flash-lite`, then `gemini-3.5-flash`, then Gemma 4;
+   - text/chat: `gemini-3.5-flash`, then `gemini-3.1-flash-lite`, then Gemma 4;
    - structured JSON: `gemini-3.5-flash`, then `gemini-3.1-flash-lite`, then
      Gemma 4;
    - image/OCR: `gemini-3.5-flash`, then `gemini-3.1-flash-lite`.

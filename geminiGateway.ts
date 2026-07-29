@@ -9,8 +9,8 @@ const DEFAULT_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 // Every default below is listed in the attached Google free-tier pricing page
 // and was verified against the configured account on 2026-07-24.
 const DEFAULT_TEXT_MODELS = [
-  'gemini-3.1-flash-lite',
   'gemini-3.5-flash',
+  'gemini-3.1-flash-lite',
   'gemma-4-26b-a4b-it',
   'gemma-4-31b-it',
 ];
@@ -365,4 +365,3 @@ export const requestGemini = async (
     )
   );
 };
-
