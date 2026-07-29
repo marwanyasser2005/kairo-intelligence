@@ -155,7 +155,9 @@ const ReportActions: React.FC<ReportActionsProps> = ({
       {state === 'error' && (
         <span className="inline-flex items-center gap-1.5 rounded-lg bg-rose-500/10 px-2.5 py-2 text-[10px] font-bold text-rose-500">
           <TriangleAlert className="h-3.5 w-3.5" />
-          {isAr ? 'تعذر إكمال العملية' : 'Action could not be completed'}
+          {isAr
+            ? 'تعذّر تجهيز الملف. جرّب مرة تانية بعد اكتمال تحميل الصفحة.'
+            : 'The file could not be prepared. Retry after the page finishes loading.'}
         </span>
       )}
     </div>

@@ -33,6 +33,33 @@ const sanitizeFilename = (filename: string) =>
     .replace(/\s+/g, '_')
     .slice(0, 90) || 'environmental_report';
 
+const downloadBlob = (blob: Blob, filename: string) => {
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = objectUrl;
+  link.rel = 'noopener';
+  link.style.display = 'none';
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
+};
+
+const waitWithTimeout = async (promise: Promise<unknown>, timeoutMs: number) => {
+  let timeoutId: number | undefined;
+  try {
+    await Promise.race([
+      promise,
+      new Promise<void>((resolve) => {
+        timeoutId = window.setTimeout(resolve, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) window.clearTimeout(timeoutId);
+  }
+};
+
 const makeText = (
   documentRef: Document,
   tag: keyof HTMLElementTagNameMap,
@@ -226,19 +253,21 @@ const addExportHeader = (
 
 const waitForDocumentAssets = async (element: HTMLElement) => {
   if ('fonts' in document) {
-    await document.fonts.ready.catch(() => undefined);
+    await waitWithTimeout(document.fonts.ready.catch(() => undefined), 8_000);
   }
-  const pendingImages = Array.from(element.querySelectorAll('img'))
-    .filter((image) => !image.complete)
-    .map(
-      (image) =>
-        new Promise<void>((resolve) => {
-          const done = () => resolve();
-          image.addEventListener('load', done, { once: true });
-          image.addEventListener('error', done, { once: true });
-        }),
-    );
-  await Promise.all(pendingImages);
+  const pendingImages = Array.from(element.querySelectorAll('img')).map(async (image) => {
+    if (image.complete && image.naturalWidth > 0) return;
+    if (typeof image.decode === 'function') {
+      await image.decode().catch(() => undefined);
+      if (image.complete) return;
+    }
+    await new Promise<void>((resolve) => {
+      const done = () => resolve();
+      image.addEventListener('load', done, { once: true });
+      image.addEventListener('error', done, { once: true });
+    });
+  });
+  await waitWithTimeout(Promise.allSettled(pendingImages), 10_000);
 };
 
 const generateCanvas = async (
@@ -259,7 +288,9 @@ const generateCanvas = async (
   const originalOverflow = element.style.overflow;
 
   try {
-    const { default: html2canvas } = await import('html2canvas');
+    // html2canvas-pro is API-compatible with html2canvas and supports the
+    // OKLCH/LAB color functions emitted by Tailwind 4 and HeroUI.
+    const { default: html2canvas } = await import('html2canvas-pro');
     element.classList.add('exporting');
     element.style.height = 'max-content';
     element.style.overflow = 'visible';
@@ -270,22 +301,26 @@ const generateCanvas = async (
     const maxSafeCanvasHeight = 25_000;
     const scale = Math.max(1, Math.min(2, maxSafeCanvasHeight / Math.max(contentHeight, 1)));
 
-    const canvas = await html2canvas(element, {
-      scale,
-      useCORS: true,
-      logging: false,
-      allowTaint: false,
-      backgroundColor: isLight ? '#f5f8f6' : '#07110f',
-      scrollX: 0,
-      scrollY: -window.scrollY,
-      windowWidth: Math.max(document.documentElement.clientWidth, contentWidth + 96),
-      width: contentWidth,
-      ignoreElements: (candidate) => candidate.classList.contains('no-export'),
-      onclone: (clonedDocument) => {
+    const renderCanvas = (renderScale: number) =>
+      html2canvas(element, {
+        scale: renderScale,
+        useCORS: true,
+        logging: false,
+        allowTaint: false,
+        imageTimeout: 12_000,
+        removeContainer: true,
+        backgroundColor: isLight ? '#f5f8f6' : '#07110f',
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        windowWidth: Math.max(document.documentElement.clientWidth, contentWidth + 96),
+        width: contentWidth,
+        ignoreElements: (candidate) => candidate.classList.contains('no-export'),
+        onclone: (clonedDocument) => {
         const clonedElement = clonedDocument.getElementById(elementId);
         if (!clonedElement) return;
 
         clonedDocument.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+        clonedDocument.documentElement.style.colorScheme = isLight ? 'light' : 'dark';
         clonedElement.style.boxSizing = 'border-box';
         clonedElement.style.width = `${contentWidth}px`;
         clonedElement.style.maxWidth = 'none';
@@ -295,7 +330,13 @@ const generateCanvas = async (
         clonedElement.style.overflow = 'visible';
         clonedElement.style.backgroundColor = isLight ? '#f5f8f6' : '#07110f';
 
+        clonedElement.querySelectorAll<HTMLElement>('.no-export').forEach((candidate) => {
+          candidate.remove();
+        });
         clonedElement.querySelectorAll<HTMLElement>('*').forEach((candidate) => {
+          candidate.style.animation = 'none';
+          candidate.style.transition = 'none';
+          candidate.style.caretColor = 'transparent';
           if (!['svg', 'path'].includes(candidate.tagName.toLowerCase())) {
             candidate.style.fontFamily = "'Cairo', 'Inter', Arial, sans-serif";
             candidate.style.fontVariantLigatures = 'normal';
@@ -317,7 +358,20 @@ const generateCanvas = async (
 
         addExportHeader(clonedDocument, clonedElement, options, language);
       },
-    });
+      });
+
+    let canvas: HTMLCanvasElement;
+    try {
+      canvas = await renderCanvas(scale);
+    } catch (firstError) {
+      if (scale <= 1) throw firstError;
+      console.warn('Kairo export is retrying at a memory-safe resolution.', firstError);
+      canvas = await renderCanvas(1);
+    }
+
+    if (!canvas.width || !canvas.height) {
+      throw new Error('The generated report canvas is empty.');
+    }
 
     return {
       canvas,
@@ -443,8 +497,12 @@ export const exportAsPdf = async (
       });
     }
 
-    pdf.save(
-      `Kairo_${sanitizeFilename(filename)}_${new Date().toISOString().slice(0, 10)}.pdf`,
+    const outputName = `Kairo_${sanitizeFilename(filename)}_${new Date()
+      .toISOString()
+      .slice(0, 10)}.pdf`;
+    downloadBlob(
+      pdf.output('blob'),
+      outputName,
     );
     return true;
   } catch (error) {
@@ -467,14 +525,12 @@ export const exportAsPng = async (
     );
     if (!blob) return false;
 
-    const link = document.createElement('a');
-    const objectUrl = URL.createObjectURL(blob);
-    link.download = `Kairo_${sanitizeFilename(filename)}_${new Date()
-      .toISOString()
-      .slice(0, 10)}.png`;
-    link.href = objectUrl;
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1_000);
+    downloadBlob(
+      blob,
+      `Kairo_${sanitizeFilename(filename)}_${new Date()
+        .toISOString()
+        .slice(0, 10)}.png`,
+    );
     return true;
   } catch (error) {
     console.error('Export PNG failed:', error);
