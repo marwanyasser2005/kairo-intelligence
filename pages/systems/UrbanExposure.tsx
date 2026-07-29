@@ -116,7 +116,7 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
            <SdgBadge sdgs={[3, 11, 13]} />
            <div className="flex items-center gap-4 text-sm text-gray-500 font-mono border-l-2 border-red-500 pl-4 mt-8">
               <Satellite className="w-4 h-4" />
-              <span>Context: Sentinel-5P Tropospheric Modeling</span>
+              <span>{language === 'ar' ? 'تقدير سياقي · يحتاج تحققًا بقياس محلي' : 'Contextual estimate · local measurement recommended'}</span>
            </div>
         </header>
 
@@ -301,7 +301,9 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
                     <AlertCircle className="w-5 h-5 text-gray-400" /> {t.exposure.disclaimer}
                 </h3>
                 <p className={`text-sm leading-relaxed ${textSub}`}>
-                    This module provides environmental estimation, not medical advice. Satellite proxies have limitations compared to hardware sensors but offer vastly superior coverage for general awareness in data-scarce regions.
+                    {language === 'ar'
+                        ? 'النتيجة تقدير بيئي للتوعية وليست نصيحة طبية. البيانات السياقية مفيدة لفهم الاتجاه العام، لكن القياس المحلي هو المرجع الأدق لاتخاذ قرار حساس.'
+                        : 'This is an environmental awareness estimate, not medical advice. Contextual data helps explain the wider pattern, while local measurements remain the stronger basis for sensitive decisions.'}
                 </p>
              </div>
              <div className="flex flex-col justify-center pl-4">
@@ -309,15 +311,15 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
                 <ul className="space-y-4 mb-8">
                     <li className="flex items-center gap-3 text-gray-400">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span> 
-                        <span><strong>Sentinel-5P:</strong> Tropospheric NO₂ column density</span>
+                        <span><strong>{language === 'ar' ? 'السياق الفضائي:' : 'Satellite context:'}</strong> {language === 'ar' ? 'مؤشرات إقليمية لجودة الهواء عند توفرها' : 'Regional air-quality indicators when available'}</span>
                     </li>
                     <li className="flex items-center gap-3 text-gray-400">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span> 
-                        <span><strong>Ground Conversion:</strong> Wind vector correlation</span>
+                        <span><strong>{language === 'ar' ? 'السياق المحلي:' : 'Local context:'}</strong> {language === 'ar' ? 'الموقع والوقت والرياح ونمط التنقل' : 'Location, time, wind, and travel pattern'}</span>
                     </li>
                     <li className="flex items-center gap-3 text-gray-400">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span> 
-                        <span><strong>Risk Scoring:</strong> Annual WHO exposure limits</span>
+                        <span><strong>{language === 'ar' ? 'تفسير النتيجة:' : 'Result interpretation:'}</strong> {language === 'ar' ? 'مستوى إرشادي مع توضيح القيود ومصدر كل مؤشر' : 'Guidance level with limitations and source labels'}</span>
                     </li>
                 </ul>
              </div>

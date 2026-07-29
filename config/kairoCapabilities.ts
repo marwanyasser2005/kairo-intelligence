@@ -49,11 +49,11 @@ export const audienceProfiles: AudienceProfile[] = [
     label: { ar: 'الأفراد والأسر', en: 'Individuals & families' },
     shortLabel: { ar: 'أفراد وأسر', en: 'People' },
     description: {
-      ar: 'قرارات يومية أوضح تقلل الفاتورة والهدر والتعرض البيئي.',
+      ar: 'قرارات يومية أوضح تساعدك تقلل الفاتورة والهدر والتعرض البيئي.',
       en: 'Clearer daily decisions that reduce bills, waste, and environmental exposure.',
     },
     value: {
-      ar: 'خطوات شخصية قابلة للتنفيذ مع أثر مالي وبيئي مفهوم.',
+      ar: 'خطوات عملية تقدر تنفذها، مع أثر مالي وبيئي واضح وسهل المتابعة.',
       en: 'Practical personal actions with understandable financial and environmental value.',
     },
   },
@@ -62,11 +62,11 @@ export const audienceProfiles: AudienceProfile[] = [
     label: { ar: 'المجتمع والفرق الميدانية', en: 'Communities & field teams' },
     shortLabel: { ar: 'مجتمع وميدان', en: 'Community' },
     description: {
-      ar: 'رصد محلي وبلاغات أوضح وترتيب عادل لأولويات التدخل.',
+      ar: 'رصد محلي أوضح يساعد الفرق ترتب أولويات التدخل بشكل عادل.',
       en: 'Local observation, clearer reporting, and fairer intervention priorities.',
     },
     value: {
-      ar: 'تحويل الإشارات المتفرقة إلى صورة مشتركة تساعد على التصرف مبكرًا.',
+      ar: 'يجمع الإشارات المتفرقة في صورة واحدة تساعدكم تتصرفوا بدري وبثقة أكبر.',
       en: 'Turn scattered signals into a shared picture that supports earlier action.',
     },
   },
@@ -75,11 +75,11 @@ export const audienceProfiles: AudienceProfile[] = [
     label: { ar: 'المدارس والجامعات والباحثون', en: 'Schools, universities & researchers' },
     shortLabel: { ar: 'تعليم وبحث', en: 'Education' },
     description: {
-      ar: 'تعلم تطبيقي وبيانات قابلة للتفسير وتجارب سيناريوهات موثقة.',
+      ar: 'تعلم تطبيقي، بيانات قابلة للتفسير، وسيناريوهات يمكن توثيقها ومناقشتها.',
       en: 'Applied learning, explainable data, and documented scenario experiments.',
     },
     value: {
-      ar: 'ربط العلوم البيئية بسلوك حقيقي ونتائج يمكن مناقشتها وقياسها.',
+      ar: 'يربط العلوم البيئية بسلوك حقيقي ونتائج تقدروا تناقشوها وتقيسوها.',
       en: 'Connect environmental science to real behavior and measurable outcomes.',
     },
   },
@@ -88,11 +88,11 @@ export const audienceProfiles: AudienceProfile[] = [
     label: { ar: 'الشركات والمنشآت', en: 'Businesses & facilities' },
     shortLabel: { ar: 'شركات ومنشآت', en: 'Business' },
     description: {
-      ar: 'كفاءة تشغيلية أعلى، تكلفة أقل، وأدلة أفضل للاستدامة.',
+      ar: 'كفاءة تشغيلية أعلى، تكلفة أقل، ودليل أوضح على أثر الاستدامة.',
       en: 'Higher operational efficiency, lower cost, and better sustainability evidence.',
     },
     value: {
-      ar: 'تحديد مصادر الهدر وترتيب الاستثمار حسب العائد والمخاطر.',
+      ar: 'يساعدكم تحددوا مصادر الهدر وترتبوا الاستثمار حسب العائد والمخاطر.',
       en: 'Identify waste sources and prioritize investment by return and risk.',
     },
   },
@@ -101,11 +101,11 @@ export const audienceProfiles: AudienceProfile[] = [
     label: { ar: 'المدن والجهات العامة', en: 'Cities & public authorities' },
     shortLabel: { ar: 'مدن وجهات عامة', en: 'Public sector' },
     description: {
-      ar: 'رؤية مكانية موحدة تساعد في التخطيط وتوجيه الموارد والاستجابة.',
+      ar: 'رؤية مكانية موحدة تساعد على التخطيط وتوجيه الموارد والاستجابة في الوقت المناسب.',
       en: 'A unified spatial view for planning, resource allocation, and response.',
     },
     value: {
-      ar: 'قرارات أسبق وأكثر شفافية مع فصل واضح بين القياس والتقدير.',
+      ar: 'قرارات أبكر وأكثر شفافية، مع فرق واضح بين القياس الحقيقي والتقدير.',
       en: 'Earlier, more transparent decisions with a clear line between measurement and estimation.',
     },
   },
@@ -119,15 +119,15 @@ export const kairoCapabilities: KairoCapability[] = [
       en: 'KAIRO SIGNALS · Environmental foresight',
     },
     shortDescription: {
-      ar: 'يتابع اتجاهات الهواء ومؤشرات مخاطر المياه حسب الموقع قبل تصاعد الأثر.',
+      ar: 'يتابع اتجاهات الهواء ومؤشرات المياه حسب الموقع، علشان تقدر تتحرك قبل ما يزيد الأثر.',
       en: 'Tracks air trends and location-aware water-risk indicators before impacts escalate.',
     },
     purpose: {
-      ar: 'منح الأفراد والفرق والجهات وقتًا لاتخاذ إجراء وقائي مبني على دليل مفهوم.',
+      ar: 'يديك وقتًا كافيًا لاتخاذ إجراء وقائي مبني على دليل واضح ومفهوم.',
       en: 'Give people, teams, and authorities time for preventive action based on understandable evidence.',
     },
     outcome: {
-      ar: 'نافذة توقع 24 ساعة، أولوية فحص المياه، مستوى ثقة، وعوامل تشرح النتيجة.',
+      ar: 'توقع 24 ساعة، أولوية فحص المياه، مستوى الثقة، والعوامل التي أثرت في النتيجة.',
       en: 'A 24-hour forecast window, water inspection priority, confidence, and result drivers.',
     },
     audiences: ['individual', 'community', 'education', 'business', 'government'],
@@ -138,15 +138,15 @@ export const kairoCapabilities: KairoCapability[] = [
     id: 'water',
     title: { ar: 'ذكاء المياه والندرة', en: 'Water & scarcity intelligence' },
     shortDescription: {
-      ar: 'يحلل الاستهلاك والهدر وعوامل الشبكة ليكشف أين تبدأ الأولوية.',
+      ar: 'يفهم استهلاكك والهدر وحالة الشبكة، ويقول لك تبدأ الفحص أو التحسين منين.',
       en: 'Analyzes use, waste, and network context to reveal where priority starts.',
     },
     purpose: {
-      ar: 'تقليل الفاقد وحماية التكلفة وربط السلوك اليومي بأمن المياه.',
+      ar: 'يساعدك تقلل الفاقد والتكلفة، وتربط استخدامك اليومي بأمن المياه.',
       en: 'Reduce losses, protect cost, and connect daily behavior to water security.',
     },
     outcome: {
-      ar: 'درجة كفاءة، تقدير للهدر، مؤشرات تسريب، وخطة تحسين قابلة للتحقق.',
+      ar: 'درجة كفاءة، هدر تقديري، أولوية للفحص، وخطة تحسين يمكن التحقق منها.',
       en: 'Efficiency score, waste estimate, leak indicators, and a verifiable improvement plan.',
     },
     audiences: ['individual', 'community', 'education', 'business', 'government'],
@@ -157,15 +157,15 @@ export const kairoCapabilities: KairoCapability[] = [
     id: 'food',
     title: { ar: 'الأمن الغذائي وتقليل الفاقد', en: 'Food security & waste reduction' },
     shortDescription: {
-      ar: 'يربط عادات الشراء والاستهلاك بسلسلة الإمداد والمياه والانبعاثات.',
+      ar: 'يربط عادات الشراء والاستهلاك بالهدر والتكلفة والمياه والانبعاثات.',
       en: 'Connects purchasing and consumption behavior to supply chains, water, and emissions.',
     },
     purpose: {
-      ar: 'تقليل الطعام المهدَر وتكلفته وتحسين كفاءة الموارد من المنزل إلى المؤسسة.',
+      ar: 'يساعدك تقلل الطعام المهدَر وتكلفته، وتحسن استخدام الموارد في البيت أو المؤسسة.',
       en: 'Reduce wasted food and cost while improving resource efficiency from homes to institutions.',
     },
     outcome: {
-      ar: 'تشخيص لنقطة الفاقد، أثر مالي وبيئي، وتوصيات شراء وتخزين واستهلاك.',
+      ar: 'يعرفك نقطة الفاقد، أثرها المالي والبيئي، وخطوات عملية للشراء والتخزين والاستهلاك.',
       en: 'Loss-point diagnosis, financial and environmental impact, and purchasing and storage actions.',
     },
     audiences: ['individual', 'education', 'business', 'government'],
@@ -176,15 +176,15 @@ export const kairoCapabilities: KairoCapability[] = [
     id: 'energy',
     title: { ar: 'ذكاء الطاقة', en: 'Energy intelligence' },
     shortDescription: {
-      ar: 'يفسر الاستهلاك والتكلفة وكفاءة الأجهزة بدل الاكتفاء برقم الفاتورة.',
+      ar: 'يفسر استهلاكك وتكلفته وكفاءة الأجهزة، بدل ما تفضل الفاتورة مجرد رقم.',
       en: 'Explains consumption, cost, and appliance efficiency beyond the utility bill.',
     },
     purpose: {
-      ar: 'خفض تكلفة التشغيل والانبعاثات دون التأثير غير الضروري على الراحة أو الإنتاج.',
+      ar: 'يساعدك تخفض تكلفة التشغيل والانبعاثات من غير ما تضحي بالراحة أو الإنتاج.',
       en: 'Lower operating cost and emissions without unnecessary impact on comfort or productivity.',
     },
     outcome: {
-      ar: 'درجة كفاءة، مصادر الاستهلاك الأعلى، وفرص توفير مرتبة حسب الأولوية.',
+      ar: 'درجة كفاءة، أكبر مصادر الاستهلاك، وفرص توفير مرتبة حسب الأولوية.',
       en: 'Efficiency score, major consumption sources, and prioritized saving opportunities.',
     },
     audiences: ['individual', 'education', 'business', 'government'],
@@ -195,15 +195,15 @@ export const kairoCapabilities: KairoCapability[] = [
     id: 'mobility',
     title: { ar: 'التنقل منخفض الأثر', en: 'Low-impact mobility' },
     shortDescription: {
-      ar: 'يقارن أنماط الرحلات بالتكلفة والزمن والكربون.',
+      ar: 'يقارن رحلاتك من ناحية التكلفة والوقت والانبعاثات.',
       en: 'Compares travel patterns through cost, time, and carbon.',
     },
     purpose: {
-      ar: 'اختيار بدائل تنقل واقعية تقلل التكلفة والانبعاثات وتدعم التخطيط الحضري.',
+      ar: 'يساعدك تختار بدائل تنقل واقعية تقلل التكلفة والانبعاثات وتوفر الوقت.',
       en: 'Choose realistic mobility alternatives that reduce cost and emissions and support urban planning.',
     },
     outcome: {
-      ar: 'بصمة شهرية، كفاءة تنقل، وبدائل واضحة لكل نمط رحلة.',
+      ar: 'بصمة شهرية، درجة كفاءة للتنقل، وبدائل واضحة تناسب نمط رحلاتك.',
       en: 'Monthly footprint, mobility efficiency, and clear alternatives for each trip pattern.',
     },
     audiences: ['individual', 'community', 'business', 'government'],
@@ -214,15 +214,15 @@ export const kairoCapabilities: KairoCapability[] = [
     id: 'exposure',
     title: { ar: 'التعرض الحضري وجودة الهواء', en: 'Urban exposure & air quality' },
     shortDescription: {
-      ar: 'يحوّل بيانات الموقع والهواء إلى صورة مفهومة للتعرض اليومي.',
+      ar: 'يحوّل بيانات الموقع والهواء إلى صورة بسيطة تشرح تعرضك اليومي.',
       en: 'Turns location and air data into an understandable view of daily exposure.',
     },
     purpose: {
-      ar: 'مساعدة الفئات الحساسة والمجتمعات والجهات على تقليل التعرض وتخطيط التدخل.',
+      ar: 'يساعد الفئات الحساسة والفرق والجهات تقلل التعرض وتختار وقت ومكان التدخل.',
       en: 'Help sensitive groups, communities, and authorities reduce exposure and plan interventions.',
     },
     outcome: {
-      ar: 'مؤشر تعرض، تفسير للعوامل، وتوصيات زمنية ومكانية قابلة للتطبيق.',
+      ar: 'مؤشر تعرض تقديري، أسباب واضحة، وتوصيات عملية للوقت والمكان.',
       en: 'Exposure index, factor explanation, and practical time- and location-based guidance.',
     },
     audiences: ['individual', 'community', 'education', 'business', 'government'],
@@ -233,15 +233,15 @@ export const kairoCapabilities: KairoCapability[] = [
     id: 'ewaste',
     title: { ar: 'ReKairo للاقتصاد الدائري', en: 'ReKairo circular economy' },
     shortDescription: {
-      ar: 'يقيم العمر المتبقي للأجهزة وأفضل مسار للإصلاح أو إعادة الاستخدام أو التدوير.',
+      ar: 'يقيّم حالة جهازك وعمره المتبقي، ويقترح أفضل مسار: استخدام، إصلاح، بيع أو تدوير.',
       en: 'Evaluates device life and the best repair, reuse, or recycling path.',
     },
     purpose: {
-      ar: 'إطالة عمر الأجهزة واسترداد قيمتها وتقليل المخلفات الإلكترونية الخطرة.',
+      ar: 'يساعدك تطوّل عمر الجهاز، تسترد جزءًا من قيمته، وتقلل المخلفات الإلكترونية الخطرة.',
       en: 'Extend device life, recover value, and reduce hazardous electronic waste.',
     },
     outcome: {
-      ar: 'توصية مصير الجهاز، قيمة محتملة، وأثر دائري قابل للتتبع.',
+      ar: 'توصية واضحة للجهاز، قيمة تقديرية، وأثر دائري يمكنك متابعته.',
       en: 'Device-path recommendation, potential value, and traceable circular impact.',
     },
     audiences: ['individual', 'community', 'education', 'business'],
@@ -252,15 +252,15 @@ export const kairoCapabilities: KairoCapability[] = [
     id: 'scenarios',
     title: { ar: 'مختبر السيناريوهات', en: 'Scenario lab' },
     shortDescription: {
-      ar: 'يقارن الخيارات قبل التنفيذ ويكشف أثر الافتراضات على النتيجة.',
+      ar: 'يقارن اختياراتك قبل التنفيذ، ويوضح كيف كل افتراض يغيّر النتيجة.',
       en: 'Compares choices before implementation and exposes how assumptions affect results.',
     },
     purpose: {
-      ar: 'تقليل مخاطرة القرار واختيار التدخل الأعلى أثرًا ضمن الموارد المتاحة.',
+      ar: 'يساعدك تقلل مخاطرة القرار وتختار التدخل الأعلى أثرًا حسب الموارد المتاحة.',
       en: 'Reduce decision risk and select the highest-impact intervention within available resources.',
     },
     outcome: {
-      ar: 'مقارنة موحدة للتكلفة والموارد والكربون مع افتراضات ظاهرة.',
+      ar: 'مقارنة واضحة للتكلفة والموارد والانبعاثات، مع إظهار كل الافتراضات.',
       en: 'A consistent comparison of cost, resources, and carbon with visible assumptions.',
     },
     audiences: ['education', 'business', 'government'],

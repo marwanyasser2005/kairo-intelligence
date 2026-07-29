@@ -89,8 +89,8 @@ const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, set
         <div className="w-full min-h-screen pt-32 lg:pt-36 pb-20 px-4 md:px-6 lg:px-8 space-y-8 max-w-7xl mx-auto">
             <CapabilityContext capabilityId="food" />
             <ModuleToolbar 
-                title={language === 'ar' ? 'محاكي هدر الطعام المتقدم' : 'Advanced Food Waste Simulator'}
-                description={language === 'ar' ? 'تحليل ذكي لسلسلة الإمداد المنزلية والبصمة البيئية.' : 'Intelligent household supply chain & environmental footprint analysis.'}
+                title={language === 'ar' ? 'الأمن الغذائي وتقليل الفاقد' : 'Food Security & Waste Reduction'}
+                description={language === 'ar' ? 'افهم هدر الطعام وتكلفته وأثره، وخُد خطوات عملية في الشراء والتخزين.' : 'Understand food waste, cost, and impact, then act on purchasing and storage.'}
                 icon={<Utensils className="w-6 h-6 text-orange-500" />}
                 onReset={() => { if(setGlobalReport) setGlobalReport(null); setStep(1); }}
                 hasReport={!!advancedReport}

@@ -125,7 +125,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                 <CapabilityContext capabilityId="energy" />
                 <ModuleToolbar 
                     title={isAr ? 'ذكاء الطاقة' : 'AI Energy Intelligence'}
-                    description={isAr ? 'منصة متقدمة لتحليل استهلاك الطاقة وكفاءتها للمنازل والمنشآت بناءً على أحدث التعريفات المصرية.' : 'Advanced energy efficiency analytics for homes and businesses powered by local tariff models.'}
+                    description={isAr ? 'حلّل الفاتورة والأجهزة وساعات التشغيل، واعرف فرص التوفير وحدود كل تقدير.' : 'Analyze bills, appliances, and operating hours with transparent savings estimates.'}
                     icon={<Zap className="w-6 h-6 text-amber-500" />}
                     onReset={() => { if(setGlobalReport) setGlobalReport(null); setOcrData(null); }}
                     hasReport={!!report}

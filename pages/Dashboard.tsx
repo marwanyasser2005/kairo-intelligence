@@ -3,6 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Chip, Meter } from '@heroui/react';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as ChartTooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import {
   Activity,
   ArrowUpRight,
   Building2,
@@ -81,6 +91,8 @@ interface CapabilityState {
   ready: boolean;
   value: string;
   label: string;
+  score?: number;
+  evidence: string;
 }
 
 const capabilityIcons: Record<CapabilityId, LucideIcon> = {
@@ -180,66 +192,83 @@ const Dashboard: React.FC<DashboardProps> = ({
               ? `${Math.round(earlyWarningData.air.peakAqi)} AQI`
               : `${Math.round(earlyWarningData.water?.score ?? 0)}/100`,
             label: isAr ? 'آخر قراءة استباقية' : 'Latest foresight reading',
+            score: earlyWarningData.water?.confidence,
+            evidence: isAr ? 'توقع ومؤشر حسب الموقع' : 'Location-aware forecast and indicator',
           }
         : {
             ready: false,
             value: isAr ? 'ابدأ تحديد الموقع' : 'Start location context',
             label: isAr ? 'لم تُنشأ قراءة بعد' : 'No reading created yet',
+            evidence: isAr ? 'يحتاج إذن الموقع أو النطاق' : 'Needs location or scope',
           },
       water: water
         ? {
             ready: true,
             value: `${Math.round(water.metrics?.water_efficiency_score || 0)}/100`,
             label: isAr ? 'كفاءة المياه' : 'Water efficiency',
+            score: water.metrics?.water_efficiency_score,
+            evidence: isAr ? 'من بيانات الاستهلاك والشبكة' : 'From usage and network inputs',
           }
         : {
             ready: false,
             value: isAr ? 'ابدأ التحليل' : 'Start analysis',
             label: isAr ? 'لا توجد نتيجة محفوظة' : 'No saved result',
+            evidence: isAr ? 'يحتاج بيانات الاستهلاك' : 'Needs consumption inputs',
           },
       food: food
         ? {
             ready: true,
             value: `${Number(food.metrics?.methane_emissions_kg || 0).toFixed(1)} kg CH₄`,
             label: isAr ? 'أثر الميثان' : 'Methane impact',
+            score: food.metrics?.food_efficiency_score,
+            evidence: isAr ? 'تقدير من سلوك الشراء والهدر' : 'Estimate from purchase and waste behavior',
           }
         : {
             ready: false,
             value: isAr ? 'ابدأ التحليل' : 'Start analysis',
             label: isAr ? 'لا توجد نتيجة محفوظة' : 'No saved result',
+            evidence: isAr ? 'يحتاج نمط الشراء والهدر' : 'Needs purchase and waste pattern',
           },
       energy: energy
         ? {
             ready: true,
             value: `${Math.round(energy.metrics?.energy_efficiency_score || 0)}/100`,
             label: isAr ? 'كفاءة الطاقة' : 'Energy efficiency',
+            score: energy.metrics?.energy_efficiency_score,
+            evidence: isAr ? 'من الفاتورة والأجهزة والتشغيل' : 'From bill, devices, and operation',
           }
         : {
             ready: false,
             value: isAr ? 'ابدأ التحليل' : 'Start analysis',
             label: isAr ? 'لا توجد نتيجة محفوظة' : 'No saved result',
+            evidence: isAr ? 'يحتاج فاتورة أو استهلاكًا' : 'Needs a bill or consumption',
           },
       mobility: transport
         ? {
             ready: true,
             value: `${Number(transport.metrics?.monthly_carbon_kg || 0).toFixed(1)} kg CO₂`,
             label: isAr ? 'أثر التنقل الشهري' : 'Monthly mobility impact',
+            score: transport.scores?.mobility_efficiency,
+            evidence: isAr ? 'تقدير من الرحلات والتكلفة والزمن' : 'Estimate from trips, cost, and time',
           }
         : {
             ready: false,
             value: isAr ? 'ابدأ التحليل' : 'Start analysis',
             label: isAr ? 'لا توجد نتيجة محفوظة' : 'No saved result',
+            evidence: isAr ? 'يحتاج نمط الرحلات' : 'Needs commute pattern',
           },
       exposure: exposure
         ? {
             ready: true,
             value: `${Math.round(exposure.estimated_aqi || 0)} AQI`,
             label: isAr ? 'التعرض المقدّر' : 'Estimated exposure',
+            evidence: isAr ? 'تقدير سياقي وليس قياس حساس محلي' : 'Contextual estimate, not a local sensor reading',
           }
         : {
             ready: false,
             value: isAr ? 'ابدأ التحليل' : 'Start analysis',
             label: isAr ? 'لا توجد نتيجة محفوظة' : 'No saved result',
+            evidence: isAr ? 'يحتاج الموقع ونمط التعرض' : 'Needs location and exposure pattern',
           },
       ewaste: ewaste
         ? {
@@ -248,16 +277,20 @@ const Dashboard: React.FC<DashboardProps> = ({
               ewaste.environmental_impact?.circular_economy_impact_score || 0,
             )}/100`,
             label: isAr ? 'أثر الاقتصاد الدائري' : 'Circular impact',
+            score: ewaste.environmental_impact?.circular_economy_impact_score,
+            evidence: isAr ? 'من حالة الجهاز وعمره' : 'From device condition and age',
           }
         : {
             ready: false,
             value: isAr ? 'قيّم جهازًا' : 'Assess a device',
             label: isAr ? 'لا توجد نتيجة محفوظة' : 'No saved result',
+            evidence: isAr ? 'يحتاج بيانات الجهاز' : 'Needs device details',
           },
       scenarios: {
         ready: true,
         value: isAr ? 'جاهز للمقارنة' : 'Ready to compare',
         label: isAr ? 'لا يحتاج بيانات محفوظة' : 'No saved result required',
+        evidence: isAr ? 'يستخدم النتائج المتاحة كخط أساس' : 'Uses available results as a baseline',
       },
     }),
     [earlyWarningData, energy, ewaste, exposure, food, isAr, transport, water],
@@ -270,6 +303,49 @@ const Dashboard: React.FC<DashboardProps> = ({
     capability.audiences.includes(audience),
   );
   const selectedAudience = getAudienceProfile(audience) ?? audienceProfiles[0];
+  const scoreChartData = useMemo(
+    () =>
+      kairoCapabilities
+        .map((capability) => ({
+          id: capability.id,
+          name: localize(capability.title, currentLanguage)
+            .replace('KAIRO SIGNALS · ', '')
+            .replace('ReKairo ', ''),
+          value: Math.max(
+            0,
+            Math.min(100, Number(capabilityStates[capability.id].score || 0)),
+          ),
+          ready: capabilityStates[capability.id].ready,
+        }))
+        .filter((item) => item.ready && item.value > 0),
+    [capabilityStates, currentLanguage],
+  );
+  const costChartData = useMemo(
+    () =>
+      [
+        {
+          name: isAr ? 'المياه' : 'Water',
+          value: Number(water?.metrics?.financial_loss_estimate_egp || 0),
+          color: '#38bdf8',
+        },
+        {
+          name: isAr ? 'الغذاء' : 'Food',
+          value: Number(food?.metrics?.monthly_waste_cost || 0),
+          color: '#fb923c',
+        },
+        {
+          name: isAr ? 'الطاقة' : 'Energy',
+          value: Number(energy?.metrics?.financial_loss_estimate_egp || 0),
+          color: '#facc15',
+        },
+        {
+          name: isAr ? 'التنقل' : 'Mobility',
+          value: Number(transport?.metrics?.monthly_cost_egp || 0),
+          color: '#a78bfa',
+        },
+      ].filter((item) => item.value > 0),
+    [energy, food, isAr, transport, water],
+  );
 
   useEffect(() => {
     const syncTimer = window.setTimeout(() => {
@@ -393,6 +469,156 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           ))}
         </section>
+
+        <MotionDiv
+          {...reveal}
+          className="mt-6 grid gap-5 xl:grid-cols-[1.08fr_.92fr]"
+        >
+          <section className={`overflow-hidden rounded-[2rem] border ${border} ${surface}`}>
+            <div className={`flex flex-col gap-3 border-b p-6 sm:flex-row sm:items-end sm:justify-between ${border}`}>
+              <div>
+                <span className="kairo-eyebrow">
+                  <CircleGauge className="h-3.5 w-3.5" />
+                  {isAr ? 'صورة الأداء' : 'Performance view'}
+                </span>
+                <h2 className={`mt-4 text-2xl font-black ${textMain}`}>
+                  {isAr ? 'مؤشرات الكفاءة المتاحة' : 'Available efficiency indicators'}
+                </h2>
+                <p className={`mt-2 text-xs leading-6 ${textSub}`}>
+                  {isAr
+                    ? 'يعرض فقط الدرجات الناتجة من تحليلاتك الحالية، من غير أي بيانات تجريبية.'
+                    : 'Shows only scores from your current analyses, with no demo values.'}
+                </p>
+              </div>
+              <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black ${border} ${textSub}`}>
+                {scoreChartData.length} {isAr ? 'مؤشرات جاهزة' : 'scores ready'}
+              </span>
+            </div>
+            <div className="h-[310px] p-4 sm:p-6">
+              {scoreChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={scoreChartData}
+                    layout="vertical"
+                    margin={{ top: 4, right: 24, left: isAr ? 12 : 8, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 6"
+                      horizontal={false}
+                      stroke={isLight ? '#dbe6e1' : 'rgba(255,255,255,.08)'}
+                    />
+                    <XAxis
+                      type="number"
+                      domain={[0, 100]}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: isLight ? '#64748b' : '#718078', fontSize: 10 }}
+                    />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      width={isAr ? 128 : 118}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: isLight ? '#334155' : '#cbd5e1', fontSize: 11, fontWeight: 700 }}
+                    />
+                    <ChartTooltip
+                      cursor={{ fill: 'rgba(43,212,167,.055)' }}
+                      contentStyle={{
+                        borderRadius: 14,
+                        border: `1px solid ${isLight ? '#dbe6e1' : 'rgba(255,255,255,.1)'}`,
+                        background: isLight ? '#ffffff' : '#0d1916',
+                        color: isLight ? '#0f172a' : '#f8fafc',
+                        fontSize: 12,
+                      }}
+                      formatter={(value) => [`${Number(value).toFixed(0)}/100`, isAr ? 'الدرجة' : 'Score']}
+                    />
+                    <Bar dataKey="value" radius={[8, 8, 8, 8]} barSize={16}>
+                      {scoreChartData.map((entry, index) => (
+                        <Cell
+                          key={entry.id}
+                          fill={['#2bd4a7', '#38bdf8', '#facc15', '#a78bfa', '#22d3ee'][index % 5]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <EmptyChartState
+                  isAr={isAr}
+                  text={isAr ? 'شغّل أي تحليل علشان تظهر درجات الكفاءة هنا.' : 'Run an analysis to show efficiency scores here.'}
+                  onOpen={() => navigate('/systems/water-scarcity')}
+                />
+              )}
+            </div>
+          </section>
+
+          <section className={`overflow-hidden rounded-[2rem] border ${border} ${surface}`}>
+            <div className={`border-b p-6 ${border}`}>
+              <span className="kairo-eyebrow">
+                <Leaf className="h-3.5 w-3.5" />
+                {isAr ? 'السياق المالي' : 'Financial context'}
+              </span>
+              <h2 className={`mt-4 text-2xl font-black ${textMain}`}>
+                {isAr ? 'التكلفة الشهرية حسب القطاع' : 'Monthly cost by sector'}
+              </h2>
+              <p className={`mt-2 text-xs leading-6 ${textSub}`}>
+                {isAr
+                  ? 'مياه وغذاء وطاقة: فاقد تقديري. التنقل: تكلفة شهرية حالية.'
+                  : 'Water, food, and energy show estimated loss; mobility shows current monthly cost.'}
+              </p>
+            </div>
+            <div className="h-[310px] p-4 sm:p-6">
+              {costChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={costChartData} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+                    <CartesianGrid
+                      strokeDasharray="3 6"
+                      vertical={false}
+                      stroke={isLight ? '#dbe6e1' : 'rgba(255,255,255,.08)'}
+                    />
+                    <XAxis
+                      dataKey="name"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: isLight ? '#475569' : '#94a3b8', fontSize: 10, fontWeight: 700 }}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fill: isLight ? '#64748b' : '#718078', fontSize: 10 }}
+                    />
+                    <ChartTooltip
+                      cursor={{ fill: 'rgba(43,212,167,.055)' }}
+                      contentStyle={{
+                        borderRadius: 14,
+                        border: `1px solid ${isLight ? '#dbe6e1' : 'rgba(255,255,255,.1)'}`,
+                        background: isLight ? '#ffffff' : '#0d1916',
+                        color: isLight ? '#0f172a' : '#f8fafc',
+                        fontSize: 12,
+                      }}
+                      formatter={(value) => [
+                        `${Number(value).toLocaleString(isAr ? 'ar-EG' : 'en-GB')} ${isAr ? 'جنيه' : 'EGP'}`,
+                        isAr ? 'شهريًا' : 'Monthly',
+                      ]}
+                    />
+                    <Bar dataKey="value" radius={[10, 10, 3, 3]} maxBarSize={46}>
+                      {costChartData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <EmptyChartState
+                  isAr={isAr}
+                  text={isAr ? 'أكمل تحليلًا فيه تكلفة علشان تظهر المقارنة.' : 'Complete a cost-based analysis to see the comparison.'}
+                  onOpen={() => navigate('/energy')}
+                />
+              )}
+            </div>
+          </section>
+        </MotionDiv>
 
         <MotionDiv
           {...reveal}
@@ -579,8 +805,12 @@ const Dashboard: React.FC<DashboardProps> = ({
                   key={capability.id}
                   {...reveal}
                   transition={{ ...reveal.transition, delay: (index % 3) * 0.055 }}
-                  className={`group flex min-h-[420px] flex-col rounded-[1.8rem] border p-6 transition duration-300 ${border} ${surface} ${accent.border}`}
+                  className={`group relative flex min-h-[430px] flex-col overflow-hidden rounded-[1.9rem] border p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,.16)] ${border} ${surface} ${accent.border}`}
                 >
+                  <div className={`absolute inset-x-0 top-0 h-1 ${accent.soft}`} />
+                  <span className={`pointer-events-none absolute end-5 top-14 text-6xl font-black opacity-[0.035] ${textMain}`}>
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
                   <div className="flex items-start justify-between gap-4">
                     <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${accent.soft} ${accent.icon}`}>
                       <Icon className="h-5 w-5" />
@@ -596,10 +826,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                     >
                       {state.ready
                         ? isAr
-                          ? 'جاهزة'
+                          ? 'نتيجة متاحة'
                           : 'Ready'
                         : isAr
-                          ? 'ابدأ'
+                          ? 'لم يبدأ'
                           : 'Start'}
                     </span>
                   </div>
@@ -613,24 +843,46 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                   <div className={`mt-5 rounded-2xl border p-4 ${border} ${isLight ? 'bg-slate-50/80' : 'bg-black/20'}`}>
                     <p className={`text-[10px] font-black uppercase tracking-[.14em] ${accent.icon}`}>
-                      {isAr ? 'الغرض العام' : 'General purpose'}
+                      {isAr ? 'الفائدة العملية' : 'Practical value'}
                     </p>
                     <p className={`mt-2 text-xs leading-5 ${textSub}`}>
                       {localize(capability.purpose, currentLanguage)}
                     </p>
                   </div>
 
-                  <div className="mt-5 flex items-end justify-between gap-4">
-                    <div>
+                  <div className={`mt-4 rounded-2xl border p-4 ${border} ${state.ready ? accent.soft : isLight ? 'bg-white' : 'bg-white/[0.02]'}`}>
+                    <div className="flex items-end justify-between gap-4">
+                      <div>
                       <p className={`text-[10px] font-bold ${textSoft}`}>{state.label}</p>
-                      <p className={`mt-1 text-base font-black ${textMain}`}>{state.value}</p>
+                        <p className={`mt-1 text-lg font-black ${textMain}`}>{state.value}</p>
+                      </div>
+                      {state.ready ? (
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                      ) : (
+                        <CircleGauge className={`h-5 w-5 ${textSoft}`} />
+                      )}
                     </div>
-                    {state.ready && capability.id !== 'scenarios' && (
-                      <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                    {state.score !== undefined && (
+                      <div className={`mt-3 h-1.5 overflow-hidden rounded-full ${isLight ? 'bg-slate-200' : 'bg-white/10'}`}>
+                        <div
+                          className="h-full rounded-full bg-kairo-green transition-[width] duration-700"
+                          style={{ width: `${Math.max(4, Math.min(100, state.score))}%` }}
+                        />
+                      </div>
                     )}
+                    <p className={`mt-3 text-[10px] leading-5 ${textSoft}`}>{state.evidence}</p>
                   </div>
 
-                  <div className="mt-auto flex items-end justify-between gap-4 pt-7">
+                  <div className="mt-4">
+                    <p className={`text-[9px] font-black uppercase tracking-wider ${textSoft}`}>
+                      {isAr ? 'النتيجة التي ستحصل عليها' : 'What you will get'}
+                    </p>
+                    <p className={`mt-1.5 line-clamp-2 text-[11px] leading-5 ${textSub}`}>
+                      {localize(capability.outcome, currentLanguage)}
+                    </p>
+                  </div>
+
+                  <div className="mt-auto flex items-end justify-between gap-4 pt-6">
                     <div>
                       <p className={`mb-2 text-[9px] font-black uppercase tracking-wider ${textSoft}`}>
                         {isAr ? 'يخدم أيضًا' : 'Also serves'}
@@ -661,7 +913,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                       }`}
                       aria-label={`${isAr ? 'فتح' : 'Open'} ${localize(capability.title, currentLanguage)}`}
                     >
-                      {isAr ? 'فتح' : 'Open'}
+                      {state.ready
+                        ? isAr
+                          ? 'راجع النتيجة'
+                          : 'Review result'
+                        : isAr
+                          ? 'ابدأ الآن'
+                          : 'Start now'}
                       <ArrowUpRight className={`h-3.5 w-3.5 ${accent.icon} ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
                     </button>
                   </div>
@@ -676,7 +934,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           className={`mt-10 grid gap-8 rounded-[2rem] border p-6 sm:p-8 lg:grid-cols-[.8fr_1.2fr] ${border} ${surface}`}
         >
           <div>
-            <span className="kairo-eyebrow">{isAr ? 'قيمة الفئة الحالية' : 'Value for this audience'}</span>
+            <span className="kairo-eyebrow">{isAr ? 'مسارك داخل Kairo' : 'Your path through Kairo'}</span>
             <h2 className={`mt-5 text-3xl font-semibold tracking-[-0.035em] ${textMain}`}>
               {localize(selectedAudience.label, currentLanguage)}
             </h2>
@@ -688,18 +946,18 @@ const Dashboard: React.FC<DashboardProps> = ({
             {[
               {
                 Icon: Target,
-                title: isAr ? '1. اختر السؤال' : '1. Choose the question',
-                text: isAr ? 'مياه، غذاء، طاقة، تنقل، تعرض أو نفايات.' : 'Water, food, energy, mobility, exposure, or waste.',
+                title: isAr ? '1. ابدأ من سؤالك' : '1. Start with your question',
+                text: isAr ? 'اختار الموضوع اللي يهمك: مياه، غذاء، طاقة، تنقل، هواء أو مخلفات.' : 'Choose what matters now: water, food, energy, mobility, air, or waste.',
               },
               {
                 Icon: CircleGauge,
-                title: isAr ? '2. شغّل التحليل' : '2. Run the analysis',
-                text: isAr ? 'أدخل الحد الأدنى من البيانات وراجع الافتراضات.' : 'Provide the minimum context and review assumptions.',
+                title: isAr ? '2. أدخل الأساسيات' : '2. Add the essentials',
+                text: isAr ? 'دخل أقل قدر من البيانات، وKairo هيشرح لك الافتراضات ونوع كل رقم.' : 'Provide the minimum data; Kairo explains assumptions and every value type.',
               },
               {
                 Icon: Route,
-                title: isAr ? '3. نفّذ وتابع' : '3. Act and track',
-                text: isAr ? 'اختر إجراءً واحفظ النتيجة للمتابعة والمقارنة.' : 'Choose an action and save the result for tracking.',
+                title: isAr ? '3. خُد خطوة وتابعها' : '3. Act and track',
+                text: isAr ? 'اختار إجراءً واقعيًا، احفظ التقرير، وارجع قارن أثر القرار بعد التنفيذ.' : 'Choose a realistic action, save the report, and compare impact after implementation.',
               },
             ].map(({ Icon, title, text }) => (
               <div key={title} className={`rounded-2xl border p-5 ${border} ${isLight ? 'bg-slate-50/70' : 'bg-black/20'}`}>
@@ -714,5 +972,29 @@ const Dashboard: React.FC<DashboardProps> = ({
     </main>
   );
 };
+
+const EmptyChartState = ({
+  isAr,
+  text,
+  onOpen,
+}: {
+  isAr: boolean;
+  text: string;
+  onOpen: () => void;
+}) => (
+  <div className="flex h-full flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-slate-400/20 bg-slate-500/[0.035] px-6 text-center">
+    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
+      <CircleGauge className="h-5 w-5" />
+    </div>
+    <p className="mt-4 max-w-xs text-xs font-bold leading-6 text-slate-500">{text}</p>
+    <button
+      type="button"
+      onClick={onOpen}
+      className="mt-4 rounded-full bg-kairo-green px-4 py-2 text-[11px] font-black text-[#052019]"
+    >
+      {isAr ? 'ابدأ تحليلًا' : 'Start an analysis'}
+    </button>
+  </div>
+);
 
 export default Dashboard;

@@ -21,6 +21,15 @@ import {
 
 import { generateFromAPI } from "./aiClient";
 
+const KAIRO_ARABIC_STYLE = `
+Write every user-facing string in clear modern Arabic that any Arab reader can understand,
+with a light professional Egyptian tone where it makes the instruction warmer and more direct.
+Use correct environmental and engineering terminology, short sentences, and familiar Egyptian
+expressions such as "جنيه" and "ابدأ من هنا" only when natural. Avoid heavy classical wording,
+street slang, untranslated English, decorative punctuation, and exaggerated claims.
+Distinguish measurements, user inputs, derived indicators, forecasts, and AI estimates.
+`;
+
 // --- SCHEMAS ---
 
 const EXPOSURE_SCHEMA = {
@@ -554,7 +563,7 @@ const FOOD_RECEIPT_SCHEMA = {
 
 export const runExposureAgent = async (inputs: ExposureAgentInputs, language: string = 'en'): Promise<ExposureAnalysis> => {
     const langInstruction = language === 'ar' 
-        ? "CRITICAL: The user interface is strictly in Arabic. All text output, explanations, strategies, and strings MUST be generated in native, authentic Egyptian Arabic (professional environmental/engineering dialect). Do NOT translate English. Generate natively." 
+        ? KAIRO_ARABIC_STYLE
         : "Output in English.";
     const prompt = `ROLE: Environmental Analyst. TASK: Estimate exposure. ${langInstruction} DATA: ${JSON.stringify(inputs)}`;
     return generateFromAPI(prompt, EXPOSURE_SCHEMA);
@@ -562,7 +571,7 @@ export const runExposureAgent = async (inputs: ExposureAgentInputs, language: st
 
 export const runTelemetryHydration = async (profile: TelemetryProfile, language: string = 'en'): Promise<TelemetryHydrationResponse> => {
     const langInstruction = language === 'ar' 
-        ? "CRITICAL ARABIC CONTEXT: Return meta.reasoning_summary in native Egyptian Arabic. Use EGP currency (جنيه) and local context accurately. Do not use direct translation." 
+        ? `${KAIRO_ARABIC_STYLE} Return meta.reasoning_summary in this style and use جنيه for EGP.`
         : "Return meta.reasoning_summary in English. Use Egypt context.";
     
     const prompt = `You are the KAIRO baseline estimator. Based on profile ${JSON.stringify(profile)}, estimate water, food, and energy metrics for Egypt. ${langInstruction} Return JSON.`;
@@ -572,7 +581,7 @@ export const runTelemetryHydration = async (profile: TelemetryProfile, language:
 export const KairoOrchestrator = {
     generateComprehensivePlan: async (results: CalculatorResults, language: string = 'en'): Promise<ClimateActionPlan> => {
         const langPrompt = language === 'ar' 
-            ? "CRITICAL ARABIC CONTEXT: Output ALL string values in native Arabic (Egyptian Context). Use Egyptian currency (جنيه مصري) and cultural norms. Tone: Professional yet practical engineering. Ensure environmental terminology is accurate to Egyptian standards." 
+            ? `${KAIRO_ARABIC_STYLE} Use Egyptian context and جنيه مصري where currency is needed.`
             : "Output in English. Use Egyptian context.";
         const prompt = `
             Act as Kairo Orchestrator. 
@@ -593,7 +602,7 @@ export const KairoOrchestrator = {
 
 export const runEnergyAnalysis = async (inputs: EnergyAnalysisInputs, language: string = 'en'): Promise<EnergyAnalysisReport> => {
     const isAr = language === 'ar';
-    const langInstructions = isAr ? 'CRITICAL: Output strictly in professional Egyptian Arabic. Use EGP (جنيه مصري). Ensure concepts like "Peak Load", "Energy Waste", and "ROI" are accurately expressed in Egyptian Engineering terms.' : 'Output in English. Use EGP and refer to Egyptian electricity tariffs.';
+    const langInstructions = isAr ? `${KAIRO_ARABIC_STYLE} Use جنيه مصري. Explain peak load, energy waste, and return on investment in familiar Arabic.` : 'Output in English. Use EGP and refer to Egyptian electricity tariffs.';
 
     const prompt = `
         You are a world-class Energy Efficiency and Sustainability AI Assessor. Execute a deep-dive Energy Intelligence Analysis.
@@ -616,42 +625,42 @@ export const runEnergyAnalysis = async (inputs: EnergyAnalysisInputs, language: 
 };
 
 export const runMobilityIntelligence = async (inputs: MobilityInputs, language: string = 'en'): Promise<MobilityIntelligenceReport> => {
-    const langPrompt = language === 'ar' ? "CRITICAL: Output strings in native Egyptian Arabic. Use 'جنيه' for savings and Egyptian context (زحمة، مترو، توك توك). Provide realistic estimates suited to the selected governorate and traffic." : "Output in English. Use EGP for cost. Assume Egyptian traffic contexts.";
+    const langPrompt = language === 'ar' ? `${KAIRO_ARABIC_STYLE} Use جنيه for savings and familiar Egyptian mobility context such as الزحام والمترو when relevant.` : "Output in English. Use EGP for cost. Assume Egyptian traffic contexts.";
     const prompt = `ROLE: Mobility Intelligence & Urban Transportation Optimization System Analyst. TASK: Generate a highly detailed mobility analysis for user with the following profile: ${JSON.stringify(inputs)}. ${langPrompt} Return JSON.`;
     return generateFromAPI(prompt, MOBILITY_SCHEMA);
 };
 
 export const runVerificationEngine = async (claim: string, language: string = 'en'): Promise<ClaimVerificationResult> => {
-    const langPrompt = language === 'ar' ? "CRITICAL: Output strings in formal Environmental Audit Arabic." : "Output in English.";
+    const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
     const prompt = `ROLE: Sustainability Auditor. TASK: Verify this corporate claim for greenwashing and scientific accuracy: "${claim}". ${langPrompt} Return JSON.`;
     return generateFromAPI(prompt, VERIFICATION_SCHEMA);
 };
 
 export const runContextEngine = async (lat: number, lng: number, language: string = 'en'): Promise<EnvironmentalSnapshot> => {
-    const langPrompt = language === 'ar' ? "Output strings in Arabic (Egyptian)." : "Output in English.";
+    const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
     const prompt = `ROLE: Geo-Environmental Data Analyst. TASK: Estimate AQI and CO2 ppm for coordinates [${lat}, ${lng}]. Use regional satellite proxy logic for Egypt. ${langPrompt} Return JSON.`;
     return generateFromAPI(prompt, CONTEXT_SCHEMA);
 };
 
 export const runWaterAnalysis = async (inputs: WaterAnalysisInputs, language: string = 'en'): Promise<WaterAnalysisReport> => {
     const langPrompt = language === 'ar' 
-        ? "CRITICAL ARABIC CONTEXT: Output ALL string values, reasoning, and advice in native Egyptian Arabic (اللهجة المصرية). Use Egyptian context (جنيه، ندرة النيل، ترشيد الماية) with a blend of professional yet accessible Egyptian phrasing." 
+        ? `${KAIRO_ARABIC_STYLE} Use Egyptian water context, جنيه, and the accessible term ترشيد المياه.`
         : "Output in English. Be highly professional.";
     
     const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Water Resource Management. TASK: Perform advanced AI water efficiency and scarcity analysis based on realistic household/corporate data. Avoid engineering assumptions like counting leaky drops; use holistic smart analysis of behavioral signs, bills, and facility types. DATA: ${JSON.stringify(inputs)}. ${langPrompt} Return highly structured, insightful JSON.`;
     return generateFromAPI(prompt, WATER_SCHEMA);
 };
 
-export const runFoodWasteAnalysis = async (inputs: any, language: string = 'en'): Promise<any> => { const langPrompt = language === 'ar' ? 'CRITICAL: Output strings in native Egyptian Arabic (اللهجة المصرية) focusing on consumer behavior.' : 'Output in English.'; const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Supply Chain. TASK: Analyze household food waste impact conceptually and practically. DATA: ${JSON.stringify(inputs)}. ${langPrompt} Provide deep, realistic insights. Return JSON.`; return generateFromAPI(prompt, FOOD_SCHEMA); };
+export const runFoodWasteAnalysis = async (inputs: any, language: string = 'en'): Promise<any> => { const langPrompt = language === 'ar' ? `${KAIRO_ARABIC_STYLE} Focus on familiar purchasing, storage, and consumption behavior.` : 'Output in English.'; const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Supply Chain. TASK: Analyze household food waste impact conceptually and practically. DATA: ${JSON.stringify(inputs)}. ${langPrompt} Provide deep, realistic insights. Return JSON.`; return generateFromAPI(prompt, FOOD_SCHEMA); };
 
 export const runEwasteAnalysis = async (inputString: string, language: string = 'en'): Promise<EwasteAnalysisReport> => {
-    const langPrompt = language === 'ar' ? "Output strings in Egyptian Arabic (باللهجة المصرية)." : "Output in English.";
+    const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
     const prompt = `ROLE: Circular Economy Consultant, E-Waste Lifecycle Analyst & Sustainability Intelligence Architect. TASK: Perform an advanced Lifecycle Assessment of the electronic device based on the provided inputs. Formulate a Circular Pathway analyzing Economic Value, Refurbish ROI, Sustainability Impact, and Urban Mining possibilities. Use realistic market data for EGP values and CO2 estimates. Include Security & Data Risk Assessment. The output should be highly detailed and professional. DATA: ${inputString}. ${langPrompt} Return JSON.`;
     return generateFromAPI(prompt, EWASTE_SCHEMA);
 };
 
 export const analyzeWaterBillOCR = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<WaterBillExtraction> => {
-    const langPrompt = language === 'ar' ? "Output strings in Arabic where appropriate." : "Output in English.";
+    const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
     
     const prompt = `
         Analyze this Water Bill (Egyptian or International). Extract complete OCR structured data including meter number, dates, current/previous reading, total consumption in cubic meters, total cost, pricing tiers (if visible), and additional fees.
@@ -662,7 +671,7 @@ export const analyzeWaterBillOCR = async (base64Image: string, language: string 
 };
 
 export const analyzeElectricityBill = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<ElectricityBillExtraction> => {
-    const langPrompt = language === 'ar' ? "Output strings in Arabic where appropriate." : "Output in English.";
+    const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
     
     const prompt = `
         Analyze this Egyptian Electricity Bill. Extract monthly consumption (kWh) and total cost.
@@ -673,7 +682,7 @@ export const analyzeElectricityBill = async (base64Image: string, language: stri
 };
 
 export const analyzeWaterBill = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<ElectricityBillExtraction> => {
-    const langPrompt = language === 'ar' ? "Output strings in Arabic where appropriate." : "Output in English.";
+    const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
     
     const prompt = `
         Analyze this Egyptian Water Bill. Extract monthly volumetric consumption in cubic meters and map it to the "kwh" field in the output schema. Extract total cost and map to "totalAmount".

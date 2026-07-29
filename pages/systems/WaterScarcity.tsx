@@ -118,8 +118,8 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
         <div className="w-full min-h-screen pt-32 lg:pt-36 pb-20 px-4 md:px-6 lg:px-8 space-y-8 max-w-7xl mx-auto" dir={dir}>
             <CapabilityContext capabilityId="water" />
             <ModuleToolbar 
-                title={language === 'ar' ? 'ذكاء إدارة المياه' : 'AI Water Intelligence'}
-                description={language === 'ar' ? 'تحليل متقدم لاستهلاك المياه باستخدام الرؤية الحاسوبية والذكاء الاصطناعي.' : 'Advanced water consumption analysis using computer vision and AI.'}
+                title={language === 'ar' ? 'ذكاء المياه والندرة' : 'Water & Scarcity Intelligence'}
+                description={language === 'ar' ? 'حلّل استهلاك المياه والهدر وحالة الشبكة، واعرف تبدأ التحسين منين.' : 'Understand consumption, losses, and network conditions to prioritize the next improvement.'}
                 icon={<Waves className="w-6 h-6 text-blue-500" />}
                 onReset={() => { if(setGlobalReport) setGlobalReport(null); setOcrData(null); }}
                 hasReport={!!report}
