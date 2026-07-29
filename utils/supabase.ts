@@ -11,7 +11,9 @@ const supabaseUrl =
 const supabasePublishableKey =
   typeof runtimeEnv.VITE_SUPABASE_PUBLISHABLE_KEY === 'string'
     ? runtimeEnv.VITE_SUPABASE_PUBLISHABLE_KEY.trim()
-    : undefined;
+    : typeof runtimeEnv.VITE_SUPABASE_ANON_KEY === 'string'
+      ? runtimeEnv.VITE_SUPABASE_ANON_KEY.trim()
+      : undefined;
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
 

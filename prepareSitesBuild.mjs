@@ -1,7 +1,7 @@
 import { copyFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
-const projectRoot = path.resolve(import.meta.dirname, '..');
+const projectRoot = import.meta.dirname;
 const outputDirectory = path.join(projectRoot, 'dist', '.openai');
 
 await mkdir(outputDirectory, { recursive: true });
