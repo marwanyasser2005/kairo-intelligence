@@ -8,10 +8,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { runMobilityIntelligence } from '../services/tokenRouterService';
 import { MobilityIntelligenceReport, MobilityInputs } from '../types';
 import { usePersistentState } from '../utils/storage';
-import { exportAsPdf, exportAsPng } from '../utils/export';
 import { useApp } from '../contexts/AppContext';
 import SdgBadge from '../components/SdgBadge';
 import CapabilityContext from '../components/CapabilityContext';
+import ReportActions from '../components/ReportActions';
 
 const MotionDiv = motion.div as any;
 
@@ -26,8 +26,6 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
     const isAr = language === 'ar';
     
     const [analyzing, setAnalyzing] = useState(false);
-    const [exportingPdf, setExportingPdf] = useState(false);
-    const [exportingPng, setExportingPng] = useState(false);
     const [ocrLoading, setOcrLoading] = useState(false);
     const [routeLoading, setRouteLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<'profile' | 'route' | 'ocr'>('profile');
@@ -70,18 +68,6 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
 
     const handleReset = () => {
         if (setGlobalReport) setGlobalReport(null);
-    };
-
-    const handleExportPdf = async () => {
-        setExportingPdf(true);
-        await exportAsPdf('mobility-report-container', 'kairo_mobility_intelligence');
-        setExportingPdf(false);
-    };
-
-    const handleExportPng = async () => {
-        setExportingPng(true);
-        await exportAsPng('mobility-report-container', 'kairo_mobility_intelligence');
-        setExportingPng(false);
     };
 
     const simulateOCR = () => {
@@ -323,25 +309,13 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                             <h2 className={`text-sm font-bold uppercase tracking-widest ${textMain}`}>{isAr ? 'لوحة القيادة' : 'Output Matrix'}</h2>
                             {report && (
                                 <div className="flex gap-3">
-                                    <div className={`flex border rounded-lg overflow-hidden ${isLight ? 'bg-white border-gray-200' : 'bg-white/5 border-white/10'}`}>
-                                        <button 
-                                            onClick={handleExportPdf} 
-                                            disabled={exportingPdf || exportingPng}
-                                            className={`flex items-center gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${isLight ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-300 hover:bg-white/10'}`}
-                                        >
-                                            {exportingPdf ? <Loader2 className="w-3 h-3 animate-spin"/> : <FileText className="w-3 h-3" />}
-                                            PDF
-                                        </button>
-                                        <div className={`w-[1px] ${isLight ? 'bg-gray-200' : 'bg-white/10'}`}></div>
-                                        <button 
-                                            onClick={handleExportPng} 
-                                            disabled={exportingPdf || exportingPng}
-                                            className={`flex items-center gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${isLight ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-300 hover:bg-white/10'}`}
-                                        >
-                                            {exportingPng ? <Loader2 className="w-3 h-3 animate-spin"/> : <ImageIcon className="w-3 h-3" />}
-                                            PNG
-                                        </button>
-                                    </div>
+                                    <ReportActions
+                                        targetId="mobility-report-container"
+                                        filename="Kairo_Mobility_Intelligence"
+                                        title={isAr ? 'تقرير التنقل منخفض الأثر' : 'Low-impact mobility report'}
+                                        subtitle={isAr ? 'تحليل التكلفة والزمن والتعرض الحضري والانبعاثات.' : 'Cost, time, urban exposure, and emissions analysis.'}
+                                        sdgs={[11, 13]}
+                                    />
                                     <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-red-900/10 hover:bg-red-900/20 border border-red-500/20 text-red-500 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-colors">
                                         <RefreshCw className="w-3 h-3" /> {isAr ? 'إعادة ضبط' : 'Reset'}
                                     </button>

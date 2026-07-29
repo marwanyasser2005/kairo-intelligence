@@ -34,6 +34,8 @@ import {
   YAxis,
 } from 'recharts';
 import SatelliteMap from '../components/SatelliteMap';
+import ReportActions from '../components/ReportActions';
+import SdgBadge from '../components/SdgBadge';
 import { useApp } from '../contexts/AppContext';
 import {
   computeAirEarlyWarning,
@@ -286,7 +288,18 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
         isLight ? 'bg-[#f5f8f6] text-slate-950' : 'bg-[#07110f] text-slate-50'
       }`}
     >
-      <div className="mx-auto max-w-[1480px]">
+      <div id="kairo-signals-report" className="mx-auto max-w-[1480px]">
+        <div className="no-export mb-5 flex flex-col gap-3 rounded-2xl border border-emerald-400/15 bg-emerald-400/[0.045] p-3 sm:flex-row sm:items-center sm:justify-between">
+          <SdgBadge sdgs={[3, 6, 11, 13]} showTitle />
+          <ReportActions
+            targetId="kairo-signals-report"
+            filename="Kairo_Signals_Environmental_Foresight"
+            title={copy.eyebrow}
+            subtitle={copy.description}
+            sdgs={[3, 6, 11, 13]}
+            disabled={!snapshot || !airWarning}
+          />
+        </div>
         <section className="relative mb-8 overflow-hidden rounded-[2rem] border border-emerald-400/15 bg-[radial-gradient(circle_at_top_right,rgba(43,212,167,0.16),transparent_42%),linear-gradient(135deg,rgba(10,31,25,0.98),rgba(7,17,15,0.96))] px-5 py-8 text-white shadow-[0_30px_90px_rgba(0,0,0,0.28)] sm:px-8 lg:px-12 lg:py-12">
           <div className="absolute -end-24 -top-24 h-72 w-72 rounded-full border border-emerald-400/15" />
           <div className="absolute -end-8 -top-8 h-44 w-44 rounded-full border border-emerald-400/20" />

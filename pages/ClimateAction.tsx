@@ -11,6 +11,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { usePersistentState } from '../utils/storage';
 import { exportAsPdf, exportAsPng } from '../utils/export';
 import { useApp } from '../contexts/AppContext';
+import ReportActions from '../components/ReportActions';
 
 const MotionDiv = motion.div as React.FC<HTMLMotionProps<"div">>;
 
@@ -251,27 +252,14 @@ const ClimateAction: React.FC<ClimateActionProps> = ({ results, userProgress, se
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto no-export">
-                    <div className={`flex border rounded-lg overflow-hidden ${isLight ? 'bg-white border-gray-200' : 'bg-white/5 border-white/10'}`}>
-                        <button 
-                            onClick={handleExportPdf} 
-                            disabled={exportingPdf || exportingPng || !plan}
-                            className={`flex items-center gap-2 px-3 py-2 text-xs font-bold transition-colors ${isLight ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-300 hover:bg-white/10'}`}
-                            title="Export as PDF"
-                        >
-                            {exportingPdf ? <Loader2 className="w-3 h-3 animate-spin"/> : <FileText className="w-3 h-3" />}
-                            PDF
-                        </button>
-                        <div className={`w-[1px] ${isLight ? 'bg-gray-200' : 'bg-white/10'}`}></div>
-                        <button 
-                            onClick={handleExportPng} 
-                            disabled={exportingPdf || exportingPng || !plan}
-                            className={`flex items-center gap-2 px-3 py-2 text-xs font-bold transition-colors ${isLight ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-300 hover:bg-white/10'}`}
-                            title="Export as PNG"
-                        >
-                            {exportingPng ? <Loader2 className="w-3 h-3 animate-spin"/> : <ImageIcon className="w-3 h-3" />}
-                            PNG
-                        </button>
-                    </div>
+                    <ReportActions
+                        targetId="roadmap-container"
+                        filename="Kairo_Climate_Action_Roadmap"
+                        title={language === 'ar' ? 'خارطة العمل البيئي' : 'Environmental action roadmap'}
+                        subtitle={language === 'ar' ? 'إجراءات مرتبة ومسؤوليات ومؤشرات أثر قابلة للمتابعة.' : 'Prioritized actions, ownership, and trackable impact indicators.'}
+                        sdgs={[2, 3, 6, 7, 11, 12, 13]}
+                        disabled={!plan}
+                    />
                     
                     <button 
                         onClick={handleRegenerate}

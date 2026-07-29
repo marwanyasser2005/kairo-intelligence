@@ -5,11 +5,11 @@ import { Recycle, Cpu, Smartphone, Laptop, Loader2, ArrowRight, CheckCircle2, Bo
 import { runEwasteAnalysis, analyzeEwasteOCR } from '../../services/tokenRouterService';
 import { EwasteAnalysisReport } from '../../types';
 import { usePersistentState } from '../../utils/storage';
-import { exportAsPdf, exportAsPng } from '../../utils/export';
 import { useApp } from '../../contexts/AppContext';
 import BillUploader from '../../components/BillUploader';
 import SdgBadge from '../../components/SdgBadge';
 import CapabilityContext from '../../components/CapabilityContext';
+import ReportActions from '../../components/ReportActions';
 
 const MotionDiv = motion.div as any;
 
@@ -24,8 +24,6 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
     const isAr = language === 'ar';
     
     const [analyzing, setAnalyzing] = useState(false);
-    const [exportingPdf, setExportingPdf] = useState(false);
-    const [exportingPng, setExportingPng] = useState(false);
     
     // Inputs Mode
     const [activeTab, setActiveTab] = useState<'manual' | 'ocr'>('manual');
@@ -100,18 +98,6 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
         if (setGlobalReport) setGlobalReport(null);
     };
 
-    const handleExportPdf = async () => {
-        setExportingPdf(true);
-        await exportAsPdf('ewaste-report-container', 'Kairo_Lifecycle_Report');
-        setExportingPdf(false);
-    };
-
-    const handleExportPng = async () => {
-        setExportingPng(true);
-        await exportAsPng('ewaste-report-container', 'Kairo_Lifecycle_Report');
-        setExportingPng(false);
-    };
-
     const textMain = isLight ? 'text-gray-900' : 'text-white';
     const textSub = isLight ? 'text-gray-500' : 'text-gray-400';
     const bgCard = isLight ? 'bg-white border-gray-200' : 'bg-white/5 border-white/10';
@@ -143,33 +129,20 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                         <p className={`text-lg ${textSub} max-w-2xl mb-4`}>
                             {isAr ? 'تقييم شامل لدورة حياة الأجهزة، والمسار الدائري الأمثل، والقيمة الاقتصادية.' : 'Comprehensive lifecycle assessment, optimal circular pathway, and economic valuation.'}
                         </p>
-                        <SdgBadge sdgs={[11, 12]} />
+                        <SdgBadge sdgs={[11, 12, 13]} />
                     </div>
 
                     <div className="flex gap-3 no-export">
                         {report && (
                             <>
-                                <div className="flex bg-blue-500/10 border border-blue-500/20 rounded-xl overflow-hidden self-start mt-2">
-                                    <button 
-                                        onClick={handleExportPdf} 
-                                        disabled={exportingPdf || exportingPng}
-                                        className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold transition-all text-blue-600 hover:bg-blue-500 hover:text-white ${isLight ? 'text-blue-700' : 'text-blue-400'}`}
-                                        title="Export as PDF"
-                                    >
-                                        {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin"/> : <FileText className="w-4 h-4" />}
-                                        PDF
-                                    </button>
-                                    <div className="w-[1px] bg-blue-500/20"></div>
-                                    <button 
-                                        onClick={handleExportPng} 
-                                        disabled={exportingPdf || exportingPng}
-                                        className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold transition-all text-blue-600 hover:bg-blue-500 hover:text-white ${isLight ? 'text-blue-700' : 'text-blue-400'}`}
-                                        title="Export as PNG"
-                                    >
-                                        {exportingPng ? <Loader2 className="w-4 h-4 animate-spin"/> : <ImageIcon className="w-4 h-4" />}
-                                        PNG
-                                    </button>
-                                </div>
+                                <ReportActions
+                                    targetId="ewaste-report-container"
+                                    filename="Kairo_Ewaste_Lifecycle_Report"
+                                    title={isAr ? 'تقرير دورة حياة الأجهزة' : 'Device lifecycle report'}
+                                    subtitle={isAr ? 'تقييم المسار الدائري والقيمة والمخاطر البيئية والأمنية.' : 'Circular pathway, value, environmental, and data-risk assessment.'}
+                                    sdgs={[11, 12, 13]}
+                                    className="self-start mt-2"
+                                />
                                 <button onClick={handleReset} className="flex items-center gap-2 px-5 py-2.5 bg-red-500/10 self-start mt-2 hover:bg-red-500/20 text-red-500 rounded-xl font-bold text-sm transition-all">
                                     <RefreshCw className="w-4 h-4" />
                                     {isAr ? 'إعادة التقييم' : 'Reset'}

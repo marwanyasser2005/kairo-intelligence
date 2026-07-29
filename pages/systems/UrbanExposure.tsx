@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { runExposureAgent } from '../../services/tokenRouterService';
 import { ExposureAnalysis } from '../../types';
 import { usePersistentState } from '../../utils/storage';
-import { exportAsPdf, exportAsPng } from '../../utils/export';
 import { useApp } from '../../contexts/AppContext';
 import SdgBadge from '../../components/SdgBadge';
 import CapabilityContext from '../../components/CapabilityContext';
+import ReportActions from '../../components/ReportActions';
 
 // Type casting to bypass strict environment checks
 const MotionDiv = motion.div as any;
@@ -22,8 +22,6 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
   const { t, theme, dir, language } = useApp();
   const isLight = theme === 'light';
   const [analyzing, setAnalyzing] = useState(false);
-  const [exportingPdf, setExportingPdf] = useState(false);
-  const [exportingPng, setExportingPng] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
 
   // Inputs - Persisted locally
@@ -72,18 +70,6 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
       if (setGlobalReport) setGlobalReport(null);
   };
 
-  const handleExportPdf = async () => {
-      setExportingPdf(true);
-      await exportAsPdf('exposure-report-container', 'kairo_exposure_analysis');
-      setExportingPdf(false);
-  };
-
-  const handleExportPng = async () => {
-      setExportingPng(true);
-      await exportAsPng('exposure-report-container', 'kairo_exposure_analysis');
-      setExportingPng(false);
-  };
-
   const textMain = isLight ? 'text-gray-900' : 'text-white';
   const textSub = isLight ? 'text-gray-600' : 'text-gray-400';
   const bgCard = isLight ? 'bg-white border-gray-200' : 'bg-white/5 border-white/10';
@@ -98,25 +84,13 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
         <div className="flex justify-end gap-3 mb-8 no-export">
             {report && (
                 <>
-                    <div className={`flex border rounded-lg overflow-hidden ${isLight ? 'bg-white border-gray-200' : 'bg-white/5 border-white/10'}`}>
-                        <button 
-                            onClick={handleExportPdf} 
-                            disabled={exportingPdf || exportingPng}
-                            className={`flex items-center gap-2 px-3 py-2 text-xs font-bold transition-colors ${isLight ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-300 hover:bg-white/10'}`}
-                        >
-                            {exportingPdf ? <Loader2 className="w-3 h-3 animate-spin"/> : <FileText className="w-3 h-3" />}
-                            PDF
-                        </button>
-                        <div className={`w-[1px] ${isLight ? 'bg-gray-200' : 'bg-white/10'}`}></div>
-                        <button 
-                            onClick={handleExportPng} 
-                            disabled={exportingPdf || exportingPng}
-                            className={`flex items-center gap-2 px-3 py-2 text-xs font-bold transition-colors ${isLight ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-300 hover:bg-white/10'}`}
-                        >
-                            {exportingPng ? <Loader2 className="w-3 h-3 animate-spin"/> : <ImageIcon className="w-3 h-3" />}
-                            PNG
-                        </button>
-                    </div>
+                    <ReportActions
+                        targetId="exposure-report-container"
+                        filename="Kairo_Urban_Exposure_Report"
+                        title={language === 'ar' ? 'تقرير التعرض الحضري وجودة الهواء' : 'Urban exposure and air-quality report'}
+                        subtitle={language === 'ar' ? 'تفسير عوامل التعرض اليومي وإجراءات الحد منه.' : 'Daily exposure drivers and practical risk-reduction actions.'}
+                        sdgs={[3, 11, 13]}
+                    />
                     <button 
                         onClick={handleReset} 
                         className="flex items-center gap-2 px-4 py-2 bg-red-900/20 hover:bg-red-900/30 border border-red-500/20 rounded-lg text-xs font-bold text-red-400 transition-colors"
@@ -139,7 +113,7 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
            <p className={`text-xl md:text-2xl leading-relaxed mb-6 ${textSub}`}>
              {t.exposure.desc}
            </p>
-           <SdgBadge sdgs={[11, 13]} />
+           <SdgBadge sdgs={[3, 11, 13]} />
            <div className="flex items-center gap-4 text-sm text-gray-500 font-mono border-l-2 border-red-500 pl-4 mt-8">
               <Satellite className="w-4 h-4" />
               <span>Context: Sentinel-5P Tropospheric Modeling</span>

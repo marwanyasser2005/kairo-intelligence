@@ -300,6 +300,13 @@ const Dashboard: React.FC<DashboardProps> = ({
           onReset={onSystemReset}
           exportTargetId="environmental-dashboard"
           exportFilename="kairo_environmental_dashboard"
+          reportTitle={isAr ? 'المتابعة البيئية الموحدة' : 'Unified environmental dashboard'}
+          reportSubtitle={
+            isAr
+              ? 'ملخص مترابط لحالة الموارد والمخاطر والإجراءات داخل Kairo.'
+              : 'A connected summary of resource, risk, and action signals across Kairo.'
+          }
+          sdgs={[2, 3, 6, 7, 11, 12, 13]}
         />
 
         <header className="mt-5 grid items-end gap-7 lg:grid-cols-[1fr_auto]">

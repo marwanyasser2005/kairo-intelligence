@@ -41,6 +41,7 @@ import {
 } from '../services/ScenarioLab';
 import { useApp } from '../contexts/AppContext';
 import CapabilityContext from '../components/CapabilityContext';
+import ModuleToolbar from '../components/ModuleToolbar';
 import { audienceProfiles, localize, type AudienceId } from '../config/kairoCapabilities';
 import { getSupabaseConnectionState } from '../utils/supabase';
 
@@ -213,8 +214,20 @@ const CompareScenarios: React.FC = () => {
 
   return (
     <main className={`min-h-screen pb-24 pt-28 transition-colors lg:pt-32 ${pageBg}`} dir={dir}>
-      <div className="kairo-shell">
+      <div id="scenario-lab-report" className="kairo-shell">
         <CapabilityContext capabilityId="scenarios" />
+        <ModuleToolbar
+          hasData={baseline.connectedModules > 0 || scenarios.length > 0}
+          exportTargetId="scenario-lab-report"
+          exportFilename="Kairo_Environmental_Scenario_Lab"
+          reportTitle={isAr ? 'مختبر السيناريوهات البيئية' : 'Environmental scenario lab'}
+          reportSubtitle={
+            isAr
+              ? 'مقارنة قرارات المياه والطاقة والغذاء والتنقل والاستخدام الدائري قبل التنفيذ.'
+              : 'Compare water, energy, food, mobility, and circular-use decisions before implementation.'
+          }
+          sdgs={[2, 6, 7, 11, 12, 13]}
+        />
 
         <header className="grid items-end gap-6 lg:grid-cols-[1fr_auto]">
           <div className="max-w-4xl">

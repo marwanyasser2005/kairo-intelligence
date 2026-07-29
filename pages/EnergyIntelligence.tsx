@@ -129,7 +129,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                     icon={<Zap className="w-6 h-6 text-amber-500" />}
                     onReset={() => { if(setGlobalReport) setGlobalReport(null); setOcrData(null); }}
                     hasReport={!!report}
-                    sdgs={[7, 13]}
+                    sdgs={[7, 11, 13]}
                     exportTargetId="energy-report-container"
                     exportFilename="Kairo_Energy_Intelligence"
                 />

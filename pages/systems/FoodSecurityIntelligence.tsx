@@ -94,7 +94,7 @@ const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, set
                 icon={<Utensils className="w-6 h-6 text-orange-500" />}
                 onReset={() => { if(setGlobalReport) setGlobalReport(null); setStep(1); }}
                 hasReport={!!advancedReport}
-                sdgs={[2, 12]}
+                sdgs={[2, 12, 13]}
                 exportTargetId="food-report-container"
                 exportFilename="Kairo_Food_Assessment"
             />

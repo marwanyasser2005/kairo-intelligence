@@ -124,7 +124,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                 onReset={() => { if(setGlobalReport) setGlobalReport(null); setOcrData(null); }}
                 hasReport={!!report}
                 theme={theme}
-                sdgs={[6, 13]}
+                sdgs={[6, 11, 13]}
                 exportTargetId="water-report-container"
                 exportFilename="Water_Scarcity_Intelligence"
             />

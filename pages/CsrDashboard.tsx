@@ -6,7 +6,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { runVerificationEngine } from '../services/tokenRouterService';
 import { ClaimVerificationResult } from '../types';
 import { useApp } from '../contexts/AppContext';
-import { exportAsPdf, exportAsPng } from '../utils/export';
+import ReportActions from '../components/ReportActions';
+import SdgBadge from '../components/SdgBadge';
 
 // Type casting to bypass strict environment checks
 const MotionDiv = motion.div as any;
@@ -19,22 +20,7 @@ const CsrDashboard: React.FC = () => {
   const [verifying, setVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<ClaimVerificationResult | null>(null);
   
-  const [exportingPdf, setExportingPdf] = useState(false);
-  const [exportingPng, setExportingPng] = useState(false);
-
   const [chartData, setChartData] = useState<any[]>([]);
-
-  const handleExportPdf = async () => {
-      setExportingPdf(true);
-      await exportAsPdf('csr-dashboard-container', 'CSR_Report');
-      setExportingPdf(false);
-  };
-
-  const handleExportPng = async () => {
-      setExportingPng(true);
-      await exportAsPng('csr-dashboard-container', 'CSR_Report');
-      setExportingPng(false);
-  };
 
   React.useEffect(() => {
     import('../services/SessionStore').then(({ SessionStore }) => {
@@ -121,26 +107,17 @@ const CsrDashboard: React.FC = () => {
                 <p className={`${textSub} max-w-2xl`}>
                     {t.csr.desc}
                 </p>
+                <div className="mt-4">
+                    <SdgBadge sdgs={[7, 11, 12, 13]} />
+                </div>
             </div>
-            <div className={`flex border rounded-lg overflow-hidden no-export ${isLight ? 'bg-white border-gray-200 shadow-sm' : 'bg-[#111114] border-white/10'}`}>
-                <button 
-                    onClick={handleExportPdf} 
-                    disabled={exportingPdf || exportingPng}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${isLight ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-300 hover:bg-white/10'}`}
-                >
-                    {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin"/> : <FileText className="w-4 h-4" />}
-                    PDF
-                </button>
-                <div className={`w-[1px] ${isLight ? 'bg-gray-200' : 'bg-white/10'}`}></div>
-                <button 
-                    onClick={handleExportPng} 
-                    disabled={exportingPdf || exportingPng}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${isLight ? 'text-gray-700 hover:bg-gray-50' : 'text-gray-300 hover:bg-white/10'}`}
-                >
-                    {exportingPng ? <Loader2 className="w-4 h-4 animate-spin"/> : <ImageIcon className="w-4 h-4" />}
-                    PNG
-                </button>
-            </div>
+            <ReportActions
+                targetId="csr-dashboard-container"
+                filename="Kairo_CSR_Report"
+                title={language === 'ar' ? 'تقرير الاستدامة المؤسسية' : 'Corporate sustainability report'}
+                subtitle={language === 'ar' ? 'ملخص الأداء والأثر والتحقق من ادعاءات الاستدامة.' : 'Performance, impact, and sustainability-claim verification summary.'}
+                sdgs={[7, 11, 12, 13]}
+            />
         </header>
 
         {/* Metrics Grid */}
