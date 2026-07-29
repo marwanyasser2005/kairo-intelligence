@@ -565,7 +565,7 @@ export const runTelemetryHydration = async (profile: TelemetryProfile, language:
         ? "CRITICAL ARABIC CONTEXT: Return meta.reasoning_summary in native Egyptian Arabic. Use EGP currency (جنيه) and local context accurately. Do not use direct translation." 
         : "Return meta.reasoning_summary in English. Use Egypt context.";
     
-    const prompt = `You are KairoMini. Based on profile ${JSON.stringify(profile)}, estimate water, food, and energy metrics for Egypt. ${langInstruction} Return JSON.`;
+    const prompt = `You are the KAIRO baseline estimator. Based on profile ${JSON.stringify(profile)}, estimate water, food, and energy metrics for Egypt. ${langInstruction} Return JSON.`;
     return generateFromAPI(prompt, TELEMETRY_SCHEMA);
 };
 

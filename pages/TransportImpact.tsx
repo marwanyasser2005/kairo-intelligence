@@ -11,6 +11,7 @@ import { usePersistentState } from '../utils/storage';
 import { exportAsPdf, exportAsPng } from '../utils/export';
 import { useApp } from '../contexts/AppContext';
 import SdgBadge from '../components/SdgBadge';
+import CapabilityContext from '../components/CapabilityContext';
 
 const MotionDiv = motion.div as any;
 
@@ -113,6 +114,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
     return (
         <div className={`min-h-screen pt-32 lg:pt-36 px-4 lg:px-8 pb-32 transition-colors duration-500 ${bgApp} font-sans`} dir={dir}>
             <div className="max-w-[1400px] mx-auto space-y-12">
+                <CapabilityContext capabilityId="mobility" />
                 
                 {/* HEADER */}
                 <header className="max-w-4xl">

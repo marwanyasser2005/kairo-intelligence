@@ -13,7 +13,7 @@
     "preview": "tsx server.ts --prod",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "test": "tsx --test tests/tokenRouter.test.ts tests/geminiGateway.test.ts tests/earlyWarning.test.ts",
+    "test": "tsx --test tests/tokenRouter.test.ts tests/geminiGateway.test.ts tests/earlyWarning.test.ts tests/scenarioLab.test.ts",
     "verify:gemini": "tsx scripts/verifyGemini.ts",
     "verify:kairo-ai": "tsx scripts/verifyKairoGemini.ts",
     "verify:tokenrouter": "tsx scripts/verifyTokenRouter.ts"
@@ -21,6 +21,7 @@
   "dependencies": {
     "@heroui/react": "^3.2.2",
     "@heroui/styles": "^3.2.2",
+    "@supabase/supabase-js": "^2.111.0",
     "@tailwindcss/vite": "^4.3.3",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

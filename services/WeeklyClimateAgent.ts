@@ -128,7 +128,7 @@ export const runWeeklyReview = async (): Promise<{ status: 'updated' | 'skipped'
     // --- STEP 1: STATE LOADING ---
     // Gather all persistence layers to form the context
     const context: AgentContext = {
-        baseline: JSON.parse(localStorage.getItem('kairo_mini_results') || 'null'),
+        baseline: JSON.parse(localStorage.getItem('kairo_baseline_results') || 'null'),
         currentPlan: JSON.parse(localStorage.getItem('kairo_generated_plan') || 'null'),
         actionHistory: JSON.parse(localStorage.getItem('kairo_actions') || '[]'),
         lastReviewDate: parseInt(localStorage.getItem('kairo_last_review') || '0')
@@ -142,7 +142,7 @@ export const runWeeklyReview = async (): Promise<{ status: 'updated' | 'skipped'
         return { status: 'skipped' };
     }
 
-    // Check if 7 days have passed (Disabled for hackathon demo purposes, assuming always run on dashboard load if manual trigger)
+    // Check if 7 days have passed (manual dashboard runs can bypass the scheduled cadence).
     // In production: if (NOW - context.lastReviewDate < SEVEN_DAYS_MS) return { status: 'skipped' };
 
     // --- STEP 2: ANALYZE PROGRESS (Deterministic) ---

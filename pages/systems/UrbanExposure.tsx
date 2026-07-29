@@ -8,6 +8,7 @@ import { usePersistentState } from '../../utils/storage';
 import { exportAsPdf, exportAsPng } from '../../utils/export';
 import { useApp } from '../../contexts/AppContext';
 import SdgBadge from '../../components/SdgBadge';
+import CapabilityContext from '../../components/CapabilityContext';
 
 // Type casting to bypass strict environment checks
 const MotionDiv = motion.div as any;
@@ -91,6 +92,7 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
   return (
     <div className={`min-h-screen pt-32 lg:pt-36 px-6 pb-20 transition-colors duration-500 ${isLight ? 'bg-gray-50' : 'bg-black'}`} dir={dir}>
       <div className="max-w-6xl mx-auto">
+        <CapabilityContext capabilityId="exposure" />
         
         {/* Workflow Toolbar */}
         <div className="flex justify-end gap-3 mb-8 no-export">

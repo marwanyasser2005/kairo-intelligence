@@ -5,6 +5,7 @@ import { usePersistentState } from '../utils/storage';
 import { useApp } from '../contexts/AppContext';
 import ModuleToolbar from '../components/ModuleToolbar';
 import BillUploader from '../components/BillUploader';
+import CapabilityContext from '../components/CapabilityContext';
 import { runEnergyAnalysis } from '../services/tokenRouterService';
 import { EnergyAnalysisReport, EnergyAnalysisInputs, EnergyBillExtraction } from '../types';
 import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, AreaChart, Area } from 'recharts';
@@ -121,6 +122,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
     return (
         <div className="w-full min-h-screen bg-slate-50/50 dark:bg-[#020617] pt-32 lg:pt-36 pb-20 px-4 md:px-6 lg:px-8 font-sans" dir={dir}>
             <div className="max-w-7xl mx-auto space-y-8">
+                <CapabilityContext capabilityId="energy" />
                 <ModuleToolbar 
                     title={isAr ? 'ذكاء الطاقة' : 'AI Energy Intelligence'}
                     description={isAr ? 'منصة متقدمة لتحليل استهلاك الطاقة وكفاءتها للمنازل والمنشآت بناءً على أحدث التعريفات المصرية.' : 'Advanced energy efficiency analytics for homes and businesses powered by local tariff models.'}

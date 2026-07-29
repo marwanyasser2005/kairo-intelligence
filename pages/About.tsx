@@ -56,18 +56,18 @@ const About: React.FC = () => {
   const achievements = [
     {
       Icon: Medal,
-      title: isAr ? 'الميدالية الفضية · Huawei ICT Competition' : 'Silver Medal · Huawei ICT Competition',
-      meta: isAr ? 'مسار الحوسبة السحابية · 2025–2026' : 'Cloud Track · 2025–2026',
+      title: isAr ? 'خبرة متقدمة في الحوسبة السحابية' : 'Advanced cloud computing experience',
+      meta: isAr ? 'بناء وتشغيل حلول رقمية قابلة للتوسع' : 'Building scalable digital solutions',
     },
     {
       Icon: Trophy,
-      title: isAr ? 'Top Achiever · ITIDA GIGS' : 'Top Achiever · ITIDA GIGS',
-      meta: isAr ? 'برنامج العمل الحر' : 'Freelancing Program',
+      title: isAr ? 'تميز مهني في تطوير الحلول' : 'Professional achievement in solution delivery',
+      meta: isAr ? 'تنفيذ منتجات رقمية موجهة للمستخدم' : 'Delivering user-centered digital products',
     },
     {
       Icon: Award,
-      title: isAr ? 'المركز الثالث · SOLE2025' : 'Third Place · SOLE2025',
-      meta: isAr ? 'BioHackathon' : 'BioHackathon',
+      title: isAr ? 'خبرة في الابتكار البحثي التطبيقي' : 'Applied research and innovation experience',
+      meta: isAr ? 'تحويل الأفكار العلمية إلى نماذج قابلة للاختبار' : 'Turning scientific ideas into testable prototypes',
     },
   ];
 
@@ -315,7 +315,7 @@ const About: React.FC = () => {
         <section className="mb-20">
             <div className="mb-10 max-w-3xl">
                 <span className="inline-flex rounded-full border border-kairo-green/20 bg-kairo-green/10 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-kairo-green">
-                    {isAr ? 'ما بعد UGRF' : 'Beyond UGRF'}
+                    {isAr ? 'من البحث إلى التطبيق' : 'From research to deployment'}
                 </span>
                 <h2 className={`mt-5 text-3xl font-bold md:text-5xl ${textMain}`}>
                     {isAr ? 'طريق واضح من البحث إلى أثر قابل للقياس.' : 'A clear path from research to measurable impact.'}

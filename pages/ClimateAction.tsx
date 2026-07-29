@@ -225,8 +225,8 @@ const ClimateAction: React.FC<ClimateActionProps> = ({ results, userProgress, se
         <p className={`${textSub} mb-8 max-w-md mx-auto`}>
             To generate your personalized action plan, Kairo needs to establish a baseline.
         </p>
-        <Link to="/mini" className={`px-8 py-4 rounded-full font-bold transition-colors flex items-center gap-2 ${isLight ? 'bg-black text-white hover:bg-gray-800' : 'bg-white text-black hover:bg-gray-200'}`}>
-            Start KairoMini <ArrowRight className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`}/>
+        <Link to="/dashboard" className={`px-8 py-4 rounded-full font-bold transition-colors flex items-center gap-2 ${isLight ? 'bg-black text-white hover:bg-gray-800' : 'bg-white text-black hover:bg-gray-200'}`}>
+            {language === 'ar' ? 'ابدأ من المتابعة البيئية' : 'Start from the environmental dashboard'} <ArrowRight className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`}/>
         </Link>
     </div>
   );

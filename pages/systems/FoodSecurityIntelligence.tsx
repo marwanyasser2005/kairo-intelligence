@@ -7,6 +7,7 @@ import { FoodWasteAnalysisReport } from '../../types';
 import { exportAsPdf } from '../../utils/export';
 import ModuleToolbar from '../../components/ModuleToolbar';
 import BillUploader from '../../components/BillUploader';
+import CapabilityContext from '../../components/CapabilityContext';
 import { UploadCloud } from 'lucide-react';
 import { usePersistentState } from '../../utils/storage';
 import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, Legend } from 'recharts';
@@ -44,7 +45,7 @@ const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, set
             const result = await runFoodWasteAnalysis(inputs, language);
             if (setGlobalReport) setGlobalReport(result);
         if (setGlobalFoodData) {
-            // Link to KairoMini simple dashboard stats
+            // Link the detailed assessment to the unified dashboard summary.
             setGlobalFoodData({
                 mealsPerDay: homeMealsPerDay,
                 costPerMealLE: Math.round(monthlyBudget / (homeMealsPerDay * 30)),
@@ -86,6 +87,7 @@ const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, set
     };
     return (
         <div className="w-full min-h-screen pt-32 lg:pt-36 pb-20 px-4 md:px-6 lg:px-8 space-y-8 max-w-7xl mx-auto">
+            <CapabilityContext capabilityId="food" />
             <ModuleToolbar 
                 title={language === 'ar' ? 'محاكي هدر الطعام المتقدم' : 'Advanced Food Waste Simulator'}
                 description={language === 'ar' ? 'تحليل ذكي لسلسلة الإمداد المنزلية والبصمة البيئية.' : 'Intelligent household supply chain & environmental footprint analysis.'}

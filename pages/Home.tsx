@@ -5,92 +5,150 @@ import { motion, useReducedMotion } from 'framer-motion';
 import {
   Activity,
   ArrowUpRight,
+  Building2,
   Check,
-  Cpu,
+  CircleDollarSign,
   Database,
   Droplets,
+  Factory,
+  FlaskConical,
   Gauge,
-  Globe2,
-  Microscope,
+  GraduationCap,
+  HeartHandshake,
+  Leaf,
   LockKeyhole,
-  Orbit,
+  MapPinned,
+  Recycle,
   Route,
   ShieldCheck,
   Sparkles,
-  TrendingUp,
-  WalletCards,
+  Target,
+  Truck,
+  Users,
+  Utensils,
+  Wind,
   Zap,
+  type LucideIcon,
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
-import { KairoBrandMark } from '../components/KairoBrand';
+import { KairoBrandMark, KairoBrandSymbol } from '../components/KairoBrand';
+import {
+  audienceProfiles,
+  getAudienceProfile,
+  kairoCapabilities,
+  localize,
+  type AudienceId,
+  type CapabilityId,
+} from '../config/kairoCapabilities';
 
 const MotionDiv = motion.div as any;
 
+const capabilityIcons: Record<CapabilityId, LucideIcon> = {
+  foresight: Activity,
+  water: Droplets,
+  food: Utensils,
+  energy: Zap,
+  mobility: Truck,
+  exposure: Wind,
+  ewaste: Recycle,
+  scenarios: FlaskConical,
+};
+
+const audienceIcons: Record<AudienceId, LucideIcon> = {
+  individual: Users,
+  community: HeartHandshake,
+  education: GraduationCap,
+  business: Building2,
+  government: MapPinned,
+};
+
 const Home: React.FC = () => {
-  const { t, theme, dir, language } = useApp();
+  const { theme, dir, language } = useApp();
   const reduceMotion = useReducedMotion();
   const isLight = theme === 'light';
   const isAr = language === 'ar';
+  const currentLanguage = isAr ? 'ar' : 'en';
 
   const textMain = isLight ? 'text-slate-950' : 'text-white';
   const textSub = isLight ? 'text-slate-600' : 'text-slate-400';
-  const border = isLight ? 'border-slate-900/[0.08]' : 'border-white/[0.08]';
-  const surface = isLight ? 'bg-white/75' : 'bg-white/[0.035]';
+  const textSoft = isLight ? 'text-slate-500' : 'text-slate-500';
+  const border = isLight ? 'border-slate-900/[0.09]' : 'border-white/[0.09]';
+  const surface = isLight ? 'bg-white/78' : 'bg-white/[0.035]';
 
   const reveal = {
-    initial: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 26 },
+    initial: reduceMotion ? { opacity: 1 } : { opacity: 0, y: 24 },
     whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: '-80px' },
-    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+    viewport: { once: true, margin: '-70px' },
+    transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
   };
 
-  const loopIcons = [Database, Cpu, Activity, Globe2];
-  const metrics = [
-    { value: '24h', label: isAr ? 'نافذة توقع الهواء' : 'Air forecast window' },
-    { value: '0–100', label: isAr ? 'مؤشر مخاطر واضح' : 'Explainable risk index' },
-    { value: 'Local', label: isAr ? 'معالجة الصوت' : 'Audio processing' },
-  ];
+  const proofPoints = isAr
+    ? [
+        'ثمانية مسارات بيئية مترابطة',
+        'نتائج قابلة للتفسير وليست أرقامًا مبهمة',
+        'تجربة مناسبة للأفراد والمؤسسات والمدن',
+        'فصل واضح بين البيانات الحية والتقديرات',
+      ]
+    : [
+        'Eight connected environmental pathways',
+        'Explainable outcomes, not opaque scores',
+        'Designed for people, institutions, and cities',
+        'A clear line between live data and estimates',
+      ];
 
-  const judgingBrief = [
+  const loop = [
     {
-      Icon: Microscope,
-      index: '01',
-      title: isAr ? 'مشكلة مدينة قابلة للقياس' : 'A measurable city problem',
+      Icon: Database,
+      title: isAr ? 'اجمع السياق' : 'Collect context',
       text: isAr
-        ? 'كيف نمنح فرق المدينة وقتًا للتصرف قبل تدهور الهواء أو تحول مؤشرات ضعف شبكة المياه إلى عطل مكلف؟'
-        : 'How can city teams gain decision time before air quality deteriorates or water-network weakness becomes a costly failure?',
+        ? 'بيانات يضيفها المستخدم، إشارات جهاز اختيارية، ومصادر بيئية موثقة.'
+        : 'User inputs, optional device signals, and documented environmental sources.',
     },
     {
-      Icon: Cpu,
-      index: '02',
-      title: isAr ? 'ابتكار رقمي قابل للتشغيل' : 'Deployable digital innovation',
+      Icon: Gauge,
+      title: isAr ? 'افهم ما يحدث' : 'Understand what is happening',
       text: isAr
-        ? 'تطبيق ويب يعمل على الهاتف واللابتوب، يستفيد من GPS والميكروفون اختياريًا ويجمعهما مع توقعات بيئية حية دون أجهزة خاصة في النسخة الأولى.'
-        : 'A web app for phones and laptops that optionally uses GPS and microphone signals with live environmental forecasts—without dedicated hardware in v1.',
+        ? 'تحليل يوضح المؤشر والعوامل المؤثرة ومستوى الثقة وحدود النتيجة.'
+        : 'Analysis that exposes the indicator, its drivers, confidence, and limitations.',
     },
     {
-      Icon: WalletCards,
-      index: '03',
-      title: isAr ? 'قرار واضح بدل لوحة مزدحمة' : 'Decisions, not dashboard noise',
+      Icon: Target,
+      title: isAr ? 'اختر الإجراء' : 'Choose the action',
       text: isAr
-        ? 'كل إشارة مرتبطة بهدف: وقت ذروة الهواء، أولوية فحص شبكة المياه، درجة ثقة، وعوامل تشرح لماذا ارتفع التنبيه.'
-        : 'Every signal has a purpose: expected air peak, water-inspection priority, evidence confidence, and factors explaining the alert.',
+        ? 'خطوات مرتبة حسب الأولوية والتكلفة والجمهور المسؤول عن التنفيذ.'
+        : 'Steps prioritized by urgency, cost, and the audience responsible for action.',
     },
     {
       Icon: Route,
-      index: '04',
-      title: isAr ? 'طريق واضح للإنتاج والتحقق' : 'A clear production-validation path',
+      title: isAr ? 'تابع وتحقق' : 'Track and verify',
       text: isAr
-        ? 'تجربة ميدانية على قطاعات محددة، معايرة المؤشر بسجل الأعطال وقراءات الضغط والتدفق، ثم تكامل بلدي وواجهات إنذار.'
-        : 'Pilot selected sectors, calibrate against failure history and pressure/flow readings, then add municipal workflows and alert APIs.',
+        ? 'مقارنة التقدم والسيناريوهات وتحديث القرار عندما تتغير البيانات.'
+        : 'Compare progress and scenarios, then update the decision as evidence changes.',
     },
   ];
 
-  const researchStats = [
-    ['02', isAr ? 'محركا إنذار' : 'Warning engines'],
-    ['24h', isAr ? 'نافذة توقع' : 'Forecast window'],
-    ['05', isAr ? 'إشارات جهاز هادفة' : 'Purposeful device signals'],
-    ['03', isAr ? 'طبقات شفافية' : 'Transparency layers'],
+  const trust = [
+    {
+      Icon: ShieldCheck,
+      title: isAr ? 'نتيجة قابلة للتفسير' : 'Explainable outcomes',
+      text: isAr
+        ? 'كل مؤشر يوضح لماذا ظهر وما الذي يمكن فعله بعده.'
+        : 'Every indicator explains why it appeared and what can be done next.',
+    },
+    {
+      Icon: LockKeyhole,
+      title: isAr ? 'خصوصية باختيار المستخدم' : 'Consent-led privacy',
+      text: isAr
+        ? 'الموقع والميكروفون لا يعملان إلا بإذن واضح ومحدد الغرض.'
+        : 'Location and microphone access only run with clear, purpose-specific consent.',
+    },
+    {
+      Icon: Check,
+      title: isAr ? 'حدود معلنة' : 'Visible limitations',
+      text: isAr
+        ? 'نفرق بين القياس والتقدير وما يحتاج تحققًا ميدانيًا.'
+        : 'Measured, estimated, and field-validation needs are clearly separated.',
+    },
   ];
 
   return (
@@ -100,78 +158,80 @@ const Home: React.FC = () => {
       }`}
       dir={dir}
     >
-      <section className={`relative min-h-[100svh] border-b ${border}`}>
-        <div className="kairo-grid absolute inset-0 opacity-80" />
+      <section className={`relative min-h-[96svh] border-b ${border}`}>
+        <div className="kairo-grid absolute inset-0 opacity-75" />
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="kairo-ambient-orb absolute -top-32 left-[8%] h-[32rem] w-[32rem] rounded-full bg-kairo-green/[0.11] blur-[110px]" />
-          <div className="absolute bottom-[-12rem] right-[-6rem] h-[30rem] w-[30rem] rounded-full bg-cyan-400/[0.07] blur-[120px]" />
+          <div className="kairo-ambient-orb absolute -top-28 start-[4%] h-[34rem] w-[34rem] rounded-full bg-kairo-green/[0.12] blur-[115px]" />
+          <div className="absolute -bottom-48 end-[-4rem] h-[32rem] w-[32rem] rounded-full bg-cyan-400/[0.07] blur-[125px]" />
         </div>
 
-        <div className="kairo-shell relative z-10 flex min-h-[100svh] items-center pb-16 pt-32 lg:pb-24 lg:pt-36">
+        <div className="kairo-shell relative z-10 flex min-h-[96svh] items-center pb-16 pt-32 lg:pb-24 lg:pt-36">
           <div className="grid w-full items-center gap-14 lg:grid-cols-[1.08fr_.92fr] lg:gap-20">
             <MotionDiv
-              initial={reduceMotion ? false : { opacity: 0, y: 30 }}
+              initial={reduceMotion ? false : { opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-3xl"
+              className="max-w-4xl"
             >
               <div className="mb-7 flex flex-wrap items-center gap-3">
                 <Chip color="success" size="sm" variant="soft">
                   <Chip.Label className="flex items-center gap-2">
                     <Sparkles className="h-3.5 w-3.5" />
-                    {isAr ? 'تحدي الابتكار الرقمي · إنذار مبكر' : 'Digital Innovation Challenge · Early warning'}
+                    {isAr ? 'منصة ذكاء بيئي متكاملة' : 'Integrated environmental intelligence'}
                   </Chip.Label>
                 </Chip>
-                <span className={`text-xs font-semibold ${textSub}`}>
-                  KAIRO · 2026
-                </span>
+                <span className={`text-xs font-semibold ${textSub}`}>KAIRO · 2026</span>
               </div>
 
               <h1
-                className={`max-w-4xl text-[clamp(3.1rem,7.4vw,7.3rem)] font-semibold leading-[0.96] tracking-[-0.055em] ${textMain}`}
+                className={`max-w-4xl text-[clamp(3rem,7vw,7rem)] font-semibold leading-[0.97] tracking-[-0.055em] ${textMain}`}
               >
                 <span className="kairo-gradient-text">
-                  {isAr ? 'اعرف الخطر قبل أن تشعر به المدينة.' : 'Know the risk before the city feels it.'}
+                  {isAr
+                    ? 'افهم أثرك البيئي. اتخذ قرارًا أفضل.'
+                    : 'Understand your impact. Make a better decision.'}
                 </span>
               </h1>
 
-              <p className={`mt-8 max-w-2xl text-lg leading-8 sm:text-xl ${textSub}`}>
+              <p className={`mt-8 max-w-3xl text-lg leading-8 sm:text-xl ${textSub}`}>
                 {isAr
-                  ? 'KAIRO يحوّل توقعات جودة الهواء، موقع الجهاز، وسياق شبكة المياه إلى إنذارات مبكرة قابلة للتفسير وإجراءات واضحة للمدينة.'
-                  : 'KAIRO turns air-quality forecasts, device location, and water-network context into explainable early warnings and clear city actions.'}
+                  ? 'Kairo يجمع المياه والغذاء والطاقة والتنقل وجودة الهواء والتعرض الحضري والمخلفات الإلكترونية في تجربة واحدة، ثم يحول البيانات إلى تفسير واضح وإجراء يناسب كل فئة من المجتمع.'
+                  : 'Kairo brings water, food, energy, mobility, air quality, urban exposure, and e-waste into one experience—turning data into clear explanations and actions for every part of society.'}
               </p>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
                 <Link
-                  to="/monitor"
+                  to="/dashboard"
                   className="btn-tactile group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-kairo-green px-7 text-sm font-extrabold text-[#052019] shadow-glow-green hover:bg-[#42e4ba]"
                 >
-                  {isAr ? 'افتح غرفة الإنذار المبكر' : 'Open the early-warning room'}
+                  {isAr ? 'ابدأ من المتابعة' : 'Start with the dashboard'}
                   <ArrowUpRight
                     className={`h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 ${
                       dir === 'rtl' ? '-scale-x-100' : ''
                     }`}
                   />
                 </Link>
-                <Link
-                  to="/architecture"
+                <a
+                  href="#capabilities"
                   className={`btn-tactile inline-flex min-h-14 items-center justify-center gap-3 rounded-full border px-7 text-sm font-bold backdrop-blur-xl ${border} ${textMain} ${
                     isLight ? 'bg-white/65 hover:bg-white' : 'bg-white/[0.045] hover:bg-white/[0.08]'
                   }`}
                 >
-                  <Orbit className="h-4 w-4 text-kairo-green" />
-                  {isAr ? 'راجع منهج القرار' : 'Review the decision method'}
-                </Link>
+                  <Leaf className="h-4 w-4 text-kairo-green" />
+                  {isAr ? 'استكشف كل الخواص' : 'Explore every capability'}
+                </a>
               </div>
 
-              <div className={`mt-12 grid max-w-2xl grid-cols-3 border-t pt-7 ${border}`}>
-                {metrics.map((metric) => (
-                  <div key={metric.label} className="pe-3">
-                    <div className={`text-xl font-extrabold sm:text-2xl ${textMain}`}>
-                      {metric.value}
-                    </div>
-                    <div className={`mt-1 text-[10px] font-bold uppercase tracking-[0.12em] sm:text-xs ${textSub}`}>
-                      {metric.label}
+              <div className={`mt-12 grid max-w-3xl grid-cols-3 border-t pt-7 ${border}`}>
+                {[
+                  ['08', isAr ? 'خواص مترابطة' : 'Connected capabilities'],
+                  ['05', isAr ? 'فئات مستهدفة' : 'Audience groups'],
+                  ['01', isAr ? 'متابعة موحدة' : 'Unified dashboard'],
+                ].map(([value, label]) => (
+                  <div key={label} className="pe-3">
+                    <div className={`text-2xl font-extrabold ${textMain}`}>{value}</div>
+                    <div className={`mt-1 text-[10px] font-bold uppercase tracking-[0.11em] sm:text-xs ${textSub}`}>
+                      {label}
                     </div>
                   </div>
                 ))}
@@ -179,67 +239,71 @@ const Home: React.FC = () => {
             </MotionDiv>
 
             <MotionDiv
-              initial={reduceMotion ? false : { opacity: 0, scale: 0.94, y: 24 }}
+              initial={reduceMotion ? false : { opacity: 0, scale: 0.95, y: 22 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-              className="relative mx-auto w-full max-w-[570px]"
+              transition={{ duration: 0.9, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
+              className="relative mx-auto w-full max-w-[580px]"
             >
-              <div className="absolute -inset-8 rounded-full bg-kairo-green/[0.07] blur-3xl" />
-              <div className={`kairo-glass relative overflow-hidden rounded-[2rem] p-4 shadow-glow sm:p-6`}>
-                <div className={`flex items-center justify-between border-b pb-4 ${border}`}>
+              <div className="absolute -inset-10 rounded-full bg-kairo-green/[0.07] blur-3xl" />
+              <div className="kairo-glass relative overflow-hidden rounded-[2.2rem] p-5 shadow-glow sm:p-7">
+                <div className={`flex items-center justify-between border-b pb-5 ${border}`}>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-kairo-green/10 text-kairo-green">
-                      <Gauge className="h-5 w-5" />
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
+                      <KairoBrandSymbol className="h-9 aspect-square" decorative />
                     </div>
                     <div>
-                      <p className={`text-sm font-bold ${textMain}`}>
-                        {isAr ? 'مركز إشارات المدينة' : 'City signal center'}
+                      <p className={`text-sm font-black ${textMain}`}>
+                        {isAr ? 'خريطة Kairo البيئية' : 'Kairo environmental map'}
                       </p>
-                      <p className={`text-[11px] ${textSub}`}>
-                        {isAr ? 'هواء · مياه · موقع · قرار' : 'Air · water · location · action'}
+                      <p className={`mt-0.5 text-[11px] ${textSub}`}>
+                        {isAr ? 'من القياس إلى الإجراء' : 'From context to action'}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 rounded-full bg-kairo-green/10 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-widest text-kairo-green">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-kairo-green" />
-                    {isAr ? 'نشط' : 'Live'}
-                  </div>
+                  <span className="rounded-full bg-kairo-green/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-kairo-green">
+                    {isAr ? 'متكامل' : 'Unified'}
+                  </span>
                 </div>
 
-                <div className="relative my-7 flex min-h-[285px] items-center justify-center overflow-hidden rounded-[1.6rem] bg-black/[0.16]">
-                  <div className="absolute inset-0 kairo-grid opacity-70" />
-                  <div className="absolute h-64 w-64 rounded-full border border-kairo-green/10" />
-                  <div className="absolute h-48 w-48 animate-spin-slow rounded-full border border-dashed border-kairo-green/25" />
-                  <div className="absolute h-32 w-32 rounded-full border border-kairo-green/30 bg-kairo-green/[0.04]" />
-                  <KairoBrandMark className="relative h-28 aspect-[822/938] sm:h-32 lg:h-40" />
-
-                  {[
-                    { Icon: Droplets, position: 'left-[10%] top-[18%]', label: isAr ? 'مخاطر المياه' : 'Water risk' },
-                    { Icon: Activity, position: 'right-[10%] top-[22%]', label: isAr ? 'هواء 24h' : 'Air 24h' },
-                    { Icon: Globe2, position: 'bottom-[14%] left-[16%]', label: isAr ? 'GPS' : 'GPS' },
-                    { Icon: TrendingUp, position: 'bottom-[12%] right-[12%]', label: isAr ? 'إنذار' : 'Warning' },
-                  ].map(({ Icon, position, label }, index) => (
-                    <MotionDiv
-                      key={label}
-                      animate={reduceMotion ? undefined : { y: [0, index % 2 ? -7 : 7, 0] }}
-                      transition={{ duration: 4 + index * 0.4, repeat: Infinity, ease: 'easeInOut' }}
-                      className={`absolute ${position} flex items-center gap-2 rounded-full border border-white/10 bg-black/35 px-3 py-2 text-[10px] font-bold text-white backdrop-blur-xl`}
+                <div className="relative my-6 grid grid-cols-2 gap-3">
+                  {kairoCapabilities.slice(0, 6).map((capability) => {
+                    const Icon = capabilityIcons[capability.id];
+                    return (
+                      <div
+                        key={capability.id}
+                        className={`rounded-2xl border p-4 ${border} ${
+                          isLight ? 'bg-white/70' : 'bg-black/20'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4 text-kairo-green" />
+                        <p className={`mt-3 text-xs font-extrabold ${textMain}`}>
+                          {localize(capability.title, currentLanguage)}
+                        </p>
+                      </div>
+                    );
+                  })}
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <div
+                      className={`flex h-24 w-24 items-center justify-center rounded-[1.75rem] border p-2.5 backdrop-blur-xl ${border} ${
+                        isLight
+                          ? 'bg-white/95 shadow-[0_18px_50px_rgba(10,60,45,.14)]'
+                          : 'bg-[#0a1713]/95 shadow-[0_18px_60px_rgba(0,0,0,.34)]'
+                      }`}
                     >
-                      <Icon className="h-3.5 w-3.5 text-kairo-green" />
-                      {label}
-                    </MotionDiv>
-                  ))}
+                      <KairoBrandSymbol className="h-full aspect-square" decorative />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    [isAr ? 'البيانات' : 'Signal', isAr ? 'حية' : 'Live'],
-                    [isAr ? 'المنطق' : 'Reasoning', isAr ? 'مفسّر' : 'Explainable'],
-                    [isAr ? 'القرار' : 'Action', isAr ? 'جاهز' : 'Ready'],
+                    [isAr ? 'البيانات' : 'Data', isAr ? 'موثقة' : 'Sourced'],
+                    [isAr ? 'المنطق' : 'Logic', isAr ? 'مفسّر' : 'Explainable'],
+                    [isAr ? 'الإجراء' : 'Action', isAr ? 'موجّه' : 'Targeted'],
                   ].map(([label, value]) => (
                     <div key={label} className={`rounded-2xl border p-3 ${border} ${surface}`}>
-                      <div className={`text-[9px] font-bold uppercase tracking-widest ${textSub}`}>{label}</div>
-                      <div className={`mt-2 truncate text-xs font-extrabold ${textMain}`}>{value}</div>
+                      <div className={`text-[9px] font-bold uppercase tracking-widest ${textSoft}`}>{label}</div>
+                      <div className={`mt-2 text-xs font-extrabold ${textMain}`}>{value}</div>
                     </div>
                   ))}
                 </div>
@@ -250,164 +314,141 @@ const Home: React.FC = () => {
       </section>
 
       <section className={`border-b py-6 ${border} ${isLight ? 'bg-white/60' : 'bg-black/20'}`}>
-        <div className="kairo-shell">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {t.home.proof.map((point: string) => (
-              <div key={point} className="flex items-center gap-2.5 py-2">
-                <Check className="h-4 w-4 shrink-0 text-kairo-green" />
-                <span className={`text-xs font-semibold leading-5 ${textSub}`}>{point}</span>
-              </div>
-            ))}
-          </div>
+        <div className="kairo-shell grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {proofPoints.map((point) => (
+            <div key={point} className="flex items-start gap-2.5 py-2">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-kairo-green" />
+              <span className={`text-xs font-semibold leading-5 ${textSub}`}>{point}</span>
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className={`relative border-b py-24 sm:py-32 ${border}`}>
-        <div className="pointer-events-none absolute inset-0 kairo-grid opacity-35" />
+      <section id="capabilities" className={`relative border-b py-24 sm:py-32 ${border}`}>
+        <div className="pointer-events-none absolute inset-0 kairo-grid opacity-30" />
         <div className="kairo-shell relative">
-          <MotionDiv {...reveal} className="grid items-end gap-8 lg:grid-cols-[1fr_.72fr]">
-            <div className="max-w-3xl">
+          <MotionDiv {...reveal} className="grid items-end gap-7 lg:grid-cols-[1fr_.7fr]">
+            <div className="max-w-4xl">
               <span className="kairo-eyebrow">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                {isAr ? 'ملخص لجنة التحكيم · تحدي الابتكار الرقمي' : 'Judging brief · Digital Innovation Challenge'}
+                <Leaf className="h-3.5 w-3.5" />
+                {isAr ? 'منظومة بيئية واحدة' : 'One environmental ecosystem'}
               </span>
-              <h2 className={`mt-6 text-4xl font-semibold tracking-[-0.04em] sm:text-6xl ${textMain}`}>
-                {isAr ? 'من إشارة صغيرة إلى وقت قرار حقيقي للمدينة.' : 'From a weak signal to real decision time for the city.'}
+              <h2 className={`mt-6 text-4xl font-semibold tracking-[-0.045em] sm:text-6xl ${textMain}`}>
+                {isAr ? 'كل خاصية لها جمهور، غرض، ونتيجة مفهومة.' : 'Every capability has an audience, purpose, and clear outcome.'}
               </h2>
-              <p className={`mt-6 max-w-2xl text-lg leading-8 ${textSub}`}>
-                {isAr
-                  ? 'KAIRO يحول الهاتف أو اللابتوب إلى نقطة دخول آمنة لمنظومة إنذار مبكر، ثم يفصل بوضوح بين البيانات الحية والمؤشر التقديري وما يحتاج تحققًا ميدانيًا.'
-                  : 'KAIRO turns a phone or laptop into a safe entry point for early warning, clearly separating live data, estimated indices, and evidence that still needs field verification.'}
-              </p>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {researchStats.map(([value, label]) => (
-                <div key={label} className={`rounded-2xl border p-4 sm:p-5 ${border} ${surface}`}>
-                  <div className={`text-2xl font-black sm:text-3xl ${textMain}`}>{value}</div>
-                  <div className={`mt-1 text-[10px] font-bold uppercase tracking-[.12em] sm:text-xs ${textSub}`}>{label}</div>
-                </div>
-              ))}
-            </div>
-          </MotionDiv>
-
-          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {judgingBrief.map(({ Icon, index, title, text }, cardIndex) => (
-              <MotionDiv
-                key={title}
-                {...reveal}
-                transition={{ ...reveal.transition, delay: cardIndex * 0.07 }}
-                className={`group rounded-[1.75rem] border p-6 transition-transform duration-300 hover:-translate-y-1 ${border} ${surface}`}
-              >
-                <div className="mb-9 flex items-center justify-between">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <span className={`font-mono text-xs ${textSub}`}>{index}</span>
-                </div>
-                <h3 className={`text-lg font-extrabold ${textMain}`}>{title}</h3>
-                <p className={`mt-4 text-sm leading-7 ${textSub}`}>{text}</p>
-              </MotionDiv>
-            ))}
-          </div>
-
-          <MotionDiv
-            {...reveal}
-            className={`mt-6 flex flex-col justify-between gap-5 rounded-[1.75rem] border p-6 sm:flex-row sm:items-center ${border} ${
-              isLight ? 'bg-[#09241d] text-white' : 'bg-kairo-green/[0.07]'
-            }`}
-          >
-            <div>
-              <p className="text-xs font-black uppercase tracking-[.16em] text-kairo-green">
-                {isAr ? 'المسار: تحدي الابتكار الرقمي' : 'Track: Digital Innovation Challenge'}
-              </p>
-              <p className={`mt-2 text-base font-bold ${isLight ? 'text-white' : textMain}`}>
-                {isAr
-                  ? 'نسخة عرض قابلة للتشغيل الآن، مع مسار معايرة ميدانية واضح قبل أي ادعاء باحتمال تسريب إحصائي.'
-                  : 'A working demonstration now, with a clear field-calibration path before any claim of statistical leak probability.'}
-              </p>
-            </div>
-            <Link
-              to="/impact"
-              className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-kairo-green px-6 text-sm font-extrabold text-[#052019]"
-            >
-              {isAr ? 'استكشف المنهجية' : 'Explore methodology'}
-              <ArrowUpRight className={`h-4 w-4 ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
-            </Link>
-          </MotionDiv>
-        </div>
-      </section>
-
-      <section className="relative py-24 sm:py-32">
-        <div className="kairo-shell">
-          <MotionDiv {...reveal} className="grid gap-12 lg:grid-cols-[.72fr_1.28fr] lg:gap-20">
-            <div>
-              <span className="kairo-eyebrow">{isAr ? 'المشكلة' : 'The constraint'}</span>
-              <h2 className={`mt-6 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl ${textMain}`}>
-                {t.home.reality.title}
-              </h2>
-              <p className={`mt-6 text-lg leading-8 ${textSub}`}>
-                {t.home.reality.closing}
-              </p>
-            </div>
-
-            <div className={`overflow-hidden rounded-[2rem] border ${border}`}>
-              {t.home.reality.points.map((point: string, index: number) => (
-                <MotionDiv
-                  key={point}
-                  whileHover={reduceMotion ? undefined : { x: dir === 'rtl' ? -8 : 8 }}
-                  className={`group flex items-center gap-5 border-b p-5 last:border-0 sm:p-6 ${border} ${
-                    isLight ? 'bg-white/55 hover:bg-white' : 'bg-white/[0.025] hover:bg-white/[0.05]'
-                  }`}
-                >
-                  <span className="font-mono text-xs font-bold text-kairo-green">0{index + 1}</span>
-                  <span className={`flex-1 text-base font-semibold sm:text-lg ${textMain}`}>{point}</span>
-                  <ArrowUpRight className={`h-4 w-4 opacity-30 transition group-hover:opacity-100 ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
-                </MotionDiv>
-              ))}
-            </div>
-          </MotionDiv>
-        </div>
-      </section>
-
-      <section id="how-it-works" className={`border-y py-24 sm:py-32 ${border} ${isLight ? 'bg-white/55' : 'bg-white/[0.018]'}`}>
-        <div className="kairo-shell">
-          <MotionDiv {...reveal} className="mx-auto mb-14 max-w-3xl text-center">
-            <span className="kairo-eyebrow">
-              <Orbit className="h-3.5 w-3.5" />
-              {isAr ? 'حلقة الذكاء' : 'Intelligence loop'}
-            </span>
-            <h2 className={`mt-6 text-4xl font-semibold tracking-[-0.04em] sm:text-6xl ${textMain}`}>
-              {t.home.loop.title}
-            </h2>
-            <p className="mt-5 font-mono text-sm font-semibold text-kairo-green">
-              {t.home.loop.subtitle}
+            <p className={`text-base leading-8 lg:pb-2 ${textSub}`}>
+              {isAr
+                ? 'يمكن استخدام كل مسار منفردًا، بينما تجمع المتابعة النتائج في صورة واحدة تساعد المستخدم على معرفة أين يبدأ ولماذا.'
+                : 'Each pathway works independently, while the dashboard brings outcomes together so users know where to start and why.'}
             </p>
           </MotionDiv>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {[1, 2, 3, 4].map((stepNumber, index) => {
-              const step = t.home.loop.steps[stepNumber];
-              const Icon = loopIcons[index];
+          <div className="mt-14 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {kairoCapabilities.map((capability, index) => {
+              const Icon = capabilityIcons[capability.id];
               return (
                 <MotionDiv
-                  key={stepNumber}
+                  key={capability.id}
                   {...reveal}
-                  transition={{ ...reveal.transition, delay: index * 0.08 }}
-                  whileHover={reduceMotion ? undefined : { y: -8 }}
-                  className={`kairo-shine group relative min-h-[315px] rounded-[1.75rem] border p-7 ${border} ${surface}`}
+                  transition={{ ...reveal.transition, delay: (index % 4) * 0.055 }}
+                  className={`group flex min-h-[410px] flex-col rounded-[1.8rem] border p-6 transition duration-300 hover:-translate-y-1 ${border} ${surface}`}
                 >
-                  <div className="mb-14 flex items-center justify-between">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green transition group-hover:bg-kairo-green group-hover:text-[#08221b]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
                       <Icon className="h-5 w-5" />
                     </div>
-                    <span className={`font-mono text-xs ${textSub}`}>0{stepNumber}</span>
+                    <span className={`font-mono text-[10px] ${textSoft}`}>0{index + 1}</span>
                   </div>
-                  <h3 className={`text-xl font-extrabold ${textMain}`}>{step.title}</h3>
-                  <p className={`mt-4 text-sm leading-6 ${textSub}`}>{step.desc}</p>
-                  <div className="absolute bottom-7 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-kairo-green">
-                    {step.link}
-                    <ArrowUpRight className={`h-3.5 w-3.5 ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
+
+                  <h3 className={`mt-7 text-xl font-extrabold ${textMain}`}>
+                    {localize(capability.title, currentLanguage)}
+                  </h3>
+                  <p className={`mt-3 text-sm leading-6 ${textSub}`}>
+                    {localize(capability.shortDescription, currentLanguage)}
+                  </p>
+
+                  <div className={`mt-5 rounded-2xl border p-4 ${border} ${isLight ? 'bg-slate-50/80' : 'bg-black/20'}`}>
+                    <p className="text-[10px] font-black uppercase tracking-[.14em] text-kairo-green">
+                      {isAr ? 'الغرض' : 'Purpose'}
+                    </p>
+                    <p className={`mt-2 text-xs leading-5 ${textSub}`}>
+                      {localize(capability.purpose, currentLanguage)}
+                    </p>
                   </div>
+
+                  <div className="mt-5 flex flex-wrap gap-1.5">
+                    {capability.audiences.slice(0, 3).map((audienceId) => {
+                      const audience = getAudienceProfile(audienceId);
+                      return audience ? (
+                        <span
+                          key={audienceId}
+                          className={`rounded-full border px-2.5 py-1 text-[9px] font-bold ${border} ${textSub}`}
+                        >
+                          {localize(audience.shortLabel, currentLanguage)}
+                        </span>
+                      ) : null;
+                    })}
+                    {capability.audiences.length > 3 && (
+                      <span className="rounded-full bg-kairo-green/10 px-2.5 py-1 text-[9px] font-black text-kairo-green">
+                        +{capability.audiences.length - 3}
+                      </span>
+                    )}
+                  </div>
+
+                  <Link
+                    to={capability.path}
+                    className={`mt-auto inline-flex items-center gap-2 pt-7 text-xs font-black ${textMain}`}
+                  >
+                    {isAr ? 'افهم الخاصية واستخدمها' : 'Understand and use it'}
+                    <ArrowUpRight className={`h-3.5 w-3.5 text-kairo-green ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
+                  </Link>
+                </MotionDiv>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className={`border-b py-24 sm:py-32 ${border} ${isLight ? 'bg-white/55' : 'bg-white/[0.018]'}`}>
+        <div className="kairo-shell">
+          <MotionDiv {...reveal} className="mx-auto max-w-4xl text-center">
+            <span className="kairo-eyebrow">
+              <Users className="h-3.5 w-3.5" />
+              {isAr ? 'قيمة لكل فئة' : 'Value for every audience'}
+            </span>
+            <h2 className={`mt-6 text-4xl font-semibold tracking-[-0.045em] sm:text-6xl ${textMain}`}>
+              {isAr ? 'نفس البيانات، قرار يناسب دور كل مستخدم.' : 'The same evidence, shaped for each user’s role.'}
+            </h2>
+            <p className={`mx-auto mt-6 max-w-3xl text-lg leading-8 ${textSub}`}>
+              {isAr
+                ? 'Kairo لا يفترض أن كل الناس تحتاج نفس الشاشة أو نفس الإجراء؛ لذلك يوضح لمن صُممت كل خاصية وما القيمة التي تقدمها.'
+                : 'Kairo does not assume everyone needs the same screen or action. Every capability states who it serves and the value it creates.'}
+            </p>
+          </MotionDiv>
+
+          <div className="mt-14 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+            {audienceProfiles.map((audience, index) => {
+              const Icon = audienceIcons[audience.id];
+              return (
+                <MotionDiv
+                  key={audience.id}
+                  {...reveal}
+                  transition={{ ...reveal.transition, delay: index * 0.055 }}
+                  className={`rounded-[1.75rem] border p-6 ${border} ${surface}`}
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className={`mt-6 text-base font-extrabold ${textMain}`}>
+                    {localize(audience.label, currentLanguage)}
+                  </h3>
+                  <p className={`mt-3 text-sm leading-6 ${textSub}`}>
+                    {localize(audience.description, currentLanguage)}
+                  </p>
+                  <p className={`mt-5 border-s-2 border-kairo-green ps-3 text-xs font-semibold leading-5 ${textMain}`}>
+                    {localize(audience.value, currentLanguage)}
+                  </p>
                 </MotionDiv>
               );
             })}
@@ -417,37 +458,64 @@ const Home: React.FC = () => {
 
       <section className="py-24 sm:py-32">
         <div className="kairo-shell">
+          <MotionDiv {...reveal} className="grid items-end gap-8 lg:grid-cols-[.75fr_1.25fr]">
+            <div>
+              <span className="kairo-eyebrow">{isAr ? 'طريقة العمل' : 'How Kairo works'}</span>
+              <h2 className={`mt-6 text-4xl font-semibold tracking-[-0.045em] sm:text-5xl ${textMain}`}>
+                {isAr ? 'رحلة بسيطة من السياق إلى أثر يمكن متابعته.' : 'A simple journey from context to trackable impact.'}
+              </h2>
+              <p className={`mt-6 text-base leading-8 ${textSub}`}>
+                {isAr
+                  ? 'ابدأ من لوحة المتابعة، اختر الفئة الأقرب لك، ثم افتح المسار الذي يجيب عن سؤالك الحالي.'
+                  : 'Start in the dashboard, choose the audience closest to you, then open the pathway that answers your current question.'}
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {loop.map(({ Icon, title, text }, index) => (
+                <div key={title} className={`rounded-[1.7rem] border p-6 ${border} ${surface}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className={`font-mono text-[10px] ${textSoft}`}>0{index + 1}</span>
+                  </div>
+                  <h3 className={`mt-6 text-lg font-extrabold ${textMain}`}>{title}</h3>
+                  <p className={`mt-3 text-sm leading-6 ${textSub}`}>{text}</p>
+                </div>
+              ))}
+            </div>
+          </MotionDiv>
+
           <MotionDiv
             {...reveal}
-            className={`relative overflow-hidden rounded-[2.25rem] border p-7 sm:p-12 lg:p-16 ${border} ${
-              isLight ? 'bg-[#09241d] text-white' : 'bg-[#0b1c17]'
+            className={`relative mt-20 overflow-hidden rounded-[2.2rem] border p-7 sm:p-12 ${border} ${
+              isLight ? 'bg-[#09241d]' : 'bg-[#0b1c17]'
             }`}
           >
-            <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-kairo-green/20 blur-[100px]" />
-            <div className="relative grid items-center gap-12 lg:grid-cols-[1fr_.82fr]">
+            <div className="absolute -end-20 -top-28 h-80 w-80 rounded-full bg-kairo-green/20 blur-[100px]" />
+            <div className="relative grid gap-10 lg:grid-cols-[.8fr_1.2fr]">
               <div>
-                <span className="kairo-eyebrow">{isAr ? 'العائد الحقيقي' : 'Measurable return'}</span>
-                <h2 className="mt-6 max-w-2xl text-4xl font-semibold tracking-[-0.04em] text-white sm:text-6xl">
-                  {t.home.roi.title}
+                <span className="kairo-eyebrow">{isAr ? 'ثقة ومسؤولية' : 'Trust by design'}</span>
+                <h2 className="mt-6 text-4xl font-semibold tracking-[-0.045em] text-white sm:text-5xl">
+                  {isAr ? 'ذكاء يساعد القرار ولا يخفي حدوده.' : 'Intelligence that supports decisions without hiding its limits.'}
                 </h2>
-                <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">{t.home.roi.desc}</p>
-                <p className="mt-8 max-w-xl border-s-2 border-kairo-green ps-5 text-base font-semibold text-white">
-                  {t.home.roi.closing}
+                <p className="mt-5 text-base leading-8 text-slate-300">
+                  {isAr
+                    ? 'نوضح مصدر كل نتيجة، والغرض من كل إذن، وما يمكن اعتباره إشارة وما يحتاج إثباتًا ميدانيًا.'
+                    : 'We expose the source of each outcome, the purpose of each permission, and what remains a signal versus field evidence.'}
                 </p>
               </div>
               <div className="grid gap-3">
-                {t.home.roi.points.map((point: string, index: number) => (
-                  <MotionDiv
-                    key={point}
-                    whileHover={reduceMotion ? undefined : { scale: 1.02 }}
-                    className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.055] p-5 backdrop-blur-xl"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-kairo-green text-[#062219]">
-                      <TrendingUp className="h-4 w-4" />
+                {trust.map(({ Icon, title, text }) => (
+                  <div key={title} className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.055] p-5">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-kairo-green text-[#062219]">
+                      <Icon className="h-4 w-4" />
                     </div>
-                    <span className="flex-1 font-bold text-white">{point}</span>
-                    <span className="font-mono text-xs text-slate-500">0{index + 1}</span>
-                  </MotionDiv>
+                    <div>
+                      <h3 className="font-extrabold text-white">{title}</h3>
+                      <p className="mt-1 text-sm leading-6 text-slate-400">{text}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -455,50 +523,28 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <section className={`border-t py-24 sm:py-32 ${border}`}>
+      <section className={`border-t py-24 ${border}`}>
         <div className="kairo-shell">
           <MotionDiv {...reveal} className="mx-auto max-w-4xl text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
-              <Globe2 className="h-6 w-6" />
+              <CircleDollarSign className="h-6 w-6" />
             </div>
-            <h2 className={`mt-7 text-4xl font-semibold tracking-[-0.04em] sm:text-6xl ${textMain}`}>
-              {t.home.global.title}
+            <h2 className={`mt-7 text-4xl font-semibold tracking-[-0.045em] sm:text-6xl ${textMain}`}>
+              {isAr ? 'ابدأ بالسؤال الأهم: أين يمكنني تحسين الأثر الآن؟' : 'Start with the question that matters: where can I improve now?'}
             </h2>
-            <p className={`mx-auto mt-6 max-w-2xl text-lg leading-8 ${textSub}`}>{t.home.global.desc}</p>
-            <p className={`mx-auto mt-8 max-w-3xl text-xl font-semibold sm:text-2xl ${textMain}`}>
-              “{t.home.global.quote}”
+            <p className={`mx-auto mt-6 max-w-2xl text-lg leading-8 ${textSub}`}>
+              {isAr
+                ? 'لوحة المتابعة تجمع الصورة، وتشرح كل خاصية، ثم تنقلك إلى التحليل المناسب دون افتراض خبرة تقنية.'
+                : 'The dashboard brings the picture together, explains each capability, and guides you to the right analysis without assuming technical expertise.'}
             </p>
-
-            <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link
-                to="/dashboard"
-                className="btn-tactile inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-kairo-green px-8 text-sm font-extrabold text-[#052019]"
-              >
-                {t.home.hero.ctaPrimary}
-                <ArrowUpRight className={`h-4 w-4 ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
-              </Link>
-              <Link
-                to="/about"
-                className={`btn-tactile inline-flex min-h-14 items-center justify-center gap-3 rounded-full border px-8 text-sm font-bold ${border} ${textMain}`}
-              >
-                <ShieldCheck className="h-4 w-4 text-kairo-green" />
-                {t.nav.about}
-              </Link>
-            </div>
+            <Link
+              to="/dashboard"
+              className="btn-tactile mt-10 inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-kairo-green px-8 text-sm font-extrabold text-[#052019]"
+            >
+              {isAr ? 'افتح المتابعة البيئية' : 'Open environmental dashboard'}
+              <ArrowUpRight className={`h-4 w-4 ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
+            </Link>
           </MotionDiv>
-
-          <div className={`mt-20 grid gap-5 border-t pt-8 sm:grid-cols-3 ${border}`}>
-            {[
-              { Icon: LockKeyhole, title: t.home.trust[0] },
-              { Icon: Activity, title: t.home.trust[1] },
-              { Icon: ShieldCheck, title: t.home.trust[2] },
-            ].map(({ Icon, title }) => (
-              <div key={title} className="flex items-center justify-center gap-3">
-                <Icon className="h-4 w-4 text-kairo-green" />
-                <span className={`text-xs font-bold uppercase tracking-[0.1em] ${textSub}`}>{title}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
     </main>

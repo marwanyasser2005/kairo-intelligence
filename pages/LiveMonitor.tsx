@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Card, Chip, Meter } from '@heroui/react';
 import {
   Activity,
@@ -52,6 +52,7 @@ import {
   type DeviceSignalSnapshot,
   type PreciseLocation,
 } from '../services/deviceSignals';
+import { saveEnvironmentalSnapshot } from '../services/kairoDatabase';
 import type {
   CarbonAnalysisReport,
   EnergyAnalysisReport,
@@ -113,15 +114,16 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
   const [locating, setLocating] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastCloudSnapshot = useRef<string | null>(null);
 
   const copy = isArabic
     ? {
-        eyebrow: 'KAIRO SIGNALS · تحدي الابتكار الرقمي',
-        title: 'الإنذار المبكر للمدينة، قبل أن تتحول الإشارة إلى أزمة.',
+        eyebrow: 'KAIRO SIGNALS · الاستباق البيئي',
+        title: 'استبق تغير الهواء ومخاطر المياه، وحوّل الإشارة إلى إجراء مناسب.',
         description:
-          'غرفة قرار تجمع توقعات جودة الهواء، موقع الجهاز، وحالة شبكة المياه في مؤشرات قابلة للتفسير والتنفيذ.',
-        locate: 'استخدم موقع الجهاز بدقة',
-        refresh: 'تحديث البيانات',
+          'خاصية متعددة الأهداف تجمع توقعات جودة الهواء، موقع الجهاز، وسياق شبكة المياه لتدعم الوقاية والفحص الميداني وحماية الفئات الحساسة وتوجيه الموارد.',
+        locate: 'استخدم سياق موقعي',
+        refresh: 'تحديث الإشارات',
         defaultArea: 'القاهرة · نطاق افتراضي',
         deviceArea: 'موقع الجهاز',
         live: 'بيانات حية',
@@ -129,12 +131,12 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
         noFabrication: 'لا توجد بيانات بديلة مصطنعة',
       }
     : {
-        eyebrow: 'KAIRO SIGNALS · DIGITAL INNOVATION CHALLENGE',
-        title: 'Early warning for the city—before a weak signal becomes a crisis.',
+        eyebrow: 'KAIRO SIGNALS · ENVIRONMENTAL FORESIGHT',
+        title: 'Anticipate changing air and water risk, then turn the signal into the right action.',
         description:
-          'A decision room combining air-quality forecasts, device location, and water-network context into explainable, actionable indices.',
-        locate: 'Use precise device location',
-        refresh: 'Refresh data',
+          'A multi-purpose capability combining air-quality forecasts, device location, and water-network context for prevention, field screening, protection of sensitive groups, and resource allocation.',
+        locate: 'Use my location context',
+        refresh: 'Refresh signals',
         defaultArea: 'Cairo · default scope',
         deviceArea: 'Device location',
         live: 'Live data',
@@ -199,6 +201,51 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
       // Persistence is an enhancement; privacy settings can disable local storage.
     }
   }, [airWarning, snapshot, waterRisk]);
+
+  useEffect(() => {
+    if (!snapshot || !airWarning) return;
+
+    const cloudSnapshot = {
+      coordinates: snapshot.coordinates,
+      air: {
+        currentAqi: airWarning.currentAqi,
+        peakAqi: airWarning.peakAqi,
+        peakAt: airWarning.peakAt,
+        level: airWarning.level,
+        confidence: airWarning.confidence,
+      },
+      water: {
+        score: waterRisk.score,
+        level: waterRisk.level,
+        confidence: waterRisk.confidence,
+        profile,
+      },
+      deviceContext: deviceSignals
+        ? {
+            online: deviceSignals.online,
+            network: deviceSignals.network,
+            battery: deviceSignals.battery,
+            geolocationPermission: deviceSignals.geolocation.permission,
+            microphonePermission: deviceSignals.microphone.permission,
+            cameraPermission: deviceSignals.camera.permission,
+          }
+        : null,
+    };
+    const signature = JSON.stringify(cloudSnapshot);
+    if (signature === lastCloudSnapshot.current) return;
+
+    const syncTimer = window.setTimeout(() => {
+      void saveEnvironmentalSnapshot(cloudSnapshot)
+        .then(() => {
+          lastCloudSnapshot.current = signature;
+        })
+        .catch(() => {
+          // The live interface remains usable with local persistence if cloud sync is unavailable.
+        });
+    }, 1200);
+
+    return () => window.clearTimeout(syncTimer);
+  }, [airWarning, deviceSignals, profile, snapshot, waterRisk]);
 
   const handleLocate = async () => {
     setLocating(true);
@@ -281,6 +328,24 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
                 <TrustPill icon={<ShieldCheck />} text={copy.method} />
                 <TrustPill icon={<Database />} text={copy.noFabrication} />
               </div>
+              <div className="mt-6">
+                <p className="mb-3 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+                  {isArabic ? 'الفئات المستهدفة' : 'Target audiences'}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {(isArabic
+                    ? ['الأفراد والأسر', 'المجتمع والفرق الميدانية', 'التعليم والبحث', 'الشركات والمنشآت', 'المدن والجهات العامة']
+                    : ['Individuals & families', 'Communities & field teams', 'Education & research', 'Businesses & facilities', 'Cities & public authorities']
+                  ).map((audience) => (
+                    <span
+                      key={audience}
+                      className="rounded-full border border-white/10 bg-black/15 px-3 py-1.5 text-[10px] font-bold text-slate-300"
+                    >
+                      {audience}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
@@ -339,7 +404,7 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
           />
           <SignalMetric
             icon={<Wind />}
-            label={isArabic ? 'إنذار الهواء' : 'Air warning'}
+            label={isArabic ? 'استباق جودة الهواء' : 'Air-quality foresight'}
             value={
               airWarning
                 ? isArabic

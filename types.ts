@@ -437,13 +437,49 @@ export interface CarbonAnalysisReport {
     };
 }
 
+export interface ScenarioBaseline {
+    waterWasteLitersMonth: number;
+    waterCostLossEgpMonth: number;
+    energyConsumptionKwhMonth: number;
+    energyCostLossEgpMonth: number;
+    energyCarbonKgMonth: number;
+    foodCostLossEgpMonth: number;
+    foodCarbonKgMonth: number;
+    mobilityCostEgpMonth: number;
+    mobilityCarbonKgMonth: number;
+    ewasteAvoidableKg: number;
+    connectedModules: number;
+}
+
+export interface ScenarioLevers {
+    waterReductionPct: number;
+    energyReductionPct: number;
+    foodWasteReductionPct: number;
+    mobilityShiftPct: number;
+    circularityPct: number;
+    investmentEgp: number;
+}
+
+export interface ScenarioOutcomes {
+    waterSavedLiters: number;
+    energySavedKwh: number;
+    financialSavingsEgp: number;
+    carbonAvoidedKg: number;
+    ewasteAvoidedKg: number;
+    paybackMonths: number | null;
+    impactScore: number;
+}
+
 export interface Scenario {
     id: string;
     name: string;
     timestamp: number;
-    results: CalculatorResults;
-    waterInput: WaterData;
-    foodInput: FoodData;
+    audience: 'individual' | 'community' | 'education' | 'business' | 'government';
+    horizonMonths: number;
+    baseline: ScenarioBaseline;
+    levers: ScenarioLevers;
+    outcomes: ScenarioOutcomes;
+    synced?: boolean;
 }
 
 export interface ScenarioComparisonAnalysis {

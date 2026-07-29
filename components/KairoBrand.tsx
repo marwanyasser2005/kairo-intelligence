@@ -7,13 +7,15 @@ interface BrandProps {
   decorative?: boolean;
 }
 
-const BrandImage: React.FC<BrandProps & { alt: string }> = ({
+const BrandImage: React.FC<BrandProps & { alt: string; source?: string; fallback?: string }> = ({
   className = 'h-[clamp(3.5rem,5vw,5.5rem)] aspect-[822/938]',
   imageClassName = '',
   decorative = false,
   alt,
+  source = BRAND_ASSETS.logo,
+  fallback = BRAND_ASSETS.logoPng,
 }) => {
-  const [logoSource, setLogoSource] = useState<string>(BRAND_ASSETS.logo);
+  const [logoSource, setLogoSource] = useState<string>(source);
   const [failed, setFailed] = useState(false);
 
   return (
@@ -34,8 +36,8 @@ const BrandImage: React.FC<BrandProps & { alt: string }> = ({
           className={`kairo-logo ${imageClassName}`}
           draggable={false}
           onError={() => {
-            if (logoSource !== BRAND_ASSETS.logoPng) {
-              setLogoSource(BRAND_ASSETS.logoPng);
+            if (logoSource !== fallback) {
+              setLogoSource(fallback);
             } else {
               setFailed(true);
             }
@@ -66,6 +68,21 @@ export const KairoBrandLockup: React.FC<BrandProps> = ({
 }) => (
   <BrandImage
     alt="KAIRO Intelligence"
+    className={className}
+    imageClassName={imageClassName}
+    decorative={decorative}
+  />
+);
+
+export const KairoBrandSymbol: React.FC<BrandProps> = ({
+  className = 'h-[clamp(3rem,5vw,5rem)] aspect-square',
+  imageClassName = '',
+  decorative = false,
+}) => (
+  <BrandImage
+    alt="KAIRO"
+    source={BRAND_ASSETS.symbol}
+    fallback={BRAND_ASSETS.favicon}
     className={className}
     imageClassName={imageClassName}
     decorative={decorative}

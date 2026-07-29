@@ -25,9 +25,9 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'Tajawal', 'system-ui', 'sans-serif'],
-        display: ['Inter', 'Tajawal', 'system-ui', 'sans-serif'],
-        cairo: ['Tajawal', 'Inter', 'sans-serif'],
+        sans: ['Manrope', 'IBM Plex Sans Arabic', 'system-ui', 'sans-serif'],
+        display: ['Manrope', 'IBM Plex Sans Arabic', 'system-ui', 'sans-serif'],
+        cairo: ['IBM Plex Sans Arabic', 'Manrope', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         glow: '0 0 0 1px rgba(43,212,167,.12), 0 24px 80px rgba(0,0,0,.28)',

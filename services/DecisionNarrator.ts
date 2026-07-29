@@ -68,7 +68,7 @@ export const generateSessionStory = async (
     });
 
     // Scale up daily actions for monthly totals if they are daily
-    // (Simplified logic for Hackathon - assumes input strings are "per month" mostly, or we accept raw sum)
+    // Simplified monthly aggregation: most inputs are monthly values, otherwise we accept the raw sum.
 
     // 2. AI NARRATIVE GENERATION
     const prompt = `

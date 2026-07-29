@@ -9,6 +9,7 @@ import { exportAsPdf, exportAsPng } from '../../utils/export';
 import { useApp } from '../../contexts/AppContext';
 import BillUploader from '../../components/BillUploader';
 import SdgBadge from '../../components/SdgBadge';
+import CapabilityContext from '../../components/CapabilityContext';
 
 const MotionDiv = motion.div as any;
 
@@ -128,6 +129,7 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
     return (
         <div className={`min-h-screen pt-32 lg:pt-36 px-4 md:px-6 pb-20 ${isLight ? 'bg-slate-50' : 'bg-black'} transition-colors duration-500`} dir={dir}>
             <div className="max-w-6xl mx-auto">
+                <CapabilityContext capabilityId="ewaste" />
                 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">

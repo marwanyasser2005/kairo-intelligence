@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import {
   AnimatePresence,
   motion,
@@ -19,7 +19,6 @@ const Impact = lazy(() => import('./pages/Impact'));
 const Learn = lazy(() => import('./pages/Learn'));
 const About = lazy(() => import('./pages/About'));
 const SaasRoadmap = lazy(() => import('./pages/SaasRoadmap'));
-const Features = lazy(() => import('./pages/Features'));
 const EnergyIntelligence = lazy(() => import('./pages/EnergyIntelligence'));
 const TransportImpact = lazy(() => import('./pages/TransportImpact'));
 
@@ -50,8 +49,25 @@ import KairoChat from './components/KairoChat';
 import { usePersistentState, clearKairoStorage } from './utils/storage';
 import { AppProvider, useApp } from './contexts/AppContext';
 import { DEFAULT_AI_MODEL } from './services/aiClient';
+import { loadModuleReports, upsertModuleReport } from './services/kairoDatabase';
 
 const MotionDiv = motion.div as React.FC<HTMLMotionProps<"div">>;
+
+const useKairoCloudReportSync = (
+  module: 'carbon' | 'water' | 'food' | 'exposure' | 'ewaste' | 'energy' | 'mobility',
+  report: unknown,
+  score?: number | null,
+) => {
+  React.useEffect(() => {
+    if (!report) return;
+    const timer = window.setTimeout(() => {
+      void upsertModuleReport(module, report, score).catch(() => {
+        // Local persistence remains available while cloud sync is unavailable.
+      });
+    }, 900);
+    return () => window.clearTimeout(timer);
+  }, [module, report, score]);
+};
 
 const ScrollProgress = () => {
     const { scrollYProgress } = useScroll();
@@ -186,7 +202,7 @@ const AnimatedRoutes: React.FC<AnimatedRoutesProps> = ({
                 } />
                                 <Route path="/action" element={<ClimateAction results={results} userProgress={userProgress} setUserProgress={setUserProgress} />} />
                 <Route path="/scenarios" element={<CompareScenarios />} />
-                <Route path="/features" element={<Features />} />
+                <Route path="/features" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/impact" element={<Impact />} />
                 <Route path="/learn" element={<Learn />} />
                 <Route path="/about" element={<About />} />
@@ -216,7 +232,7 @@ const AnimatedRoutes: React.FC<AnimatedRoutesProps> = ({
 const AppLayout: React.FC = () => {
   const { theme, dir, language } = useApp();
 
-  const [results, setResults] = usePersistentState<CalculatorResults | null>('kairo_mini_results', null);
+  const [results, setResults] = usePersistentState<CalculatorResults | null>('kairo_baseline_results', null);
   const [waterData, setWaterData] = usePersistentState<WaterData>('kairo_input_water', { leakingTaps: 0, leakingToilets: 0, leakageHoursPerDay: 0, monthlyBillLE: 0 });
   const [foodData, setFoodData] = usePersistentState<FoodData>('kairo_input_food', { mealsPerDay: 3, costPerMealLE: 50, wastePercentage: 10 });
   const [energyData, setEnergyData] = usePersistentState<EnergyData>('kairo_input_energy', { monthlyKwh: 250, billEgp: 0, acCount: 1, acHoursPerDay: 6, acSetTemperature: 20, acType: 'standard', majorAppliances: 3 });
@@ -232,6 +248,41 @@ const AppLayout: React.FC = () => {
   const [userProgress, setUserProgress] = usePersistentState<UserProgress>('kairo_user_progress', {
     waterScore: 0, badges: [], co2TargetKg: null, pledges: []
   });
+
+  React.useEffect(() => {
+    let active = true;
+    void loadModuleReports()
+      .then((reports) => {
+        if (!active) return;
+        if (!carbonReport && reports.carbon) setCarbonReport(reports.carbon as CarbonAnalysisReport);
+        if (!waterReport && reports.water) setWaterReport(reports.water as WaterAnalysisReport);
+        if (!foodReport && reports.food) setFoodReport(reports.food as FoodWasteAnalysisReport);
+        if (!exposureReport && reports.exposure) setExposureReport(reports.exposure as ExposureAnalysis);
+        if (!ewasteReport && reports.ewaste) setEwasteReport(reports.ewaste as EwasteAnalysisReport);
+        if (!energyReport && reports.energy) setEnergyReport(reports.energy as EnergyAnalysisReport);
+        if (!transportReport && reports.mobility) {
+          setTransportReport(reports.mobility as MobilityIntelligenceReport);
+        }
+      })
+      .catch(() => {
+        // The app remains fully usable with local storage if cloud hydration is unavailable.
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useKairoCloudReportSync('carbon', carbonReport, carbonReport?.baseline?.monthly_total_kg_co2);
+  useKairoCloudReportSync('water', waterReport, waterReport?.metrics?.water_efficiency_score);
+  useKairoCloudReportSync('food', foodReport, foodReport?.metrics?.food_efficiency_score);
+  useKairoCloudReportSync('exposure', exposureReport, exposureReport?.estimated_aqi);
+  useKairoCloudReportSync(
+    'ewaste',
+    ewasteReport,
+    ewasteReport?.environmental_impact?.circular_economy_impact_score,
+  );
+  useKairoCloudReportSync('energy', energyReport, energyReport?.metrics?.energy_efficiency_score);
+  useKairoCloudReportSync('mobility', transportReport, transportReport?.scores?.mobility_efficiency);
 
   const handleSystemReset = () => {
       if (window.confirm(language === 'ar' ? 'هل تريد بدء تشغيل جديد ومسح بيانات الجلسة الحالية؟' : 'Start a new run and clear the current session data?')) {

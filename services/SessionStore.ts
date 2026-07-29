@@ -1,9 +1,7 @@
 
-import { CalculatorResults } from "../types";
-
 // Define all keys used across the application for persistence
 const APP_STORAGE_KEYS = [
-    'kairo_mini_results',
+    'kairo_baseline_results',
     'kairo_input_water',
     'kairo_input_food',
     'kairo_report_carbon',
@@ -14,7 +12,7 @@ const APP_STORAGE_KEYS = [
     'kairo_report_energy',
     'kairo_report_transport',
     'kairo_user_progress',
-    'kairo_mini_profile',
+    'kairo_baseline_profile',
     'kairo_generated_plan',
     'kairo_actions',
     'kairo_last_review',
@@ -56,9 +54,20 @@ export const SessionStore = {
         });
 
         // Calculate preview metrics for the session list UI
-        const results = data['kairo_mini_results'] as CalculatorResults;
-        const financialRisk = results ? results.water.monthlyCostLE + results.food.monthlyFinancialLossLE : 0;
-        const co2Total = results ? results.totalCo2Kg : 0;
+        const waterReport = data['kairo_report_water'];
+        const foodReport = data['kairo_report_food'];
+        const energyReport = data['kairo_report_energy'];
+        const transportReport = data['kairo_report_transport'];
+        const carbonReport = data['kairo_report_carbon'];
+        const financialRisk =
+            (waterReport?.metrics?.financial_loss_estimate_egp || 0) +
+            (foodReport?.metrics?.monthly_waste_cost || 0) +
+            (energyReport?.metrics?.financial_loss_estimate_egp || 0);
+        const co2Total =
+            (carbonReport?.baseline?.monthly_total_kg_co2 || 0) +
+            (energyReport?.metrics?.carbon_footprint_kg || 0) +
+            (transportReport?.metrics?.monthly_carbon_kg || 0) +
+            (foodReport?.metrics?.carbon_footprint_kg || 0);
 
         return {
             id: Math.random().toString(36).substr(2, 9),

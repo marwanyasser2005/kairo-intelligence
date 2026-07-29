@@ -66,7 +66,7 @@ export const translations = {
       about: "About",
       input: "Input Data",
       roadmap: "My Roadmap",
-      monitor: "Live Monitor",
+      monitor: "Environmental Foresight",
       lang: "English",
       systemsList: {
         foodSecurity: "Food Security Intelligence",
@@ -78,7 +78,7 @@ export const translations = {
         transport: "Mobility Impact",
         exposure: "Urban Exposure",
         ewaste: "ReKairo E-Waste",
-        mini: "KairoMini Ingestion"
+        mini: "Baseline Input"
       }
     },
     home: {
@@ -109,7 +109,7 @@ export const translations = {
         title: "The Intelligence Loop",
         subtitle: "Observe → Interpret → Adapt → Verify",
         steps: {
-            1: { title: "Ingestion", desc: "KairoMini acts as a telemetry gateway, structuring behavioral inputs into machine-readable environmental signals.", link: "Telemetry Gateway" },
+            1: { title: "Ingestion", desc: "Kairo structures user inputs and optional device context into machine-readable environmental signals.", link: "Data Gateway" },
             2: { title: "Reasoning", desc: "The Core Orchestrator synthesizes user telemetry with localized emission factors, tariff models, and scarcity metrics to produce bounded recommendations.", link: "Core Logic" },
             3: { title: "Adaptation", desc: "Static plans fail in dynamic environments. Kairo continuously recalibrates behavioral guidance using atmospheric and contextual data streams.", link: "Dynamic Monitor" },
             4: { title: "Validation", desc: "Individual adaptation compounds into measurable national resource preservation.", link: "Macro Impact" }
@@ -158,9 +158,9 @@ export const translations = {
       },
 
       origin: {
-        title: "The Evolution from Kairo Mini",
-        p1: "The project started with 'Kairo Mini', a preliminary prototype focused purely on data ingestion and basic behavioral estimates. It proved that households are willing to act responsibly when the outcome is financially visible.",
-        p2: "We then evolved Kairo Mini into the comprehensive Kairo Dashboard you see today. The new platform closes three critical gaps: replacing fragmented data with structured insights, turning abstract tools into operational guidance, and fully integrating the Mini engine into a broader ecosystem of real-time monitoring and AI reasoning.",
+        title: "The Evolution into Unified Kairo",
+        p1: "Kairo began with a focused behavioral-estimation prototype. It showed that people act more responsibly when environmental outcomes are connected to clear financial value.",
+        p2: "That research evolved into today’s unified dashboard: structured evidence, environmental foresight, practical guidance, and connected resource intelligence in one product.",
         statement: "Kairo translates environmental action into clear household economics."
       },
 
@@ -232,7 +232,7 @@ export const translations = {
         title: "Optimization Journey",
         step1: "Telemetry",
         step2: "Action Plan",
-        step3: "Live Monitor",
+        step3: "Environmental Foresight",
         step4: "Impact",
         desc: "Complete these steps to unlock full system capabilities."
       },
@@ -297,7 +297,7 @@ export const translations = {
     foodSecurity: {
       title: "Food Security Intelligence",
       subtitle: "Supply Chain & Agricultural Water Analysis",
-      badge: "UGRF Track 7",
+      badge: "Applied Environmental Research",
       description: "AI-powered analysis of Egypt's food supply chain efficiency, agricultural water consumption, and climate impact on crop productivity.",
       inputs: {
         title: "Supply Chain Inputs",
@@ -375,15 +375,15 @@ export const translations = {
       runAnalysis: "Run Food Security Analysis",
       analyzing: "Analyzing supply chain data..."
     },
-    ugrf: {
-      badge: "UGRF 22 — Competition Entry",
-      track7: "Track 7: Water Science & Food Security",
-      track2: "Track 2: AI & Machine Learning",
+    research: {
+      badge: "Applied Research Project",
+      track7: "Water Science & Food Security",
+      track2: "AI & Machine Learning",
       sdgAlignment: "SDG Alignment",
-      competitionMode: "Competition Mode",
-      submissionReady: "Submission Ready",
-      internationalComp: "International Competition",
-      nileUniversity: "Nile University"
+      competitionMode: "Research Mode",
+      submissionReady: "Evidence Ready",
+      internationalComp: "Open Environmental Platform",
+      nileUniversity: "Research & Community"
     },
     mini: {
       step: "Step 01: Ingestion",
@@ -438,7 +438,7 @@ export const translations = {
       justification: "Justification",
       context: "National Context",
       recs: "Recommendations",
-      synced: "Synced with KairoMini"
+      synced: "Synced with Kairo Dashboard"
     },
     food: {
       title: "Food Waste Simulator",
@@ -558,7 +558,7 @@ export const translations = {
         water: { title: "Water Logic", problem: "Leaks are ignored.", outcome: "Volumetric savings." },
         food: { title: "Food Supply", problem: "Organic waste.", outcome: "Financial recovery." },
         air: { title: "Air Monitor", problem: "Pollution is vague.", outcome: "Health guidance." },
-        mini: { title: "KairoMini", problem: "Data entry is hard.", outcome: "Instant estimation." }
+        mini: { title: "Baseline Estimator", problem: "Data entry is hard.", outcome: "Instant estimation." }
       },
       footer: {
         tokenRouter: "Powered by Gemini", tokenRouterSub: "Free Multi-model Gateway",
@@ -645,7 +645,7 @@ export const translations = {
         options: { walking: "Walking", bicycle: "Bicycle", bus: "Public Bus", metro: "Metro", car: "Private Car", motorcycle: "Motorcycle" }
     },
     airQuality: {
-        badge: "Live Monitor",
+        badge: "Environmental Foresight",
         title: "Air Quality",
         desc: "Real-time satellite data.",
         estimate: "Estimate My Exposure",
@@ -715,7 +715,7 @@ export const translations = {
     },
     miniSystem: {
         badge: "Architecture",
-        title: "KairoMini System",
+        title: "Kairo Baseline System",
         desc: "Low-latency ingestion engine.",
         friction: { title: "Reducing Friction", desc: "Making input easy." },
         flow: { title: "Data Flow", step1: "Input", step2: "Process", step3: "Output" },
@@ -727,7 +727,7 @@ export const translations = {
         snapshot: "Create Snapshot",
         save: "Save",
         empty: "No scenarios saved.",
-        runMini: "Run KairoMini",
+        runMini: "Build a baseline",
         savedTitle: "Saved Scenarios",
         run: "Run Comparison",
         metrics: { co2: "CO2", water: "Water", loss: "Financial Loss" },
@@ -818,7 +818,7 @@ export const translations = {
       about: "عن كايرو",
       input: "دخل بياناتك",
       roadmap: "خطتك",
-      monitor: "المراقب الحي",
+      monitor: "الاستباق البيئي",
       lang: "العربية",
       systemsList: {
         foodSecurity: "أمنك الغذائي",
@@ -830,7 +830,7 @@ export const translations = {
         transport: "أثرك في الزحمة",
         exposure: "المخاطر حواليك",
         ewaste: "إلكترونياتك القديمة",
-        mini: "كايرو ميني"
+        mini: "البيانات الأساسية"
       }
     },
     home: {
@@ -861,7 +861,7 @@ export const translations = {
         title: "دايرة الذكاء الخاصة بينا",
         subtitle: "راقب ← افهم ← اتأقلم ← اتأكد",
         steps: {
-            1: { title: "تجميع", desc: "كايرو ميني بياخد سلوكيات استهلاكك ويحولها لإشارات بيئية واضحة للسيستم.", link: "بوابة البيانات" },
+            1: { title: "تجميع", desc: "كايرو ينظّم مدخلات المستخدم وسياق الجهاز الاختياري ويحولها لإشارات بيئية قابلة للمعالجة.", link: "بوابة البيانات" },
             2: { title: "تحليل منطقي", desc: "كايرو بيربط استهلاكك بأسعار الكهربا في مصر ومستويات الانبعاثات الحالية عشان يديك حلول متفصلة.", link: "المخ الأساسي" },
             3: { title: "تأقلم", desc: "الخطط الثابتة مبتنفعش، عشان كده كايرو على طول بيعمل تحديث لنسايحه بناءً على جودة الهوا والمعطيات الحالية.", link: "المراقبة" },
             4: { title: "تأكيد", desc: "خطواتك البسيطة في بيتك بتتجمع عشان تكون تأثير وطني حقيقي.", link: "تأثيرك الكبير" }
@@ -910,9 +910,9 @@ export const translations = {
       },
 
       origin: {
-        title: "التطور من كايرو ميني",
-        p1: "المشروع بدأ بنموذج مبدئي اسمه 'كايرو ميني'، وكان معتمد على إدخال البيانات وتقديرات بسيطة. ولما شوفنا إن الناس مستعدة تتصرف صح لو لقت توفير حقيقي في فلوسها، قررنا نكبر الفكرة.",
-        p2: "طورنا 'كايرو ميني' ودمجناه بالكامل جوه لوحة تحكم كايرو (الداشبورد) الشاملة اللي بتشوفها دلوقتي. الداشبورد الجديد بيسد فجوة كبيرة: بدل البيانات المتفرقة، بنديك تحليلات ذكية ومراقبة حية وتوجيهات عملية.",
+        title: "تطور كايرو إلى منصة موحدة",
+        p1: "بدأت كايرو بنموذج بحثي مركز على التقديرات السلوكية، وأثبت أن ربط الأثر البيئي بقيمة مالية واضحة يساعد الناس على اتخاذ قرارات أفضل.",
+        p2: "تطور البحث إلى لوحة متابعة موحدة تجمع الأدلة المنظمة والاستباق البيئي والتوجيه العملي وذكاء الموارد داخل منتج واحد.",
         statement: "كايرو بتحول أي كلام عن الاستدامة لأرقام وفلوس توفرها في بيتك."
       },
 
@@ -984,7 +984,7 @@ export const translations = {
         title: "رحلة التحسين",
         step1: "القياسات",
         step2: "الخطة",
-        step3: "المراقب",
+        step3: "الاستباق البيئي",
         step4: "التأثير",
         desc: "أكمل هذه الخطوات لفتح قدرات النظام بالكامل."
       },
@@ -1049,7 +1049,7 @@ export const translations = {
     foodSecurity: {
       title: "ذكاء الأمن الغذائي",
       subtitle: "تحليل سلسلة التوريد والمياه الزراعية",
-      badge: "مسار UGRF 7",
+      badge: "بحث بيئي تطبيقي",
       description: "تحليل مدعوم بالذكاء الاصطناعي لكفاءة سلسلة الإمداد الغذائي في مصر واستهلاك المياه الزراعية وتأثير المناخ على إنتاجية المحاصيل.",
       inputs: {
         title: "مدخلات سلسلة التوريد",
@@ -1127,15 +1127,15 @@ export const translations = {
       runAnalysis: "تشغيل تحليل الأمن الغذائي",
       analyzing: "جارٍ تحليل بيانات سلسلة التوريد..."
     },
-    ugrf: {
-      badge: "UGRF 22 — مشاركة تنافسية",
-      track7: "المسار ٧: علوم المياه والأمن الغذائي",
-      track2: "المسار ٢: الذكاء الاصطناعي والتعلم الآلي",
+    research: {
+      badge: "مشروع بحثي تطبيقي",
+      track7: "علوم المياه والأمن الغذائي",
+      track2: "الذكاء الاصطناعي والتعلم الآلي",
       sdgAlignment: "التوافق مع أهداف التنمية المستدامة",
-      competitionMode: "وضع المسابقة",
-      submissionReady: "جاهز للتقديم",
-      internationalComp: "مسابقة دولية",
-      nileUniversity: "جامعة النيل"
+      competitionMode: "وضع البحث",
+      submissionReady: "الأدلة جاهزة",
+      internationalComp: "منصة بيئية مفتوحة",
+      nileUniversity: "بحث ومجتمع"
     },
     mini: {
       step: "الخطوة ٠١: الاستيعاب",
@@ -1190,7 +1190,7 @@ export const translations = {
       justification: "التحليل المنطقي",
       context: "السياق القومي",
       recs: "التوصيات الهندسية",
-      synced: "متزامن مع بيانات كايرو ميني"
+      synced: "متزامن مع لوحة متابعة كايرو"
     },
     food: {
       title: "محاكي هدر الطعام",
@@ -1310,7 +1310,7 @@ export const translations = {
         water: { title: "منطق المياه", problem: "يتم تجاهل التسربات.", outcome: "توفير حجمي." },
         food: { title: "إمدادات الغذاء", problem: "النفايات العضوية.", outcome: "الاسترداد المالي." },
         air: { title: "مراقب الهواء", problem: "التلوث غامض.", outcome: "إرشادات صحية." },
-        mini: { title: "كايرو ميني", problem: "إدخال البيانات صعب.", outcome: "تقدير فوري." }
+        mini: { title: "مُقدّر البيانات الأساسية", problem: "إدخال البيانات صعب.", outcome: "تقدير فوري." }
       },
       footer: {
         tokenRouter: "مدعوم بواسطة Gemini", tokenRouterSub: "بوابة مجانية متعددة النماذج",
@@ -1467,7 +1467,7 @@ export const translations = {
     },
     miniSystem: {
         badge: "هندسة",
-        title: "نظام كايرو ميني",
+        title: "نظام البيانات الأساسية",
         desc: "محرك استيعاب منخفض الكمون.",
         friction: { title: "تقليل الاحتكاك", desc: "جعل الإدخال سهلاً." },
         flow: { title: "تدفق البيانات", step1: "إدخال", step2: "معالجة", step3: "إخراج" },
@@ -1479,7 +1479,7 @@ export const translations = {
         snapshot: "إنشاء لقطة",
         save: "حفظ",
         empty: "لا سيناريوهات محفوظة.",
-        runMini: "شغل كايرو ميني",
+        runMini: "أنشئ خط أساس",
         savedTitle: "السيناريوهات المحفوظة",
         run: "تشغيل المقارنة",
         metrics: { co2: "CO2", water: "مياه", loss: "خسارة مالية" },

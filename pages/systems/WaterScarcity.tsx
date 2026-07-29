@@ -9,6 +9,7 @@ import { useApp } from '../../contexts/AppContext';
 import ModuleToolbar from '../../components/ModuleToolbar';
 import { exportAsPdf } from '../../utils/export';
 import BillUploader from '../../components/BillUploader';
+import CapabilityContext from '../../components/CapabilityContext';
 import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 
 const MotionDiv = motion.div as any;
@@ -115,6 +116,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
 
     return (
         <div className="w-full min-h-screen pt-32 lg:pt-36 pb-20 px-4 md:px-6 lg:px-8 space-y-8 max-w-7xl mx-auto" dir={dir}>
+            <CapabilityContext capabilityId="water" />
             <ModuleToolbar 
                 title={language === 'ar' ? 'ذكاء إدارة المياه' : 'AI Water Intelligence'}
                 description={language === 'ar' ? 'تحليل متقدم لاستهلاك المياه باستخدام الرؤية الحاسوبية والذكاء الاصطناعي.' : 'Advanced water consumption analysis using computer vision and AI.'}

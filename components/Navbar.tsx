@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@heroui/react';
-import { Menu, X, ChevronDown, Droplet, Utensils, Wind, Recycle, Moon, Sun, Zap, Truck, FlaskConical, Map as MapIcon, Activity } from 'lucide-react';
+import { Menu, X, ChevronDown, Droplet, Utensils, Wind, Recycle, Moon, Sun, Zap, Truck, FlaskConical, Map as MapIcon, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../contexts/AppContext';
 import { KairoBrandMark } from './KairoBrand';
@@ -161,20 +161,20 @@ const Navbar: React.FC = () => {
              {isLight ? <Moon className="w-4 h-4 md:w-5 md:h-5" /> : <Sun className="w-4 h-4 md:w-5 md:h-5" />}
            </Button>
 
-           {/* Live Monitor Button (Hidden on tiny phones, visible on sm+) */}
+           {/* Primary dashboard entry */}
            <Button
             size="sm"
             variant="secondary"
             onPress={() => {
               playSound('click');
-              navigate('/monitor');
+              navigate('/dashboard');
             }}
             className="hidden rounded-full text-[10px] font-bold uppercase tracking-wider sm:flex md:text-xs"
-            aria-label={language === 'ar' ? 'غرفة الإنذار المبكر' : 'Early-warning room'}
+            aria-label={language === 'ar' ? 'فتح المتابعة البيئية' : 'Open environmental dashboard'}
            >
-            <Activity className="h-3 w-3 text-emerald-500 md:h-4 md:w-4" />
+            <LayoutDashboard className="h-3 w-3 text-emerald-500 md:h-4 md:w-4" />
             <span className="hidden lg:inline">
-              {language === 'ar' ? 'الإنذار المبكر' : 'Early warning'}
+              {language === 'ar' ? 'ابدأ المتابعة' : 'Open dashboard'}
             </span>
            </Button>
 
@@ -245,14 +245,6 @@ const Navbar: React.FC = () => {
                             ))}
                             <div className="my-6 border-t border-dashed border-gray-300 dark:border-white/10"></div>
                             
-                            <Link 
-                                to="/monitor"
-                                onClick={() => { setMobileMenuOpen(false); playSound('click'); }}
-                                className={`flex items-center gap-3 p-4 rounded-xl font-bold text-lg transition-colors ${isActive('/monitor') ? (isLight ? 'bg-black text-white' : 'bg-white text-black') : (isLight ? 'text-gray-600 hover:bg-gray-100' : 'text-gray-300 hover:bg-white/5')}`}
-                            >
-                                <Activity className="w-5 h-5 text-red-500" />
-                                {t.nav.monitor}
-                            </Link>
                             <Link 
                                 to="/action"
                                 onClick={() => { setMobileMenuOpen(false); playSound('click'); }}
