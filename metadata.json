@@ -1,0 +1,10 @@
+{
+  "name": "Kairo",
+  "description": "Water Science and Food Security intelligence platform for Egypt. Keywords: Water Resource Management, Water Quality & Treatment Technologies, Irrigation Systems & Smart Agriculture, Food Security & Sustainable Food Systems, Climate Change Impact, Remote Sensing & GIS, Crop Productivity.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_TOKEN_ROUTER_API"
+  ]
+}

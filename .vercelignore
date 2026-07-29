@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+node_modules
+dist
+tests
+scripts
+tmp
+*.log
+KAIRO_TOKENROUTER_REPORT.md
+key-diag.txt
+test_req.js
