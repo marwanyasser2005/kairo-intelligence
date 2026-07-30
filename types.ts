@@ -365,6 +365,15 @@ export interface WaterAnalysisReport {
 export interface FoodWasteAnalysisReport { metrics: { food_waste_index: number; food_efficiency_score: number; monthly_waste_cost: number; annual_waste_cost: number; carbon_footprint_kg: number; methane_emissions_kg: number; water_footprint_loss_liters: number; food_recovery_potential_egp: number; sustainability_rating: string; }; ai_waste_analysis: { primary_causes: string[]; behavioral_insights: string; }; ai_financial_insights: { monthly_savings_potential: number; annual_savings_potential: number; redirect_suggestions: string[]; }; ai_supply_chain_diagnosis: { most_inefficient_stage: string; stage_breakdown_percentages: { purchase: number; storage: number; preparation: number; consumption: number; disposal: number; }; bottleneck_explanation: string; }; ai_optimization_plan: { immediate_actions: string[]; long_term_habits: string[]; }; }
 
 export interface EwasteAnalysisReport {
+    device_identity: {
+        normalized_name: string;
+        category: string;
+        brand: string;
+        model: string;
+        identification_confidence: number;
+        evidence_basis: string;
+        market_data_status: string;
+    };
     device_health_score: number;
     device_grade: 'Grade A' | 'Grade B' | 'Grade C' | 'Grade D' | 'Grade E';
     circular_economy_score: number;

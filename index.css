@@ -29,20 +29,20 @@
 
   :root[data-theme='light'] {
     color-scheme: light;
-    --background: #f5f8f6;
-    --foreground: #10211c;
-    --surface: #ffffff;
-    --surface-foreground: #10211c;
-    --surface-secondary: #eaf3ef;
-    --surface-tertiary: #dbece5;
-    --muted: #587066;
-    --accent: #078d68;
+    --background: #edf4f1;
+    --foreground: #13241f;
+    --surface: #f8fbf9;
+    --surface-foreground: #13241f;
+    --surface-secondary: #e5efeb;
+    --surface-tertiary: #d8e8e1;
+    --muted: #5d7169;
+    --accent: #0b8062;
     --accent-foreground: #ffffff;
-    --success: #078d68;
-    --warning: #b56b00;
-    --danger: #c93655;
-    --border: rgba(7, 57, 43, 0.12);
-    --focus: #078d68;
+    --success: #0b8062;
+    --warning: #9b650e;
+    --danger: #b83f58;
+    --border: rgba(11, 83, 63, 0.13);
+    --focus: #0b8062;
   }
 
   html {
@@ -117,7 +117,32 @@
   }
 
   .light-mode body {
-    @apply bg-[#f5f8f6] text-slate-950;
+    @apply bg-[#edf4f1] text-slate-950;
+    background-image:
+      radial-gradient(circle at 88% 0%, rgba(33, 151, 116, 0.075), transparent 34rem),
+      linear-gradient(180deg, #f1f7f4 0%, #eaf2ee 100%);
+  }
+
+  .light-mode .bg-white {
+    background-color: #f8fbf9 !important;
+  }
+
+  select {
+    color-scheme: dark;
+  }
+
+  .light-mode select {
+    color-scheme: light;
+  }
+
+  select option {
+    color: #edf9f5;
+    background: #0d1916;
+  }
+
+  .light-mode select option {
+    color: #173029;
+    background: #f8fbf9;
   }
 
   *, *::before, *::after {
@@ -258,11 +283,65 @@
     font-family: 'Manrope', 'IBM Plex Sans Arabic', system-ui, sans-serif;
   }
 
+  .recharts-wrapper {
+    direction: ltr !important;
+    max-width: 100%;
+  }
+
+  .recharts-surface {
+    overflow: visible;
+  }
+
   html[dir='rtl'] .recharts-wrapper,
   html[dir='rtl'] .recharts-surface,
   html[dir='rtl'] .recharts-layer,
   html[dir='rtl'] .recharts-text {
     font-family: 'IBM Plex Sans Arabic', 'Manrope', system-ui, sans-serif;
+    unicode-bidi: plaintext;
+  }
+
+  html[dir='rtl'] .recharts-legend-wrapper {
+    direction: rtl;
+  }
+
+  .recharts-legend-wrapper {
+    max-width: 100%;
+  }
+
+  .recharts-default-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.35rem 0.8rem;
+  }
+
+  .recharts-legend-item {
+    margin-inline: 0 !important;
+    white-space: nowrap;
+  }
+
+  .kairo-chart {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    background-color: var(--surface);
+    background-image: linear-gradient(180deg, rgba(43, 212, 167, 0.025), transparent 42%);
+  }
+
+  .kairo-chart .recharts-cartesian-axis-tick-value {
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  @media (max-width: 640px) {
+    .kairo-chart .recharts-cartesian-axis-tick-value {
+      font-size: 9px;
+    }
+
+    .recharts-default-legend {
+      font-size: 10px;
+    }
   }
 
   .recharts-cartesian-grid line {
@@ -297,8 +376,8 @@
   }
 
   .light-mode .kairo-glass {
-    @apply border-slate-900/[0.08] bg-white/70;
-    box-shadow: 0 18px 60px rgba(13, 54, 43, 0.07), inset 0 1px 0 #fff;
+    @apply border-emerald-950/[0.09] bg-[#f8fbf9]/85;
+    box-shadow: 0 18px 60px rgba(13, 54, 43, 0.06), inset 0 1px 0 rgba(255,255,255,.72);
   }
 
   .kairo-grid {

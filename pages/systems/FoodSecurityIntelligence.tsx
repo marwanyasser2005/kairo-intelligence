@@ -237,7 +237,16 @@ const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, set
                         <div className={`${bgCard} border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'مؤشر كفاءة الطعام' : 'Efficiency Score'}</div>
                             <div className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-500">{advancedReport.metrics.food_efficiency_score}%</div>
-                            <div className={`text-xs mt-2 font-bold ${getScoreColor(advancedReport.metrics.sustainability_rating)}`}>{advancedReport.metrics.sustainability_rating}</div>
+                            <div className={`text-xs mt-2 font-bold ${getScoreColor(advancedReport.metrics.sustainability_rating)}`}>
+                                {language === 'ar'
+                                    ? ({
+                                        Excellent: 'ممتاز',
+                                        Good: 'جيد',
+                                        'Needs Improvement': 'يحتاج تحسين',
+                                        Poor: 'ضعيف',
+                                      } as Record<string, string>)[advancedReport.metrics.sustainability_rating] || advancedReport.metrics.sustainability_rating
+                                    : advancedReport.metrics.sustainability_rating}
+                            </div>
                         </div>
                         <div className={`${bgCard} border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'خسارة مالية سنوية' : 'Annual Waste Cost'}</div>
@@ -260,21 +269,21 @@ const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, set
                                     <h2 className={`text-xl font-bold ${textMain}`}>{language === 'ar' ? 'تشخيص الذكاء الاصطناعي: سلسلة الإمداد' : 'AI Supply Chain Diagnosis'}</h2>
                                 </div>
                                 <div className="grid md:grid-cols-2 gap-8 items-center">
-                                    <div className="h-64">
+                                    <div className="kairo-chart h-72 p-3" dir="ltr">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <RePieChart>
-                                                <Pie data={[{ name: language==='ar'?'شراء':'Purchase', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.purchase || 0 }, { name: language==='ar'?'تخزين':'Storage', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.storage || 0 }, { name: language==='ar'?'تحضير':'Prep', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.preparation || 0 }, { name: language==='ar'?'استهلاك':'Consumption', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.consumption || 0 }, { name: language==='ar'?'تخلص':'Disposal', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.disposal || 0 }]} cx="50%" cy="50%" innerRadius={70} outerRadius={90} paddingAngle={2} dataKey="value">
+                                                <Pie data={[{ name: language==='ar'?'الشراء':'Purchase', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.purchase || 0 }, { name: language==='ar'?'التخزين':'Storage', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.storage || 0 }, { name: language==='ar'?'التحضير':'Preparation', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.preparation || 0 }, { name: language==='ar'?'الاستهلاك':'Consumption', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.consumption || 0 }, { name: language==='ar'?'التخلص':'Disposal', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.disposal || 0 }]} cx="50%" cy="44%" innerRadius={55} outerRadius={78} paddingAngle={3} dataKey="value">
                                                     {COLORS.map((c, i) => <Cell key={i} fill={c} />)}
                                                 </Pie>
                                                 <RechartsTooltip contentStyle={{ backgroundColor: isLight ? '#fff' : '#1e293b', borderRadius: '12px', borderColor: isLight?'#e2e8f0':'#334155', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                                <Legend verticalAlign="bottom" height={36}/>
+                                                <Legend verticalAlign="bottom" height={48} iconType="circle" iconSize={8} />
                                             </RePieChart>
                                         </ResponsiveContainer>
                                     </div>
                                     <div>
                                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-500 font-bold text-xs uppercase mb-4 border border-red-500/20">
                                             <AlertTriangle className="w-3 h-3" />
-                                            Most Inefficient: {advancedReport.ai_supply_chain_diagnosis?.most_inefficient_stage}
+                                            {language === 'ar' ? 'أكبر نقطة فاقد: ' : 'Largest loss point: '}{advancedReport.ai_supply_chain_diagnosis?.most_inefficient_stage}
                                         </div>
                                         <p className="text-gray-500 text-sm leading-relaxed">{advancedReport.ai_supply_chain_diagnosis?.bottleneck_explanation}</p>
                                     </div>
@@ -293,11 +302,11 @@ const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, set
                         <div className="space-y-6">
                             <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-8">
                                 <h2 className="text-xl font-bold text-green-500 mb-6">{language === 'ar' ? 'خطة التحسين' : 'Optimization Plan'}</h2>
-                                <h4 className="text-xs font-bold uppercase text-gray-500 mb-3">Immediate</h4>
+                                <h4 className="text-xs font-bold uppercase text-gray-500 mb-3">{language === 'ar' ? 'ابدأ بها الآن' : 'Immediate'}</h4>
                                 <ul className="space-y-2 mb-6">
                                     {advancedReport.ai_optimization_plan?.immediate_actions?.map((act: any, i: any) => <li key={i} className={`text-sm flex gap-2 ${textMain}`}>• {act}</li>)}
                                 </ul>
-                                <h4 className="text-xs font-bold uppercase text-gray-500 mb-3">Long-term</h4>
+                                <h4 className="text-xs font-bold uppercase text-gray-500 mb-3">{language === 'ar' ? 'عادات طويلة المدى' : 'Long-term'}</h4>
                                 <ul className="space-y-2">
                                     {advancedReport.ai_optimization_plan?.long_term_habits?.map((act: any, i: any) => <li key={i} className={`text-sm flex gap-2 ${textMain}`}>• {act}</li>)}
                                 </ul>
@@ -311,7 +320,7 @@ const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, set
                                     </div>
                                     <div className="text-center">
                                         <div className="text-xs font-bold text-orange-500 uppercase">Projected Savings</div>
-                                        <div className="text-2xl font-bold text-orange-600">+ {((advancedReport.metrics.annual_waste_cost * reductionTarget) / 100).toLocaleString()} EGP</div>
+                                        <div className="text-2xl font-bold text-orange-600">+ {((advancedReport.metrics.annual_waste_cost * reductionTarget) / 100).toLocaleString()} {language === 'ar' ? 'جنيه' : 'EGP'}</div>
                                     </div>
                                     {reductionTarget > 0 && <button onClick={handleRunAnalysis} disabled={loading} className="w-full py-2 bg-black/5 dark:bg-white/5 rounded-lg text-sm font-bold">Recalculate Model</button>}
                                 </div>

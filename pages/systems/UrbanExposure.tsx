@@ -76,7 +76,7 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
   const inputBg = isLight ? 'bg-white border-gray-200' : 'bg-black border-white/20';
 
   return (
-    <div className={`min-h-screen pt-32 lg:pt-36 px-6 pb-20 transition-colors duration-500 ${isLight ? 'bg-gray-50' : 'bg-black'}`} dir={dir}>
+    <div className={`min-h-screen pt-32 lg:pt-36 px-6 pb-20 transition-colors duration-500 ${isLight ? 'bg-[#edf4f1]' : 'bg-black'}`} dir={dir}>
       <div className="max-w-6xl mx-auto">
         <CapabilityContext capabilityId="exposure" />
         
@@ -229,7 +229,10 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
                                                 {report.estimated_aqi || 0}
                                             </div>
                                             <div className="inline-block px-2 py-1 rounded bg-white/10 text-xs font-bold text-gray-300 mt-2">
-                                                Risk: {report.risk_level || 'Unknown'}
+                                                {language === 'ar' ? 'مستوى التعرض: ' : 'Risk: '}
+                                                {language === 'ar'
+                                                    ? ({ Low: 'منخفض', Moderate: 'متوسط', High: 'مرتفع', Critical: 'حرج' } as Record<string, string>)[report.risk_level || ''] || 'غير محدد'
+                                                    : report.risk_level || 'Unknown'}
                                             </div>
                                         </div>
                                         <div className="text-left md:text-right">

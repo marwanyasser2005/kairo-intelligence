@@ -7,6 +7,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  LabelList,
   ResponsiveContainer,
   Tooltip as ChartTooltip,
   XAxis,
@@ -308,9 +309,27 @@ const Dashboard: React.FC<DashboardProps> = ({
       kairoCapabilities
         .map((capability) => ({
           id: capability.id,
-          name: localize(capability.title, currentLanguage)
-            .replace('KAIRO SIGNALS · ', '')
-            .replace('ReKairo ', ''),
+          name: isAr
+            ? {
+                foresight: 'الاستباق البيئي',
+                water: 'المياه',
+                food: 'الغذاء',
+                energy: 'الطاقة',
+                mobility: 'التنقل',
+                exposure: 'جودة الهواء',
+                ewaste: 'الاقتصاد الدائري',
+                scenarios: 'السيناريوهات',
+              }[capability.id]
+            : {
+                foresight: 'Foresight',
+                water: 'Water',
+                food: 'Food',
+                energy: 'Energy',
+                mobility: 'Mobility',
+                exposure: 'Air quality',
+                ewaste: 'Circularity',
+                scenarios: 'Scenarios',
+              }[capability.id],
           value: Math.max(
             0,
             Math.min(100, Number(capabilityStates[capability.id].score || 0)),
@@ -318,7 +337,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           ready: capabilityStates[capability.id].ready,
         }))
         .filter((item) => item.ready && item.value > 0),
-    [capabilityStates, currentLanguage],
+    [capabilityStates, isAr],
   );
   const costChartData = useMemo(
     () =>
@@ -494,13 +513,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {scoreChartData.length} {isAr ? 'مؤشرات جاهزة' : 'scores ready'}
               </span>
             </div>
-            <div className="h-[310px] p-4 sm:p-6">
+            <div className="kairo-chart m-4 h-[350px] min-w-0 p-4 sm:m-6 sm:p-5" dir="ltr">
               {scoreChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={scoreChartData}
                     layout="vertical"
-                    margin={{ top: 4, right: 24, left: isAr ? 12 : 8, bottom: 0 }}
+                    margin={{ top: 8, right: 54, left: 18, bottom: 8 }}
                   >
                     <CartesianGrid
                       strokeDasharray="3 6"
@@ -517,10 +536,15 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <YAxis
                       dataKey="name"
                       type="category"
-                      width={isAr ? 128 : 118}
+                      width={isAr ? 118 : 104}
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fill: isLight ? '#334155' : '#cbd5e1', fontSize: 11, fontWeight: 700 }}
+                      tick={{
+                        fill: isLight ? '#334155' : '#cbd5e1',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        textAnchor: 'end',
+                      }}
                     />
                     <ChartTooltip
                       cursor={{ fill: 'rgba(43,212,167,.055)' }}
@@ -540,6 +564,14 @@ const Dashboard: React.FC<DashboardProps> = ({
                           fill={['#2bd4a7', '#38bdf8', '#facc15', '#a78bfa', '#22d3ee'][index % 5]}
                         />
                       ))}
+                      <LabelList
+                        dataKey="value"
+                        position="right"
+                        formatter={(value: number) => `${Math.round(value)}`}
+                        fill={isLight ? '#36574c' : '#d3e7df'}
+                        fontSize={10}
+                        fontWeight={800}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -568,10 +600,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                   : 'Water, food, and energy show estimated loss; mobility shows current monthly cost.'}
               </p>
             </div>
-            <div className="h-[310px] p-4 sm:p-6">
+            <div className="kairo-chart m-4 h-[350px] min-w-0 p-4 sm:m-6 sm:p-5" dir="ltr">
               {costChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={costChartData} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+                  <BarChart data={costChartData} margin={{ top: 12, right: 12, left: 0, bottom: 8 }}>
                     <CartesianGrid
                       strokeDasharray="3 6"
                       vertical={false}
@@ -606,6 +638,14 @@ const Dashboard: React.FC<DashboardProps> = ({
                       {costChartData.map((entry) => (
                         <Cell key={entry.name} fill={entry.color} />
                       ))}
+                      <LabelList
+                        dataKey="value"
+                        position="top"
+                        formatter={(value: number) => Number(value).toLocaleString(isAr ? 'ar-EG' : 'en-GB')}
+                        fill={isLight ? '#36574c' : '#d3e7df'}
+                        fontSize={10}
+                        fontWeight={800}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>

@@ -30,6 +30,16 @@ street slang, untranslated English, decorative punctuation, and exaggerated clai
 Distinguish measurements, user inputs, derived indicators, forecasts, and AI estimates.
 `;
 
+const KAIRO_EVIDENCE_RULES = `
+Evidence rules:
+- Never present an inferred number as a live measurement or a verified market price.
+- Use only the supplied inputs for calculations. If an input is missing, state the assumption in the available explanation field.
+- Keep scores between 0 and 100 and keep percentage breakdowns internally consistent.
+- Separate observed condition, derived score, estimate, and recommendation.
+- Prefer a specific next action with a measurable reason over generic sustainability advice.
+- Do not claim access to live tariffs, Google results, sensor feeds, or current market listings unless such evidence is explicitly supplied.
+`;
+
 // --- SCHEMAS ---
 
 const EXPOSURE_SCHEMA = {
@@ -448,6 +458,19 @@ const FOOD_SCHEMA = { type: 'OBJECT', properties: { metrics: { type: 'OBJECT', p
 const EWASTE_SCHEMA = {
     type: "OBJECT",
     properties: {
+        device_identity: {
+            type: "OBJECT",
+            properties: {
+                normalized_name: { type: "STRING" },
+                category: { type: "STRING" },
+                brand: { type: "STRING" },
+                model: { type: "STRING" },
+                identification_confidence: { type: "NUMBER" },
+                evidence_basis: { type: "STRING" },
+                market_data_status: { type: "STRING" }
+            },
+            required: ["normalized_name", "category", "brand", "model", "identification_confidence", "evidence_basis", "market_data_status"]
+        },
         device_health_score: { type: "NUMBER" },
         device_grade: { type: "STRING", enum: ['Grade A', 'Grade B', 'Grade C', 'Grade D', 'Grade E'] },
         circular_economy_score: { type: "NUMBER" },
@@ -521,7 +544,7 @@ const EWASTE_SCHEMA = {
         },
         ai_executive_recommendation: { type: "STRING" }
     },
-    required: ["device_health_score", "device_grade", "circular_economy_score", "device_longevity_index", "recommended_pathway", "pathway_reasoning", "alternative_pathways", "economic_analysis", "environmental_impact", "urban_mining_potential", "security_risk_assessment", "ai_executive_recommendation"]
+    required: ["device_identity", "device_health_score", "device_grade", "circular_economy_score", "device_longevity_index", "recommended_pathway", "pathway_reasoning", "alternative_pathways", "economic_analysis", "environmental_impact", "urban_mining_potential", "security_risk_assessment", "ai_executive_recommendation"]
 };
 
 const BILL_SCHEMA = {
@@ -542,6 +565,7 @@ const EWASTE_OCR_SCHEMA = {
     properties: {
         deviceType: { type: "STRING" },
         brand: { type: "STRING" },
+        model: { type: "STRING" },
         purchaseYear: { type: "NUMBER" },
         approximatePurchasePrice: { type: "NUMBER" },
         batteryHealth: { type: "NUMBER" }
@@ -565,7 +589,7 @@ export const runExposureAgent = async (inputs: ExposureAgentInputs, language: st
     const langInstruction = language === 'ar' 
         ? KAIRO_ARABIC_STYLE
         : "Output in English.";
-    const prompt = `ROLE: Environmental Analyst. TASK: Estimate exposure. ${langInstruction} DATA: ${JSON.stringify(inputs)}`;
+    const prompt = `ROLE: Environmental Analyst. TASK: Estimate exposure. ${langInstruction} ${KAIRO_EVIDENCE_RULES} DATA: ${JSON.stringify(inputs)}`;
     return generateFromAPI(prompt, EXPOSURE_SCHEMA);
 };
 
@@ -619,6 +643,7 @@ export const runEnergyAnalysis = async (inputs: EnergyAnalysisInputs, language: 
         5. Populate the scenarios with realistic estimates for Return on Investment (ROI) and cost/emissions savings if applied.
         
         ${langInstructions}
+        ${KAIRO_EVIDENCE_RULES}
     `;
 
     return generateFromAPI(prompt, ENERGY_SCHEMA);
@@ -626,7 +651,7 @@ export const runEnergyAnalysis = async (inputs: EnergyAnalysisInputs, language: 
 
 export const runMobilityIntelligence = async (inputs: MobilityInputs, language: string = 'en'): Promise<MobilityIntelligenceReport> => {
     const langPrompt = language === 'ar' ? `${KAIRO_ARABIC_STYLE} Use جنيه for savings and familiar Egyptian mobility context such as الزحام والمترو when relevant.` : "Output in English. Use EGP for cost. Assume Egyptian traffic contexts.";
-    const prompt = `ROLE: Mobility Intelligence & Urban Transportation Optimization System Analyst. TASK: Generate a highly detailed mobility analysis for user with the following profile: ${JSON.stringify(inputs)}. ${langPrompt} Return JSON.`;
+    const prompt = `ROLE: Mobility Intelligence & Urban Transportation Optimization System Analyst. TASK: Generate a highly detailed mobility analysis for user with the following profile: ${JSON.stringify(inputs)}. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Return JSON.`;
     return generateFromAPI(prompt, MOBILITY_SCHEMA);
 };
 
@@ -647,15 +672,23 @@ export const runWaterAnalysis = async (inputs: WaterAnalysisInputs, language: st
         ? `${KAIRO_ARABIC_STYLE} Use Egyptian water context, جنيه, and the accessible term ترشيد المياه.`
         : "Output in English. Be highly professional.";
     
-    const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Water Resource Management. TASK: Perform advanced AI water efficiency and scarcity analysis based on realistic household/corporate data. Avoid engineering assumptions like counting leaky drops; use holistic smart analysis of behavioral signs, bills, and facility types. DATA: ${JSON.stringify(inputs)}. ${langPrompt} Return highly structured, insightful JSON.`;
+    const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Water Resource Management. TASK: Perform advanced AI water efficiency and scarcity analysis based on realistic household/corporate data. Avoid engineering assumptions like counting leaky drops; use holistic smart analysis of behavioral signs, bills, and facility types. DATA: ${JSON.stringify(inputs)}. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Return highly structured, insightful JSON.`;
     return generateFromAPI(prompt, WATER_SCHEMA);
 };
 
-export const runFoodWasteAnalysis = async (inputs: any, language: string = 'en'): Promise<any> => { const langPrompt = language === 'ar' ? `${KAIRO_ARABIC_STYLE} Focus on familiar purchasing, storage, and consumption behavior.` : 'Output in English.'; const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Supply Chain. TASK: Analyze household food waste impact conceptually and practically. DATA: ${JSON.stringify(inputs)}. ${langPrompt} Provide deep, realistic insights. Return JSON.`; return generateFromAPI(prompt, FOOD_SCHEMA); };
+export const runFoodWasteAnalysis = async (inputs: any, language: string = 'en'): Promise<any> => { const langPrompt = language === 'ar' ? `${KAIRO_ARABIC_STYLE} Focus on familiar purchasing, storage, and consumption behavior.` : 'Output in English.'; const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Supply Chain. TASK: Analyze household food waste impact conceptually and practically. DATA: ${JSON.stringify(inputs)}. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Provide deep, realistic insights. Return JSON.`; return generateFromAPI(prompt, FOOD_SCHEMA); };
 
 export const runEwasteAnalysis = async (inputString: string, language: string = 'en'): Promise<EwasteAnalysisReport> => {
     const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
-    const prompt = `ROLE: Circular Economy Consultant, E-Waste Lifecycle Analyst & Sustainability Intelligence Architect. TASK: Perform an advanced Lifecycle Assessment of the electronic device based on the provided inputs. Formulate a Circular Pathway analyzing Economic Value, Refurbish ROI, Sustainability Impact, and Urban Mining possibilities. Use realistic market data for EGP values and CO2 estimates. Include Security & Data Risk Assessment. The output should be highly detailed and professional. DATA: ${inputString}. ${langPrompt} Return JSON.`;
+    const prompt = `ROLE: Circular Economy Consultant, E-Waste Lifecycle Analyst & Sustainability Intelligence Architect.
+TASK: Perform an advanced lifecycle assessment of the supplied electronic device.
+First normalize the device identity from category, brand, model, year, and any OCR evidence. Do not invent an exact model when it was not provided; lower identification_confidence and explain the evidence basis.
+Treat all EGP values as transparent estimates derived from purchase price, age, condition, accessories, and repairability. market_data_status must explicitly say whether the result is user-input-derived, catalog-assisted, or lacks live market verification.
+Assess repairability, remaining useful life, data-security risk, economic value, circular pathway, and urban-mining potential. Recommend recycling only when continued use, repair, refurbishment, donation, or resale is not reasonable.
+DATA: ${inputString}.
+${langPrompt}
+${KAIRO_EVIDENCE_RULES}
+Return JSON.`;
     return generateFromAPI(prompt, EWASTE_SCHEMA);
 };
 
@@ -712,8 +745,8 @@ export interface FoodReceiptExtraction {
 export const analyzeEwasteOCR = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<any> => {
     try {
         const prompt = language === 'ar' 
-            ? 'قم بتحليل هذه الصورة للجهاز الإلكتروني أو فاتورة الشراء أو تقرير صحة البطارية. استخرج أكبر قدر ممكن من المعلومات: نوع الجهاز (deviceType: الهاتف، اللابتوب...)، الماركة (brand)، سنة الشراء (purchaseYear)، السعر التقريبي (approximatePurchasePrice)، وصحة البطارية (batteryHealth) إذا وجدت. قم بإرجاع JSON فقط بدون Markdown. Keys: deviceType, brand, purchaseYear, approximatePurchasePrice, batteryHealth.'
-            : 'Analyze this image of an electronic device, purchase receipt, or battery health report. Extract as much information as possible: device type (deviceType like Smartphone, Laptop, etc.), brand, purchase year (purchaseYear), approximate purchase price (approximatePurchasePrice), and battery health (batteryHealth) if available. Return ONLY raw JSON. Keys: deviceType, brand, purchaseYear, approximatePurchasePrice, batteryHealth.';
+            ? 'حلّل صورة الجهاز الإلكتروني أو فاتورة الشراء أو تقرير صحة البطارية. استخرج فقط المعلومات الظاهرة أو التي يمكن قراءتها بثقة: نوع الجهاز (deviceType)، الماركة (brand)، الموديل الدقيق (model)، سنة الشراء (purchaseYear)، السعر المذكور أو التقريبي (approximatePurchasePrice)، وصحة البطارية (batteryHealth). لا تخمّن موديلًا غير ظاهر. أرجع JSON فقط بدون Markdown. Keys: deviceType, brand, model, purchaseYear, approximatePurchasePrice, batteryHealth.'
+            : 'Analyze this electronic-device image, receipt, or battery-health report. Extract only visible or confidently readable information: deviceType, brand, exact model, purchaseYear, stated or approximatePurchasePrice, and batteryHealth. Do not invent a model that is not visible. Return raw JSON only. Keys: deviceType, brand, model, purchaseYear, approximatePurchasePrice, batteryHealth.';
         return await generateFromAPI(prompt, EWASTE_OCR_SCHEMA, undefined, base64Image, imageMimeType);
     } catch (e) {
         console.error('OCR Extraction failed:', e);

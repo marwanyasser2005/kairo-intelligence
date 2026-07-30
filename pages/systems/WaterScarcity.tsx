@@ -10,7 +10,7 @@ import ModuleToolbar from '../../components/ModuleToolbar';
 import { exportAsPdf } from '../../utils/export';
 import BillUploader from '../../components/BillUploader';
 import CapabilityContext from '../../components/CapabilityContext';
-import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
+import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 
 const MotionDiv = motion.div as any;
 const COLORS = ['#38bdf8', '#ef4444', '#94a3b8']; // User, Benchmark, National
@@ -112,6 +112,22 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
             case 'High Risk': return 'text-red-500';
             default: return 'text-blue-500';
         }
+    };
+    const localizeLevel = (value: string) => {
+        if (language !== 'ar') return value;
+        return ({
+            Excellent: 'ممتاز',
+            'Very Good': 'جيد جدًا',
+            Good: 'جيد',
+            'Needs Improvement': 'يحتاج تحسين',
+            'High Risk': 'مخاطرة مرتفعة',
+            High: 'مرتفع',
+            Medium: 'متوسط',
+            Low: 'منخفض',
+            Zero: 'بدون تكلفة',
+            Fast: 'سريع',
+            Slow: 'يحتاج وقتًا',
+        } as Record<string, string>)[value] || value;
     };
 
     return (
@@ -382,7 +398,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                         <div className={`${bgCard} border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'مستوى المخاطرة' : 'Risk Level'}</div>
                             <div className={`text-2xl mt-2 font-bold ${getRiskColor(report.metrics?.water_risk_level || '')}`}>
-                                {report.metrics?.water_risk_level || 'N/A'}
+                                {localizeLevel(report.metrics?.water_risk_level || (language === 'ar' ? 'غير متاح' : 'N/A'))}
                             </div>
                         </div>
                     </div>
@@ -395,7 +411,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                     <Scale className="w-5 h-5 text-blue-500" />
                                     {language === 'ar' ? 'مقارنة مرجعية' : 'Benchmarking'}
                                 </h2>
-                                <div className="h-64">
+                                <div className="kairo-chart h-72 p-3" dir="ltr">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart
                                             data={[
@@ -403,16 +419,16 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                                 { name: language==='ar'?'منازل مشابهة':'Similar Avg', liters: report.benchmarks?.similar_household_avg_liters || 0, fill: '#38bdf8' },
                                                 { name: language==='ar'?'استهلاكك':'Your Usage', liters: report.benchmarks?.user_estimated_liters || 0, fill: '#ef4444' }
                                             ]}
-                                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                                            margin={{ top: 24, right: 12, left: 0, bottom: 14 }}
                                             barSize={40}
                                         >
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isLight ? '#e2e8f0' : '#334155'} />
-                                            <XAxis dataKey="name" tick={{fill: isLight ? '#64748b' : '#94a3b8', fontSize: 12, fontWeight: 'bold'}} axisLine={false} tickLine={false} />
+                                            <XAxis dataKey="name" interval={0} tickMargin={10} tick={{fill: isLight ? '#526b62' : '#a9bbb4', fontSize: 11, fontWeight: 'bold'}} axisLine={false} tickLine={false} />
                                             <YAxis tick={{fill: isLight ? '#64748b' : '#94a3b8', fontSize: 12}} axisLine={false} tickLine={false} />
                                             <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{backgroundColor: isLight?'#fff':'#1e293b', borderRadius: '12px', borderColor: isLight?'#e2e8f0':'#334155', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-                                            <Legend wrapperStyle={{ paddingTop: '20px' }} />
                                             <Bar dataKey="liters" name={language === 'ar' ? 'لتر/شهر' : 'Liters/Mo'} radius={[6, 6, 0, 0]}>
-                                                {COLORS.map((c, i) => <Cell key={i} />)}
+                                                {COLORS.map((color, index) => <Cell key={color} fill={color} />)}
+                                                <LabelList dataKey="liters" position="top" fill={isLight ? '#36574c' : '#d3e7df'} fontSize={10} fontWeight={800} />
                                             </Bar>
                                         </BarChart>
                                     </ResponsiveContainer>
@@ -435,13 +451,13 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                                 <h4 className={`text-sm font-bold mb-2 ${textMain}`}>{rec.action}</h4>
                                                 <div className="flex gap-3 text-xs">
                                                     <span className={`px-2 py-1 rounded border ${rec.impact === 'High' ? 'bg-green-500/10 text-green-600 border-green-500/20' : 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300'}`}>
-                                                        {language === 'ar' ? 'التأثير: ' : 'Impact: '} {rec.impact}
+                                                        {language === 'ar' ? 'التأثير: ' : 'Impact: '} {localizeLevel(rec.impact)}
                                                     </span>
                                                     <span className={`px-2 py-1 rounded border bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300`}>
-                                                        {language === 'ar' ? 'التكلفة: ' : 'Cost: '} {rec.cost}
+                                                        {language === 'ar' ? 'التكلفة: ' : 'Cost: '} {localizeLevel(rec.cost)}
                                                     </span>
                                                     <span className={`px-2 py-1 rounded border bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300`}>
-                                                        {language === 'ar' ? 'السرعة: ' : 'Speed: '} {rec.speed}
+                                                        {language === 'ar' ? 'التنفيذ: ' : 'Speed: '} {localizeLevel(rec.speed)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -493,7 +509,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                             <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-black/5 dark:bg-white/5">
                                                 <div className={`text-sm font-bold ${textMain}`}>{scenario.label}</div>
                                                 <div className="text-right">
-                                                    <div className={`text-sm font-bold ${scenario.color}`}>-{(scenario.data?.savings_egp || 0).toLocaleString()} EGP</div>
+                                                    <div className={`text-sm font-bold ${scenario.color}`}>-{(scenario.data?.savings_egp || 0).toLocaleString()} {language === 'ar' ? 'جنيه' : 'EGP'}</div>
                                                     <div className="text-xs text-gray-500">-{(scenario.data?.savings_liters || 0).toLocaleString()} L</div>
                                                 </div>
                                             </div>

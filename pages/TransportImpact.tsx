@@ -20,6 +20,67 @@ interface TransportImpactProps {
     setGlobalReport?: (report: MobilityIntelligenceReport | null) => void;
 }
 
+const AR_OPTION_LABELS: Record<string, string> = {
+    Employee: 'موظف',
+    Student: 'طالب',
+    'Hybrid Worker': 'عمل هجين',
+    'Field Worker': 'عمل ميداني',
+    'Business Owner': 'صاحب عمل',
+    Freelancer: 'عمل حر',
+    Remote: 'عمل عن بُعد',
+    Cairo: 'القاهرة',
+    Giza: 'الجيزة',
+    Alexandria: 'الإسكندرية',
+    Dakahlia: 'الدقهلية',
+    Sharqia: 'الشرقية',
+    Assiut: 'أسيوط',
+    Aswan: 'أسوان',
+    Other: 'أخرى',
+    Metro: 'مترو',
+    Train: 'قطار',
+    Bus: 'أتوبيس',
+    Microbus: 'ميكروباص',
+    'Private Car': 'سيارة خاصة',
+    Uber: 'أوبر',
+    Careem: 'كريم',
+    Motorcycle: 'دراجة نارية',
+    Walking: 'مشي',
+    Bicycle: 'دراجة',
+    'Same as Primary': 'نفس وسيلة الذهاب',
+    Direct: 'مباشر من غير تبديل',
+    '1 Transfer': 'تبديل واحد',
+    '2 Transfers': 'تبديلان',
+    '3+': '3 تبديلات أو أكثر',
+    'Complex Route': 'مسار متعدد المراحل',
+    '< 15 min': 'أقل من 15 دقيقة',
+    '15-30': 'من 15 إلى 30 دقيقة',
+    '30-60': 'من 30 إلى 60 دقيقة',
+    '60-90': 'من 60 إلى 90 دقيقة',
+    '90+': 'أكثر من 90 دقيقة',
+    'Under 300': 'أقل من 300 جنيه',
+    '300-600': '300–600 جنيه',
+    '600-1000': '600–1000 جنيه',
+    '1000-2000': '1000–2000 جنيه',
+    '2000+': 'أكثر من 2000 جنيه',
+    Low: 'منخفض',
+    Moderate: 'متوسط',
+    High: 'مرتفع',
+    Extreme: 'شديد جدًا',
+    Gasoline: 'بنزين',
+    Diesel: 'سولار',
+    'Natural Gas': 'غاز طبيعي',
+    Hybrid: 'هجين',
+    Electric: 'كهربائي',
+    'Before 2010': 'قبل 2010',
+    '2010-2015': '2010–2015',
+    '2016-2020': '2016–2020',
+    '2021+': '2021 أو أحدث',
+    Always: 'دائمًا',
+    Frequently: 'غالبًا',
+    Occasionally: 'أحيانًا',
+    Never: 'أبدًا',
+};
+
 const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalReport }) => {
     const { theme, dir, language } = useApp();
     const isLight = theme === 'light';
@@ -53,6 +114,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
     const updateInput = (key: keyof MobilityInputs, value: any) => {
         setInputs(prev => ({ ...prev, [key]: value }));
     };
+    const optionLabel = (value: string) => isAr ? (AR_OPTION_LABELS[value] || value) : value;
 
     const handleAnalysis = async () => {
         setAnalyzing(true);
@@ -89,13 +151,13 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
         }, 1500);
     };
 
-    const bgApp = isLight ? 'bg-[#FAFAFA]' : 'bg-[#0a0a0c]';
-    const textMain = isLight ? 'text-[#111111]' : 'text-slate-100';
-    const textDim = isLight ? 'text-[#666666]' : 'text-[#888888]';
-    const textMuted = isLight ? 'text-[#999999]' : 'text-[#555555]';
-    const borderSubtle = isLight ? 'border-[#EAEAEA]' : 'border-white/[0.04]';
-    const bgCard = isLight ? 'bg-white' : 'bg-[#111114]';
-    const inputBg = isLight ? 'bg-[#F5F5F5] border-transparent text-[#111111] focus:bg-white focus:border-purple-300' : 'bg-white/[0.02] border-white/5 text-slate-100 focus:bg-white/[0.05] focus:border-purple-500/50';
+    const bgApp = isLight ? 'bg-[#edf4f1]' : 'bg-[#0a0a0c]';
+    const textMain = isLight ? 'text-[#173029]' : 'text-slate-100';
+    const textDim = isLight ? 'text-[#526b62]' : 'text-[#a0aaa6]';
+    const textMuted = isLight ? 'text-[#6f827b]' : 'text-[#7b8983]';
+    const borderSubtle = isLight ? 'border-emerald-950/10' : 'border-white/[0.07]';
+    const bgCard = isLight ? 'bg-[#f8fbf9]' : 'bg-[#111714]';
+    const inputBg = isLight ? 'bg-[#eef5f2] border-emerald-950/10 text-[#173029] focus:bg-[#f8fbf9] focus:border-emerald-600/40' : 'bg-white/[0.035] border-white/10 text-slate-100 focus:bg-white/[0.06] focus:border-purple-500/50';
 
     return (
         <div className={`min-h-screen pt-32 lg:pt-36 px-4 lg:px-8 pb-32 transition-colors duration-500 ${bgApp} font-sans`} dir={dir}>
@@ -183,7 +245,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                             <div>
                                                 <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'المهنة' : 'Occupation'}</label>
                                                 <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.occupationType} onChange={(e) => updateInput('occupationType', e.target.value)}>
-                                                    {['Employee', 'Student', 'Hybrid Worker', 'Field Worker', 'Business Owner', 'Freelancer', 'Remote'].map(t => <option key={t} value={t}>{t}</option>)}
+                                                    {['Employee', 'Student', 'Hybrid Worker', 'Field Worker', 'Business Owner', 'Freelancer', 'Remote'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                                 </select>
                                             </div>
                                             <div>
@@ -196,7 +258,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                         <div>
                                             <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'المحافظة' : 'Governorate'}</label>
                                             <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.governorate} onChange={(e) => updateInput('governorate', e.target.value)}>
-                                                {['Cairo', 'Giza', 'Alexandria', 'Dakahlia', 'Sharqia', 'Assiut', 'Aswan', 'Other'].map(t => <option key={t} value={t}>{t}</option>)}
+                                                {['Cairo', 'Giza', 'Alexandria', 'Dakahlia', 'Sharqia', 'Assiut', 'Aswan', 'Other'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                             </select>
                                         </div>
                                     </div>
@@ -210,19 +272,19 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                                 updateInput('primaryTransport', e.target.value);
                                                 updateInput('isCar', e.target.value === 'Private Car');
                                             }}>
-                                                {['Metro', 'Train', 'Bus', 'Microbus', 'Private Car', 'Uber', 'Careem', 'Motorcycle', 'Walking', 'Bicycle'].map(t => <option key={t} value={t}>{t}</option>)}
+                                                {['Metro', 'Train', 'Bus', 'Microbus', 'Private Car', 'Uber', 'Careem', 'Motorcycle', 'Walking', 'Bicycle'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                             </select>
                                         </div>
                                         <div>
                                             <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'المواصلة (عودة)' : 'Return Transport'}</label>
                                             <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.returnTransport} onChange={(e) => updateInput('returnTransport', e.target.value)}>
-                                                {['Same as Primary', 'Metro', 'Train', 'Bus', 'Microbus', 'Private Car', 'Uber', 'Careem', 'Motorcycle', 'Walking'].map(t => <option key={t} value={t}>{t}</option>)}
+                                                {['Same as Primary', 'Metro', 'Train', 'Bus', 'Microbus', 'Private Car', 'Uber', 'Careem', 'Motorcycle', 'Walking'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                             </select>
                                         </div>
                                         <div>
                                             <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'عدد التحويلات' : 'Transfers'}</label>
                                             <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.transfers} onChange={(e) => updateInput('transfers', e.target.value)}>
-                                                {['Direct', '1 Transfer', '2 Transfers', '3+', 'Complex Route'].map(t => <option key={t} value={t}>{t}</option>)}
+                                                {['Direct', '1 Transfer', '2 Transfers', '3+', 'Complex Route'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                             </select>
                                         </div>
                                     </div>
@@ -233,19 +295,19 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                         <div>
                                             <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'وقت التنقل اليومي' : 'Daily Commute Time'}</label>
                                             <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.commuteTime} onChange={(e) => updateInput('commuteTime', e.target.value)}>
-                                                {['< 15 min', '15-30', '30-60', '60-90', '90+'].map(t => <option key={t} value={t}>{t}</option>)}
+                                                {['< 15 min', '15-30', '30-60', '60-90', '90+'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                             </select>
                                         </div>
                                         <div>
                                             <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'الإنفاق الشهري (تقريبي)' : 'Monthly Spending (EGP)'}</label>
                                             <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.monthlySpending} onChange={(e) => updateInput('monthlySpending', e.target.value)}>
-                                                {['Under 300', '300-600', '600-1000', '1000-2000', '2000+'].map(t => <option key={t} value={t}>{t}</option>)}
+                                                {['Under 300', '300-600', '600-1000', '1000-2000', '2000+'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                             </select>
                                         </div>
                                         <div>
                                             <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'التعرض للزحام المروري' : 'Traffic Exposure'}</label>
                                             <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.trafficExposure} onChange={(e) => updateInput('trafficExposure', e.target.value)}>
-                                                {['Low', 'Moderate', 'High', 'Extreme'].map(t => <option key={t} value={t}>{t}</option>)}
+                                                {['Low', 'Moderate', 'High', 'Extreme'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                             </select>
                                         </div>
                                     </div>
@@ -258,13 +320,13 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                                 <div>
                                                     <label className={`block text-[10px] uppercase font-bold !text-purple-600/70 tracking-widest mb-2`}>{isAr ? 'نوع الوقود' : 'Fuel Type'}</label>
                                                     <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg} !border-purple-500/20`} value={inputs.fuelType} onChange={(e) => updateInput('fuelType', e.target.value)}>
-                                                        {['Gasoline', 'Diesel', 'Natural Gas', 'Hybrid', 'Electric'].map(t => <option key={t} value={t}>{t}</option>)}
+                                                        {['Gasoline', 'Diesel', 'Natural Gas', 'Hybrid', 'Electric'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                                     </select>
                                                 </div>
                                                 <div>
                                                     <label className={`block text-[10px] uppercase font-bold !text-purple-600/70 tracking-widest mb-2`}>{isAr ? 'موديل السيارة' : 'Vehicle Year'}</label>
                                                     <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg} !border-purple-500/20`} value={inputs.vehicleYear} onChange={(e) => updateInput('vehicleYear', e.target.value)}>
-                                                        {['Before 2010', '2010-2015', '2016-2020', '2021+'].map(t => <option key={t} value={t}>{t}</option>)}
+                                                        {['Before 2010', '2010-2015', '2016-2020', '2021+'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                                     </select>
                                                 </div>
                                             </div>
@@ -278,7 +340,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                                 <div>
                                                     <label className={`block text-[10px] uppercase font-bold !text-purple-600/70 tracking-widest mb-2`}>{isAr ? 'التكييف' : 'AC Usage'}</label>
                                                     <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg} !border-purple-500/20`} value={inputs.acUsage} onChange={(e) => updateInput('acUsage', e.target.value)}>
-                                                        {['Always', 'Frequently', 'Occasionally', 'Never'].map(t => <option key={t} value={t}>{t}</option>)}
+                                                        {['Always', 'Frequently', 'Occasionally', 'Never'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                                     </select>
                                                 </div>
                                             </div>
@@ -333,19 +395,24 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                     {/* SCORE CARDS */}
                                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                                         {[
-                                            { t: isAr ? 'الكفاءة الحركية' : 'Mobility Efficiency', v: `${report.scores.mobility_efficiency}/100`, i: TargetIcon, c: 'text-emerald-500' },
-                                            { t: isAr ? 'تكلفة التنقل' : 'Monthly Transport Cost', v: `${report.metrics.monthly_cost_egp} EGP`, i: DollarSign, c: 'text-red-500' },
-                                            { t: isAr ? 'الوقت المهدر شهرياً' : 'Monthly Time Lost', v: `${report.metrics.monthly_hours_lost} h`, i: Clock, c: 'text-amber-500' },
-                                            { t: isAr ? 'العبء الكربوني' : 'Monthly Carbon Burden', v: `${report.metrics.monthly_carbon_kg} kg`, i: CloudRain, c: 'text-gray-500' },
-                                            { t: isAr ? 'التعرض الحضري' : 'Urban Exposure Risk', v: report.scores.urban_exposure, i: AlertTriangle, c: 'text-orange-500' },
-                                            { t: isAr ? 'مؤشر هدر المال' : 'Financial Waste Index', v: `${report.scores.financial_waste_index}/100`, i: Activity, c: 'text-rose-500' },
+                                            { t: isAr ? 'كفاءة التنقل' : 'Mobility Efficiency', v: `${report.scores.mobility_efficiency}/100`, p: report.scores.mobility_efficiency, i: TargetIcon, c: 'text-emerald-500', bar: 'bg-emerald-500' },
+                                            { t: isAr ? 'تكلفة التنقل الشهرية' : 'Monthly Transport Cost', v: `${report.metrics.monthly_cost_egp.toLocaleString()} ${isAr ? 'جنيه' : 'EGP'}`, i: DollarSign, c: 'text-red-500' },
+                                            { t: isAr ? 'الوقت المهدر شهريًا' : 'Monthly Time Lost', v: `${report.metrics.monthly_hours_lost} ${isAr ? 'ساعة' : 'hours'}`, i: Clock, c: 'text-amber-500' },
+                                            { t: isAr ? 'الانبعاثات الشهرية' : 'Monthly Carbon Burden', v: `${report.metrics.monthly_carbon_kg} kg CO₂`, i: CloudRain, c: 'text-cyan-500' },
+                                            { t: isAr ? 'التعرض للزحام' : 'Urban Exposure Risk', v: optionLabel(String(report.scores.urban_exposure)), i: AlertTriangle, c: 'text-orange-500' },
+                                            { t: isAr ? 'مؤشر هدر المال' : 'Financial Waste Index', v: `${report.scores.financial_waste_index}/100`, p: report.scores.financial_waste_index, i: Activity, c: 'text-rose-500', bar: 'bg-rose-500' },
                                         ].map((card, i) => (
-                                            <div key={i} className={`p-6 rounded-3xl border ${borderSubtle} ${bgCard} flex flex-col justify-between`}>
+                                            <div key={i} className={`min-w-0 p-5 sm:p-6 rounded-3xl border ${borderSubtle} ${bgCard} flex flex-col justify-between shadow-[0_14px_40px_rgba(10,60,45,.04)]`}>
                                                 <div className="flex justify-between items-start mb-4">
                                                     <span className={`text-[10px] font-bold uppercase tracking-widest ${textMuted} w-2/3`}>{card.t}</span>
                                                     <card.i className={`w-4 h-4 ${card.c}`} />
                                                 </div>
-                                                <div className={`text-2xl md:text-3xl font-black tracking-tight ${textMain}`}>{card.v}</div>
+                                                <div className={`break-words text-xl sm:text-2xl md:text-3xl font-black tracking-tight ${textMain}`}>{card.v}</div>
+                                                {typeof card.p === 'number' && (
+                                                    <div className={`mt-4 h-1.5 overflow-hidden rounded-full ${isLight ? 'bg-emerald-950/8' : 'bg-white/10'}`}>
+                                                        <div className={`h-full rounded-full ${card.bar}`} style={{ width: `${Math.max(0, Math.min(100, card.p))}%` }} />
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -356,11 +423,11 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                         <div className="grid md:grid-cols-3 gap-6 mb-8">
                                             <div>
                                                 <div className={`text-[10px] uppercase font-bold tracking-widest mb-1 ${textMuted}`}>{isAr ? 'توفير مالي' : 'Savings'}</div>
-                                                <div className="text-xl font-black text-emerald-500">+{report.advanced_insights.potential_savings_egp_month * 12} EGP</div>
+                                                <div className="text-xl font-black text-emerald-500">+{(report.advanced_insights.potential_savings_egp_month * 12).toLocaleString()} {isAr ? 'جنيه' : 'EGP'}</div>
                                             </div>
                                             <div>
                                                 <div className={`text-[10px] uppercase font-bold tracking-widest mb-1 ${textMuted}`}>{isAr ? 'استرداد زمني' : 'Time Recovery'}</div>
-                                                <div className="text-xl font-black text-blue-500">+{report.advanced_insights.potential_time_recovery_hours * 12} Hours</div>
+                                                <div className="text-xl font-black text-blue-500">+{report.advanced_insights.potential_time_recovery_hours * 12} {isAr ? 'ساعة' : 'hours'}</div>
                                             </div>
                                             <div>
                                                 <div className={`text-[10px] uppercase font-bold tracking-widest mb-1 ${textMuted}`}>{isAr ? 'تقليل انبعاثات' : 'Carbon Reduction'}</div>

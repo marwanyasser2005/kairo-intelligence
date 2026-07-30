@@ -150,7 +150,7 @@ const CsrDashboard: React.FC = () => {
                         <div className={`flex items-center gap-2 ${textSub}`}><span className="w-3 h-3 rounded-full bg-gray-500"></span> {t.csr.scopeTarget}</div>
                     </div>
                 </div>
-                <div className="h-[300px] w-full">
+                <div className="kairo-chart h-[320px] w-full p-3" dir="ltr">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={chartData}>
                             <defs>

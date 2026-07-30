@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Recycle, Cpu, Smartphone, Laptop, Loader2, ArrowRight, CheckCircle2, Box, RefreshCw, Heart, Trash2, Info, AlertTriangle, Download, Save, AlertOctagon, Network, Scale, TrendingUp, Database, PackageCheck, Battery, Monitor, ShieldCheck, FileText, Camera, UploadCloud, Volume2, Usb, Image as ImageIcon } from 'lucide-react';
+import { Recycle, Cpu, Smartphone, Laptop, Loader2, ArrowRight, CheckCircle2, Box, RefreshCw, Heart, Trash2, Info, AlertTriangle, Download, Save, AlertOctagon, Network, Scale, TrendingUp, Database, PackageCheck, Battery, Monitor, ShieldCheck, FileText, Camera, UploadCloud, Volume2, Usb, Image as ImageIcon, Search, ExternalLink } from 'lucide-react';
 import { runEwasteAnalysis, analyzeEwasteOCR } from '../../services/tokenRouterService';
 import { EwasteAnalysisReport } from '../../types';
 import { usePersistentState } from '../../utils/storage';
@@ -18,6 +18,61 @@ interface EwasteRecyclerProps {
     setGlobalReport?: (report: EwasteAnalysisReport | null) => void;
 }
 
+interface DeviceCatalogEntry {
+    type: string;
+    brand: string;
+    model: string;
+}
+
+const DEVICE_CATALOG: DeviceCatalogEntry[] = [
+    { type: 'Smartphone', brand: 'Apple', model: 'iPhone 16 Pro Max' },
+    { type: 'Smartphone', brand: 'Apple', model: 'iPhone 15 Pro' },
+    { type: 'Smartphone', brand: 'Apple', model: 'iPhone 14' },
+    { type: 'Smartphone', brand: 'Apple', model: 'iPhone 13' },
+    { type: 'Smartphone', brand: 'Samsung', model: 'Galaxy S25 Ultra' },
+    { type: 'Smartphone', brand: 'Samsung', model: 'Galaxy S24 Ultra' },
+    { type: 'Smartphone', brand: 'Samsung', model: 'Galaxy A55 5G' },
+    { type: 'Smartphone', brand: 'Samsung', model: 'Galaxy A35 5G' },
+    { type: 'Smartphone', brand: 'Xiaomi', model: 'Redmi Note 14 Pro' },
+    { type: 'Smartphone', brand: 'Xiaomi', model: 'Redmi Note 13' },
+    { type: 'Smartphone', brand: 'Google', model: 'Pixel 9 Pro' },
+    { type: 'Smartphone', brand: 'Oppo', model: 'Reno 13' },
+    { type: 'Smartphone', brand: 'Huawei', model: 'Pura 70 Pro' },
+    { type: 'Laptop', brand: 'Apple', model: 'MacBook Air M4' },
+    { type: 'Laptop', brand: 'Apple', model: 'MacBook Air M3' },
+    { type: 'Laptop', brand: 'Apple', model: 'MacBook Pro M3' },
+    { type: 'Laptop', brand: 'Dell', model: 'XPS 13' },
+    { type: 'Laptop', brand: 'Dell', model: 'Latitude 7440' },
+    { type: 'Laptop', brand: 'HP', model: 'Spectre x360 14' },
+    { type: 'Laptop', brand: 'HP', model: 'EliteBook 840 G10' },
+    { type: 'Laptop', brand: 'Lenovo', model: 'ThinkPad X1 Carbon Gen 12' },
+    { type: 'Laptop', brand: 'Lenovo', model: 'IdeaPad Slim 5' },
+    { type: 'Laptop', brand: 'Asus', model: 'Zenbook 14 OLED' },
+    { type: 'Laptop', brand: 'Acer', model: 'Swift Go 14' },
+    { type: 'Tablet', brand: 'Apple', model: 'iPad Pro M4' },
+    { type: 'Tablet', brand: 'Apple', model: 'iPad Air M2' },
+    { type: 'Tablet', brand: 'Samsung', model: 'Galaxy Tab S10 Ultra' },
+    { type: 'Gaming Console', brand: 'Sony', model: 'PlayStation 5 Slim' },
+    { type: 'Gaming Console', brand: 'Microsoft', model: 'Xbox Series X' },
+    { type: 'Gaming Console', brand: 'Nintendo', model: 'Switch OLED' },
+    { type: 'Monitor', brand: 'Samsung', model: 'Odyssey G7' },
+    { type: 'Monitor', brand: 'Dell', model: 'UltraSharp U2723QE' },
+    { type: 'Printer', brand: 'HP', model: 'LaserJet Pro M404dn' },
+    { type: 'Router', brand: 'TP-Link', model: 'Archer AX55' },
+];
+
+const DEVICE_TYPE_LABELS: Record<string, string> = {
+    Smartphone: 'هاتف ذكي',
+    Laptop: 'لابتوب',
+    Tablet: 'تابلت',
+    'Desktop PC': 'كمبيوتر مكتبي',
+    Monitor: 'شاشة',
+    Printer: 'طابعة',
+    Router: 'راوتر',
+    'Gaming Console': 'جهاز ألعاب',
+    Other: 'جهاز آخر',
+};
+
 const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport }) => {
     const { t, theme, dir, language } = useApp();
     const isLight = theme === 'light';
@@ -33,6 +88,7 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
     const [deviceType, setDeviceType] = usePersistentState('kre_type', 'Smartphone');
     const [brand, setBrand] = usePersistentState('kre_brand', 'Apple');
     const [model, setModel] = usePersistentState('kre_model', '');
+    const [deviceQuery, setDeviceQuery] = usePersistentState('kre_device_query', '');
     const [purchaseYear, setPurchaseYear] = usePersistentState('kre_year', new Date().getFullYear() - 2);
     const [purchasePrice, setPurchasePrice] = usePersistentState('kre_price', 0);
     const [dailyUsageHours, setDailyUsageHours] = usePersistentState('kre_daily_usage', 4);
@@ -55,11 +111,28 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
     const [cloudLocked, setCloudLocked] = usePersistentState('kre_cloud', false);
     const [unDeletedPersonalData, setUnDeletedPersonalData] = usePersistentState('kre_data', true);
 
+    const deviceMatches = useMemo(() => {
+        const query = deviceQuery.trim().toLocaleLowerCase();
+        if (query.length < 2) return [];
+        return DEVICE_CATALOG
+            .filter((device) =>
+                `${device.brand} ${device.model} ${device.type}`.toLocaleLowerCase().includes(query),
+            )
+            .slice(0, 6);
+    }, [deviceQuery]);
+
+    const selectDevice = (device: DeviceCatalogEntry) => {
+        setDeviceType(device.type);
+        setBrand(device.brand);
+        setModel(device.model);
+        setDeviceQuery(`${device.brand} ${device.model}`);
+    };
+
     const handleAnalyze = async () => {
         setAnalyzing(true);
         try {
             const inputData = {
-                deviceType, brand, model, purchaseYear, purchasePrice, dailyUsageHours, yearsOfUse, batteryHealth,
+                deviceType, brand, model, deviceSearchQuery: deviceQuery, purchaseYear, purchasePrice, dailyUsageHours, yearsOfUse, batteryHealth,
                 condition: {
                     isFullyFunctional, hasScreenCracks, hasBatteryIssues, hasCameraIssues, hasAudioIssues, hasPortIssues, previouslyRepaired, supportsLatestUpdates
                 },
@@ -82,6 +155,10 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
             const data = await analyzeEwasteOCR(base64String, language, imageMimeType);
             if (data?.deviceType) setDeviceType(data.deviceType);
             if (data?.brand) setBrand(data.brand);
+            if (data?.model) {
+                setModel(data.model);
+                setDeviceQuery(`${data.brand || brand} ${data.model}`.trim());
+            }
             if (data?.purchaseYear) setPurchaseYear(data.purchaseYear);
             if (data?.approximatePurchasePrice) setPurchasePrice(data.approximatePurchasePrice);
             if (data?.batteryHealth) setBatteryHealth(data.batteryHealth);
@@ -100,8 +177,8 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
 
     const textMain = isLight ? 'text-gray-900' : 'text-white';
     const textSub = isLight ? 'text-gray-500' : 'text-gray-400';
-    const bgCard = isLight ? 'bg-white border-gray-200' : 'bg-white/5 border-white/10';
-    const inputBg = isLight ? 'bg-slate-50 border-slate-200 text-slate-900' : 'bg-black/50 border-white/10 text-white';
+    const bgCard = isLight ? 'bg-[#f8fbf9] border-emerald-950/10 shadow-[0_16px_50px_rgba(17,76,58,.045)]' : 'bg-white/5 border-white/10';
+    const inputBg = isLight ? 'bg-[#edf4f1] border-emerald-950/10 text-[#173029] focus:border-emerald-600/40' : 'bg-black/50 border-white/10 text-white';
 
     const getGradeColor = (grade: string) => {
         if (!grade) return 'text-gray-500';
@@ -111,9 +188,28 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
         if (grade.includes('D')) return 'text-orange-500';
         return 'text-red-500';
     };
+    const localizePathway = (value: string) => {
+        if (!isAr) return value;
+        return ({
+            'Continue Using': 'استمر في استخدامه',
+            Repair: 'إصلاح',
+            Refurbish: 'تجديد وإعادة تأهيل',
+            Upgrade: 'ترقية مدروسة',
+            Donate: 'تبرع',
+            Resell: 'إعادة بيع',
+            'Trade-In': 'استبدال لدى جهة موثوقة',
+            Recycle: 'تدوير آمن',
+            'Urban Mining': 'استرداد المواد',
+        } as Record<string, string>)[value] || value;
+    };
+    const localizeGrade = (value: string) => isAr ? value.replace('Grade', 'فئة') : value;
+    const localizeRisk = (value: string) => {
+        if (!isAr) return value;
+        return ({ Low: 'منخفض', Medium: 'متوسط', High: 'مرتفع', Critical: 'حرج' } as Record<string, string>)[value] || value;
+    };
 
     return (
-        <div className={`min-h-screen pt-32 lg:pt-36 px-4 md:px-6 pb-20 ${isLight ? 'bg-slate-50' : 'bg-black'} transition-colors duration-500`} dir={dir}>
+        <div className={`min-h-screen pt-32 lg:pt-36 px-4 md:px-6 pb-20 ${isLight ? 'bg-[#edf4f1]' : 'bg-black'} transition-colors duration-500`} dir={dir}>
             <div className="max-w-6xl mx-auto">
                 <CapabilityContext capabilityId="ewaste" />
                 
@@ -183,18 +279,74 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                                 {/* Basic Info */}
                                 <div className={`${bgCard} border rounded-3xl p-6`}>
                                     <h3 className={`font-bold mb-4 flex items-center gap-2 ${textMain}`}><Smartphone className="w-5 h-5 text-emerald-500"/> {isAr ? 'المعلومات الأساسية' : 'Basic Information'}</h3>
+                                    <div className="mb-5">
+                                        <div className="mb-2 flex items-center justify-between gap-3">
+                                            <label className="text-xs font-bold uppercase text-gray-500">
+                                                {isAr ? 'ابحث عن الجهاز أو اكتب اسمه كاملًا' : 'Search or enter the exact device'}
+                                            </label>
+                                            {deviceQuery.trim() && (
+                                                <a
+                                                    href={`https://www.google.com/search?q=${encodeURIComponent(`${deviceQuery} specifications release year`)}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 hover:text-emerald-500"
+                                                >
+                                                    {isAr ? 'تحقق من المواصفات' : 'Verify specifications'}
+                                                    <ExternalLink className="h-3 w-3" />
+                                                </a>
+                                            )}
+                                        </div>
+                                        <div className="relative">
+                                            <Search className={`pointer-events-none absolute top-1/2 h-4 w-4 -translate-y-1/2 ${isAr ? 'right-4' : 'left-4'} text-emerald-500`} />
+                                            <input
+                                                type="search"
+                                                value={deviceQuery}
+                                                onChange={(event) => {
+                                                    setDeviceQuery(event.target.value);
+                                                    setModel(event.target.value);
+                                                }}
+                                                className={`w-full rounded-2xl border py-3.5 ${isAr ? 'pr-11 pl-4' : 'pl-11 pr-4'} ${inputBg}`}
+                                                placeholder={isAr ? 'مثال: Samsung Galaxy S24 Ultra أو Dell XPS 13' : 'e.g. Samsung Galaxy S24 Ultra or Dell XPS 13'}
+                                                autoComplete="off"
+                                            />
+                                        </div>
+                                        {deviceMatches.length > 0 && (
+                                            <div className={`mt-2 overflow-hidden rounded-2xl border ${isLight ? 'border-emerald-950/10 bg-[#f8fbf9]' : 'border-white/10 bg-[#101915]'}`}>
+                                                {deviceMatches.map((device) => (
+                                                    <button
+                                                        type="button"
+                                                        key={`${device.brand}-${device.model}`}
+                                                        onClick={() => selectDevice(device)}
+                                                        className={`flex w-full items-center justify-between gap-4 border-b px-4 py-3 text-start text-sm last:border-0 ${isLight ? 'border-emerald-950/8 hover:bg-emerald-50' : 'border-white/5 hover:bg-white/5'}`}
+                                                    >
+                                                        <span className={`font-bold ${textMain}`}>{device.brand} {device.model}</span>
+                                                        <span className="shrink-0 text-[10px] font-bold text-emerald-600">
+                                                            {isAr ? DEVICE_TYPE_LABELS[device.type] || device.type : device.type}
+                                                        </span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <p className={`mt-2 text-[11px] leading-5 ${textSub}`}>
+                                            {isAr
+                                                ? 'الاقتراحات تساعدك تختار بسرعة، والكتابة الحرة متاحة لأي جهاز. رابط التحقق يفتح بحثًا خارجيًا؛ Kairo لا يدّعي أنه قرأ سعرًا لحظيًا من Google.'
+                                                : 'Suggestions speed up selection, while free text supports any device. The verification link opens external search; Kairo does not claim live Google pricing.'}
+                                        </p>
+                                    </div>
                                     <div className="grid md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="text-xs font-bold uppercase text-gray-500 mb-2 block">{isAr ? 'النوع' : 'Type'}</label>
                                             <select value={deviceType} onChange={e => setDeviceType(e.target.value)} className={`w-full p-3 rounded-xl border ${inputBg}`} >
-                                                {['Smartphone', 'Laptop', 'Tablet', 'Desktop PC', 'Monitor', 'Printer', 'Router', 'Gaming Console', 'Other'].map(v => <option key={v} value={v}>{v}</option>)}
+                                                {['Smartphone', 'Laptop', 'Tablet', 'Desktop PC', 'Monitor', 'Printer', 'Router', 'Gaming Console', 'Other'].map(v => <option key={v} value={v}>{isAr ? DEVICE_TYPE_LABELS[v] || v : v}</option>)}
                                             </select>
                                         </div>
                                         <div>
                                             <label className="text-xs font-bold uppercase text-gray-500 mb-2 block">{isAr ? 'الماركة' : 'Brand'}</label>
-                                            <select value={brand} onChange={e => setBrand(e.target.value)} className={`w-full p-3 rounded-xl border ${inputBg}`} >
-                                                {['Apple', 'Samsung', 'Xiaomi', 'Dell', 'HP', 'Lenovo', 'Asus', 'Acer', 'Sony', 'Huawei', 'Other'].map(v => <option key={v} value={v}>{v}</option>)}
-                                            </select>
+                                            <input value={brand} onChange={e => setBrand(e.target.value)} className={`w-full p-3 rounded-xl border ${inputBg}`} placeholder={isAr ? 'مثال: Samsung' : 'e.g. Samsung'} />
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <label className="text-xs font-bold uppercase text-gray-500 mb-2 block">{isAr ? 'الموديل الدقيق' : 'Exact Model'}</label>
+                                            <input value={model} onChange={e => setModel(e.target.value)} className={`w-full p-3 rounded-xl border ${inputBg}`} placeholder={isAr ? 'مثال: Galaxy S24 Ultra 256GB' : 'e.g. Galaxy S24 Ultra 256GB'} />
                                         </div>
                                         <div>
                                             <label className="text-xs font-bold uppercase text-gray-500 mb-2 block">{isAr ? 'سنة الشراء' : 'Purchase Year'}</label>
@@ -203,6 +355,10 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                                         <div>
                                             <label className="text-xs font-bold uppercase text-gray-500 mb-2 block">{isAr ? 'السعر التقريبي (EGP)' : 'Purchase Price (EGP)'}</label>
                                             <input type="number" min="0" value={purchasePrice} onChange={e => setPurchasePrice(Number(e.target.value))} className={`w-full p-3 rounded-xl border ${inputBg}`} />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold uppercase text-gray-500 mb-2 block">{isAr ? 'مدة الاستخدام الفعلية (سنة)' : 'Actual Years Used'}</label>
+                                            <input type="number" min="0" max="30" step="0.5" value={yearsOfUse} onChange={e => setYearsOfUse(Number(e.target.value))} className={`w-full p-3 rounded-xl border ${inputBg}`} />
                                         </div>
                                     </div>
                                 </div>
@@ -272,11 +428,36 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
 
                 {report && (
                     <MotionDiv id="ewaste-report-container" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 pt-8 border-t border-black/10 dark:border-white/10">
+                        {report.device_identity && (
+                            <div className={`${bgCard} grid gap-5 border rounded-3xl p-6 md:grid-cols-[1.25fr_.75fr] md:items-center`}>
+                                <div>
+                                    <div className="mb-2 flex items-center gap-2 text-xs font-bold text-emerald-600">
+                                        <Search className="h-4 w-4" />
+                                        {isAr ? 'هوية الجهاز المستخدمة في التقييم' : 'Device identity used for assessment'}
+                                    </div>
+                                    <h2 className={`text-2xl font-black ${textMain}`}>{report.device_identity.normalized_name}</h2>
+                                    <p className={`mt-2 text-sm leading-6 ${textSub}`}>{report.device_identity.evidence_basis}</p>
+                                    <p className="mt-2 text-[11px] font-bold text-amber-600">{report.device_identity.market_data_status}</p>
+                                </div>
+                                <div className={`rounded-2xl border p-5 ${isLight ? 'border-emerald-950/10 bg-[#edf4f1]' : 'border-white/10 bg-black/20'}`}>
+                                    <div className="mb-3 flex items-center justify-between text-xs font-bold text-gray-500">
+                                        <span>{isAr ? 'ثقة التعرّف' : 'Identification confidence'}</span>
+                                        <span>{Math.round(report.device_identity.identification_confidence)}%</span>
+                                    </div>
+                                    <div className={`h-2 overflow-hidden rounded-full ${isLight ? 'bg-emerald-950/10' : 'bg-white/10'}`}>
+                                        <div className="h-full rounded-full bg-emerald-500" style={{ width: `${Math.max(0, Math.min(100, report.device_identity.identification_confidence))}%` }} />
+                                    </div>
+                                    <div className={`mt-3 text-[11px] ${textSub}`}>
+                                        {isAr ? 'راجع الموديل والسنة قبل اتخاذ قرار بيع أو إصلاح.' : 'Verify the model and year before a sale or repair decision.'}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         {/* Executive Summary */}
                         <div className={`${bgCard} border rounded-3xl p-8 md:p-10 text-center relative overflow-hidden`}>
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-500"></div>
                             <h2 className="text-sm font-bold uppercase text-gray-500 tracking-widest mb-6">{isAr ? 'التوصية النهائية' : 'Executive Recommendation'}</h2>
-                            <div className={`text-4xl md:text-5xl font-black mb-6 ${textMain}`}>{report.recommended_pathway}</div>
+                            <div className={`text-4xl md:text-5xl font-black mb-6 ${textMain}`}>{localizePathway(report.recommended_pathway)}</div>
                             <p className={`text-lg md:text-xl max-w-3xl mx-auto ${textSub} leading-relaxed`}>{report.ai_executive_recommendation}</p>
                         </div>
 
@@ -284,7 +465,7 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                         <div className="grid md:grid-cols-3 gap-6">
                             <div className={`${bgCard} border rounded-3xl p-6 flex flex-col items-center text-center`}>
                                 <div className="text-xs font-bold uppercase text-gray-500 mb-4">{isAr ? 'تقييم الجهاز' : 'Device Grade'}</div>
-                                <div className={`text-4xl font-black mb-2 ${getGradeColor(report.device_grade)}`}>{report.device_grade}</div>
+                                <div className={`text-4xl font-black mb-2 ${getGradeColor(report.device_grade)}`}>{localizeGrade(report.device_grade)}</div>
                                 <div className={`text-sm ${textSub}`}>{isAr ? 'الحالة العامة للجهاز' : 'Overall Hardware State'}</div>
                             </div>
                             <div className={`${bgCard} border rounded-3xl p-6 flex flex-col items-center text-center`}>
@@ -307,7 +488,7 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center pb-4 border-b border-black/5 dark:border-white/5">
                                         <div className={textSub}>{isAr ? 'القيمة السوقية الحالية' : 'Current Market Value'}</div>
-                                        <div className={`font-bold text-lg ${textMain}`}>{report.economic_analysis?.current_market_value_egp?.toLocaleString() ?? 0} EGP</div>
+                                        <div className={`font-bold text-lg ${textMain}`}>{report.economic_analysis?.current_market_value_egp?.toLocaleString() ?? 0} {isAr ? 'جنيه' : 'EGP'}</div>
                                     </div>
                                     <div className="flex justify-between items-center pb-4 border-b border-black/5 dark:border-white/5">
                                         <div className={textSub}>{isAr ? 'نسبة الاستهلاك (الإهلاك)' : 'Depreciation'}</div>
@@ -315,19 +496,19 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                                     </div>
                                     <div className="flex justify-between items-center pb-4 border-b border-black/5 dark:border-white/5">
                                         <div className={textSub}>{isAr ? 'القيمة المتبقية' : 'Residual Value'}</div>
-                                        <div className={`font-bold text-lg ${textMain}`}>{report.economic_analysis?.residual_value_egp?.toLocaleString() ?? 0} EGP</div>
+                                        <div className={`font-bold text-lg ${textMain}`}>{report.economic_analysis?.residual_value_egp?.toLocaleString() ?? 0} {isAr ? 'جنيه' : 'EGP'}</div>
                                     </div>
                                     <div className="flex justify-between items-center pb-4 border-b border-black/5 dark:border-white/5">
                                         <div className={textSub}>{isAr ? 'تكلفة الاستبدال' : 'Replacement Cost'}</div>
-                                        <div className={`font-bold text-lg text-orange-500`}>{report.economic_analysis?.replacement_cost_egp?.toLocaleString() ?? 0} EGP</div>
+                                        <div className={`font-bold text-lg text-orange-500`}>{report.economic_analysis?.replacement_cost_egp?.toLocaleString() ?? 0} {isAr ? 'جنيه' : 'EGP'}</div>
                                     </div>
                                     <div className="flex justify-between items-center pb-4 border-b border-black/5 dark:border-white/5">
                                         <div className={textSub}>{isAr ? 'تكلفة مالكية كاملة' : 'Total Ownership Value'}</div>
-                                        <div className={`font-bold text-lg ${textMain}`}>{report.economic_analysis?.total_ownership_value_egp?.toLocaleString() ?? 0} EGP</div>
+                                        <div className={`font-bold text-lg ${textMain}`}>{report.economic_analysis?.total_ownership_value_egp?.toLocaleString() ?? 0} {isAr ? 'جنيه' : 'EGP'}</div>
                                     </div>
                                     <div className="flex justify-between items-center pb-4 border-b border-black/5 dark:border-white/5">
                                         <div className={textSub}>{isAr ? 'تكلفة التجديد التقديرية' : 'Estimated Refurbish Cost'}</div>
-                                        <div className={`font-bold text-lg ${textMain}`}>{report.economic_analysis?.refurbish_cost_estimate_egp?.toLocaleString() ?? 0} EGP</div>
+                                        <div className={`font-bold text-lg ${textMain}`}>{report.economic_analysis?.refurbish_cost_estimate_egp?.toLocaleString() ?? 0} {isAr ? 'جنيه' : 'EGP'}</div>
                                     </div>
                                     <div className="flex justify-between items-center pt-2">
                                         <div className={textSub}>{isAr ? 'عائد استثمار التجديد' : 'Refurbish ROI'}</div>
@@ -366,7 +547,7 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {(report.alternative_pathways || []).map((path, idx) => (
                                     <div key={idx} className={`p-5 rounded-2xl border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-black/30 border-white/5'}`}>
-                                        <div className="font-bold mb-2 text-indigo-500">{path.pathway}</div>
+                                        <div className="font-bold mb-2 text-indigo-500">{localizePathway(path.pathway)}</div>
                                         <div className={`text-sm mb-4 ${textSub}`}>{path.reasoning}</div>
                                         <div className={`text-xs font-bold uppercase bg-indigo-500/10 text-indigo-600 px-3 py-1.5 rounded-lg inline-block`}>ROI: {path.roi_estimate}%</div>
                                     </div>
@@ -378,7 +559,7 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                         <div className={`${bgCard} border rounded-3xl p-8`}>
                             <h3 className={`font-bold text-xl mb-6 flex items-center justify-between ${textMain}`}>
                                 <span className="flex items-center gap-2"><Cpu className="text-yellow-500" /> {isAr ? 'التعدين الحضري واسترجاع المواد' : 'Urban Mining Potential'}</span>
-                                <span className="text-emerald-500 text-sm font-bold uppercase">{isAr ? 'القيمة التقديرية:' : 'Est. Value:'} {report.urban_mining_potential?.estimated_value_egp ?? 0} EGP</span>
+                                <span className="text-emerald-500 text-sm font-bold uppercase">{isAr ? 'القيمة التقديرية:' : 'Est. Value:'} {report.urban_mining_potential?.estimated_value_egp ?? 0} {isAr ? 'جنيه' : 'EGP'}</span>
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-center">
                                 {Object.entries(report.urban_mining_potential?.materials || {}).map(([mat, weight]) => (
@@ -394,7 +575,9 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                         <div className={`border rounded-3xl p-8 ${report.security_risk_assessment?.risk_level === 'High' || report.security_risk_assessment?.risk_level === 'Critical' ? 'bg-red-500/5 border-red-500/30' : (isLight ? 'bg-orange-50 border-orange-200' : 'bg-orange-900/10 border-orange-500/20')}`}>
                             <h3 className={`font-bold text-xl mb-6 flex items-center justify-between ${textMain}`}>
                                 <span className="flex items-center gap-2"><AlertOctagon className={report.security_risk_assessment?.risk_level === 'Critical' ? 'text-red-500' : 'text-orange-500'} /> {isAr ? 'تقييم المخاطر الأمنية' : 'Security & Data Risk Assessment'}</span>
-                                <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full ${report.security_risk_assessment?.risk_level === 'Critical' || report.security_risk_assessment?.risk_level === 'High' ? 'bg-red-500 text-white' : 'bg-orange-500 text-white'}`}>{report.security_risk_assessment?.risk_level || 'Unknown'} RISK</span>
+                                <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full ${report.security_risk_assessment?.risk_level === 'Critical' || report.security_risk_assessment?.risk_level === 'High' ? 'bg-red-500 text-white' : 'bg-orange-500 text-white'}`}>
+                                    {localizeRisk(report.security_risk_assessment?.risk_level || 'Unknown')} {isAr ? '' : 'RISK'}
+                                </span>
                             </h3>
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>

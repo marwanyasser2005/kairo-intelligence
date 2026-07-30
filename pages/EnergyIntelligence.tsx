@@ -8,7 +8,7 @@ import BillUploader from '../components/BillUploader';
 import CapabilityContext from '../components/CapabilityContext';
 import { runEnergyAnalysis } from '../services/tokenRouterService';
 import { EnergyAnalysisReport, EnergyAnalysisInputs, EnergyBillExtraction } from '../types';
-import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, AreaChart, Area } from 'recharts';
+import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList, AreaChart, Area } from 'recharts';
 
 const MotionDiv = motion.div as any;
 const COLORS = ['#38bdf8', '#ef4444', '#94a3b8']; // User, Benchmark, National
@@ -112,6 +112,10 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
         if (r.includes('medium') || r.includes('moderate') || r.includes('متوسط')) return 'text-orange-500';
         return 'text-green-500';
     };
+    const localizeRisk = (value: string) => {
+        if (!isAr) return value;
+        return ({ Low: 'منخفض', Medium: 'متوسط', Moderate: 'متوسط', High: 'مرتفع', Severe: 'شديد' } as Record<string, string>)[value] || value;
+    };
 
     const navTabs = [
         { id: 'quick', icon: <Target className="w-5 h-5" />, label: isAr ? 'التقييم السريع' : 'Quick Assessment' },
@@ -120,7 +124,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
     ];
 
     return (
-        <div className="w-full min-h-screen bg-slate-50/50 dark:bg-[#020617] pt-32 lg:pt-36 pb-20 px-4 md:px-6 lg:px-8 font-sans" dir={dir}>
+        <div className="w-full min-h-screen bg-[#edf4f1] dark:bg-[#020617] pt-32 lg:pt-36 pb-20 px-4 md:px-6 lg:px-8 font-sans" dir={dir}>
             <div className="max-w-7xl mx-auto space-y-8">
                 <CapabilityContext capabilityId="energy" />
                 <ModuleToolbar 
@@ -162,7 +166,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                             <ShieldCheck className="w-5 h-5 text-green-500" />
                                             <div>
                                                 <div className="text-sm font-bold text-green-600">{isAr ? 'تم استخراج البيانات وتقسيم الشرائح بنجاح' : 'Bill parsed and tariff tiers extracted'}</div>
-                                                <div className="text-xs text-green-700/70">{ocrData.consumption_kwh} kWh • {ocrData.total_amount} EGP</div>
+                                                <div className="text-xs text-green-700/70">{ocrData.consumption_kwh} kWh • {ocrData.total_amount} {isAr ? 'جنيه' : 'EGP'}</div>
                                             </div>
                                         </div>
                                     )}
@@ -334,7 +338,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                             <div className={`${bgCard} border rounded-3xl p-6 relative overflow-hidden`}>
                                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{isAr?'مخاطر الحمل وقت الذروة':'Peak Load Risk'}</div>
                                 <div className={`text-2xl mt-2 font-black ${getRiskColor(report.metrics?.peak_load_risk || '')}`}>
-                                    {report.metrics?.peak_load_risk || 'N/A'}
+                                    {localizeRisk(report.metrics?.peak_load_risk || (isAr ? 'غير متاح' : 'N/A'))}
                                 </div>
                             </div>
                         </div>
@@ -348,7 +352,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                         {isAr ? 'البصمة والأداء' : 'Footprint & Performance'}
                                     </h2>
                                     <div className="grid md:grid-cols-2 gap-8">
-                                        <div className="h-64">
+                                        <div className="kairo-chart h-72 p-3" dir="ltr">
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <BarChart
                                                     data={[
@@ -356,16 +360,16 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                                         { name: isAr?'أماكن مشابهة':'Similar Avg', kwh: report.benchmarks?.similar_properties_avg_kwh || 0, fill: '#f59e0b' },
                                                         { name: isAr?'استهلاكك':'Your Usage', kwh: report.metrics?.estimated_consumption_kwh || 0, fill: '#ef4444' }
                                                     ]}
-                                                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                                                    margin={{ top: 24, right: 12, left: 0, bottom: 14 }}
                                                     barSize={40}
                                                 >
                                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isLight ? '#e2e8f0' : '#334155'} />
-                                                    <XAxis dataKey="name" tick={{fill: isLight ? '#64748b' : '#94a3b8', fontSize: 12, fontWeight: 'bold'}} axisLine={false} tickLine={false} />
+                                                    <XAxis dataKey="name" interval={0} tickMargin={10} tick={{fill: isLight ? '#526b62' : '#a9bbb4', fontSize: 11, fontWeight: 'bold'}} axisLine={false} tickLine={false} />
                                                     <YAxis tick={{fill: isLight ? '#64748b' : '#94a3b8', fontSize: 12}} axisLine={false} tickLine={false} />
                                                     <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{backgroundColor: isLight?'#fff':'#0f172a', borderRadius: '12px', borderColor: isLight?'#e2e8f0':'#334155', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
-                                                    <Legend wrapperStyle={{ paddingTop: '20px' }} />
                                                     <Bar dataKey="kwh" name="kWh" radius={[6, 6, 0, 0]}>
-                                                        {COLORS.map((c, i) => <Cell key={i} />)}
+                                                        {COLORS.map((color) => <Cell key={color} fill={color} />)}
+                                                        <LabelList dataKey="kwh" position="top" fill={isLight ? '#36574c' : '#d3e7df'} fontSize={10} fontWeight={800} />
                                                     </Bar>
                                                 </BarChart>
                                             </ResponsiveContainer>
@@ -377,7 +381,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                             </div>
                                             <div className="p-4 rounded-2xl bg-orange-100/50 dark:bg-orange-500/10">
                                                 <div className="text-xs text-orange-600 dark:text-orange-400 uppercase font-bold mb-1">{isAr?'متوسط سعر الكيلووات':'Avg Price per kWh'}</div>
-                                                <div className={`font-black text-xl text-orange-700 dark:text-orange-500`}>{report.metrics?.average_kwh_price_egp || 0} EGP</div>
+                                                <div className={`font-black text-xl text-orange-700 dark:text-orange-500`}>{report.metrics?.average_kwh_price_egp || 0} {isAr ? 'جنيه' : 'EGP'}</div>
                                             </div>
                                             <div className="p-4 rounded-2xl bg-red-100/50 dark:bg-red-500/10">
                                                 <div className="text-xs text-red-600 dark:text-red-400 uppercase font-bold mb-1">{isAr?'البصمة الكربونية الشهرية':'Monthly Carbon Footprint'}</div>
@@ -451,7 +455,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                                     <div className="flex justify-between items-baseline mt-3 pl-9">
                                                         <div>
                                                             <div className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">{isAr?'توفير':'Savings'}</div>
-                                                            <div className="text-lg font-black text-green-400">{(scenario.data.savings_egp || 0).toLocaleString()} EGP</div>
+                                                            <div className="text-lg font-black text-green-400">{(scenario.data.savings_egp || 0).toLocaleString()} {isAr ? 'جنيه' : 'EGP'}</div>
                                                         </div>
                                                         <div className="text-right">
                                                             <div className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">{isAr?'الكربون':'CO₂'}</div>
