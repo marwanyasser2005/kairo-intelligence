@@ -49,6 +49,9 @@ import type {
 } from '../types';
 import { useApp } from '../contexts/AppContext';
 import ModuleToolbar from '../components/ModuleToolbar';
+import EvidenceAndImpact, {
+  type EvidencePassportItem,
+} from '../components/EvidenceAndImpact';
 import { usePersistentState } from '../utils/storage';
 import {
   audienceProfiles,
@@ -366,6 +369,135 @@ const Dashboard: React.FC<DashboardProps> = ({
     [energy, food, isAr, transport, water],
   );
 
+  const evidencePassportItems = useMemo<EvidencePassportItem[]>(() => {
+    const sessionFreshness = isAr ? 'نتيجة الجلسة المحفوظة' : 'Saved session result';
+    const waitingFreshness = isAr ? 'غير متاح حتى تشغيل التحليل' : 'Unavailable until analysis';
+    const foresightFreshness = earlyWarningData?.updatedAt
+      ? new Intl.DateTimeFormat(isAr ? 'ar-EG' : 'en-GB', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        }).format(new Date(earlyWarningData.updatedAt))
+      : sessionFreshness;
+
+    const metadata: Record<
+      Exclude<CapabilityId, 'scenarios'>,
+      Omit<EvidencePassportItem, 'title' | 'value' | 'ready' | 'score' | 'freshness'>
+    > = {
+      foresight: {
+        id: 'foresight',
+        kind: 'forecast',
+        source: isAr
+          ? 'توقعات الهواء العامة + بيانات الموقع بإذن المستخدم + ملف شبكة المياه'
+          : 'Public air forecast + consent-led location + water-network profile',
+        method: isAr
+          ? 'توقع 24 ساعة وترتيب أولوية الفحص بعوامل معلنة'
+          : '24-hour outlook and factor-based inspection prioritization',
+        limitation: isAr
+          ? 'توقع الهواء ليس حساسًا محليًا، ومؤشر المياه ليس احتمال عطل مؤكدًا'
+          : 'Air is not a local sensor reading; water is not a confirmed failure probability',
+        confidence: earlyWarningData?.water?.confidence,
+      },
+      water: {
+        id: 'water',
+        kind: 'user-derived',
+        source: isAr
+          ? 'بيانات الاستهلاك والفاتورة وحالة الشبكة التي أدخلها المستخدم'
+          : 'User-provided usage, bill, and network-condition inputs',
+        method: isAr
+          ? 'حساب كفاءة وفاقد وأولوية فحص من المدخلات'
+          : 'Efficiency, loss, and inspection-priority calculations from inputs',
+        limitation: isAr
+          ? 'يحتاج فحصًا ميدانيًا أو بيانات تدفق وضغط لتأكيد التسريب'
+          : 'A field inspection or flow/pressure data is required to confirm a leak',
+      },
+      food: {
+        id: 'food',
+        kind: 'user-derived',
+        source: isAr
+          ? 'نمط الشراء والتخزين والاستهلاك والهدر المدخل'
+          : 'Provided purchasing, storage, consumption, and waste pattern',
+        method: isAr
+          ? 'تحويل السلوك إلى تكلفة وأثر مياه وكربون وميثان تقديري'
+          : 'Behavior-to-cost, water, carbon, and methane estimation',
+        limitation: isAr
+          ? 'يتحسن بوزن فعلي للهدر وفواتير شراء عبر فترة زمنية'
+          : 'Improves with measured waste weight and purchase receipts over time',
+      },
+      energy: {
+        id: 'energy',
+        kind: 'user-derived',
+        source: isAr
+          ? 'الفاتورة واستهلاك الكهرباء والأجهزة وساعات التشغيل'
+          : 'Bill, electricity use, devices, and operating hours',
+        method: isAr
+          ? 'حساب الكفاءة وفرص التوفير والانبعاثات من خط الأساس'
+          : 'Baseline-based efficiency, savings, and emissions calculation',
+        limitation: isAr
+          ? 'التوفير المتوقع يحتاج فاتورة متابعة بعد تنفيذ الإجراء'
+          : 'Expected savings require a follow-up bill after action',
+      },
+      mobility: {
+        id: 'mobility',
+        kind: 'user-derived',
+        source: isAr
+          ? 'نوع الرحلة والمسافة والتكرار والتكلفة والزمن'
+          : 'Trip type, distance, frequency, cost, and time',
+        method: isAr
+          ? 'مقارنة شهرية للتكلفة والزمن وأثر الكربون'
+          : 'Monthly cost, time, and carbon comparison',
+        limitation: isAr
+          ? 'النتيجة تعتمد على انتظام نمط الرحلات ومعاملات الانبعاث'
+          : 'Result depends on commute regularity and emission factors',
+      },
+      exposure: {
+        id: 'exposure',
+        kind: 'contextual-estimate',
+        source: isAr
+          ? 'الموقع ونمط التعرض والبيانات البيئية السياقية'
+          : 'Location, exposure pattern, and contextual environmental data',
+        method: isAr
+          ? 'تقدير التعرض حسب المكان والمدة وحساسية الفئة'
+          : 'Place, duration, and audience-sensitivity exposure estimate',
+        limitation: isAr
+          ? 'ليس قياسًا طبيًا ولا قراءة حساس شخصي'
+          : 'Not a medical measurement or personal sensor reading',
+      },
+      ewaste: {
+        id: 'ewaste',
+        kind: 'device-estimate',
+        source: isAr
+          ? 'هوية الجهاز وعمره وحالته ووصف الأعطال'
+          : 'Device identity, age, condition, and fault description',
+        method: isAr
+          ? 'تقدير العمر المتبقي وأفضل مسار دائري وقيمة محتملة'
+          : 'Remaining-life, circular-path, and potential-value estimate',
+        limitation: isAr
+          ? 'السعر ليس عرض سوق حيًا ويحتاج فحصًا فعليًا للجهاز'
+          : 'Price is not a live market quote and requires physical inspection',
+      },
+    };
+
+    return kairoCapabilities
+      .filter((capability) => capability.id !== 'scenarios')
+      .map((capability) => {
+        const id = capability.id as Exclude<CapabilityId, 'scenarios'>;
+        const state = capabilityStates[id];
+        return {
+          ...metadata[id],
+          title: localize(capability.title, currentLanguage),
+          value: state.value,
+          ready: state.ready,
+          score: state.score,
+          freshness:
+            id === 'foresight' && state.ready
+              ? foresightFreshness
+              : state.ready
+                ? sessionFreshness
+                : waitingFreshness,
+        };
+      });
+  }, [capabilityStates, currentLanguage, earlyWarningData, isAr]);
+
   useEffect(() => {
     const syncTimer = window.setTimeout(() => {
       void upsertKairoProfile(audience, currentLanguage).catch(() => {
@@ -659,6 +791,12 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </section>
         </MotionDiv>
+
+        <EvidenceAndImpact
+          items={evidencePassportItems}
+          isArabic={isAr}
+          isLight={isLight}
+        />
 
         <MotionDiv
           {...reveal}
