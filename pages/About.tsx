@@ -25,13 +25,15 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
+import { kairoPublicIdentity } from '../config/kairoKnowledge';
 
 // Type casting to bypass strict environment checks
 const MotionDiv = motion.div as any;
 
 const activeTeam = {
     founder: {
-      name: "Marwan Abdelghaffar",
+      name: kairoPublicIdentity.founder.en,
+      nameAr: kairoPublicIdentity.founder.ar,
       image: "https://lh3.googleusercontent.com/d/1Ytrot7_Ct_wJEjUbctwRa2a5M6x6D4Ev=w1600"
     }
 };
@@ -218,15 +220,15 @@ const About: React.FC = () => {
                             <p className="text-[10px] font-black uppercase tracking-[.16em] text-kairo-green">
                                 {isAr ? 'المؤسس ومهندس الذكاء الاصطناعي' : 'Founder & AI Engineer'}
                             </p>
-                            <h3 className="mt-2 text-3xl font-black">{activeTeam.founder.name}</h3>
+                            <h3 className="mt-2 text-3xl font-black">{isAr ? activeTeam.founder.nameAr : activeTeam.founder.name}</h3>
                         </div>
                     </div>
 
                     <div className="p-6 sm:p-9 lg:p-12">
                         <p className={`text-lg leading-8 ${textMain}`}>
                             {isAr
-                                ? 'مروان عبد الغفار مهندس ذكاء اصطناعي شغوف ببناء أنظمة ذكية تحل مشكلات واقعية. تمتد خبرته عبر تعلم الآلة والتعلم العميق وعلم البيانات وتطوير البرمجيات وتطبيقات الذكاء الاصطناعي.'
-                                : 'Marwan Abdelghaffar is an AI Engineer passionate about building intelligent systems that solve real-world problems. His expertise spans Machine Learning, Deep Learning, Data Science, Software Development and Artificial Intelligence applications.'}
+                                ? 'مروان ياسر حسن عبد الغفار هو مؤسس KAIRO Intelligence ومطوّرها ومهندس ذكاء اصطناعي شغوف ببناء أنظمة ذكية تحل مشكلات واقعية. تمتد خبرته عبر تعلم الآلة والتعلم العميق وعلم البيانات وتطوير البرمجيات وتطبيقات الذكاء الاصطناعي.'
+                                : 'Marwan Yasser Hassan Abdel Ghafar is the founder and developer of KAIRO Intelligence, and an AI engineer passionate about building intelligent systems that solve real-world problems. His expertise spans machine learning, deep learning, data science, software development, and AI applications.'}
                         </p>
 
                         <div className="mt-7 flex flex-wrap gap-2">

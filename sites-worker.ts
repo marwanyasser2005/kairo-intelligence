@@ -1,10 +1,19 @@
 import {
+  getAIGatewayHealth,
   requestAI,
-  UpstreamError,
+  toPublicAIResult,
   validateGenerateRequest,
   type AIGatewayConfig,
   type GenerateRequest,
 } from './aiGateway';
+import {
+  MAX_JSON_BODY_BYTES,
+  SECURITY_HEADERS,
+  createRateLimiter,
+  isAllowedRequestOrigin,
+  isJsonContentType,
+  publicAIError,
+} from './security';
 
 interface SitesEnvironment {
   ASSETS: {
@@ -19,19 +28,47 @@ interface SitesEnvironment {
   GEMINI_TOTAL_TIMEOUT_MS?: string;
   GEMINI_MAX_OUTPUT_TOKENS?: string;
   GEMINI_THINKING_BUDGET?: string;
+  AGENTROUTER_API_KEY?: string;
+  AGENTROUTER_BASE_URL?: string;
+  AGENTROUTER_MODELS?: string;
+  AGENTROUTER_MODEL?: string;
+  AGENTROUTER_VISION_MODELS?: string;
+  AGENTROUTER_TIMEOUT_MS?: string;
+  TABIAI_API_KEY?: string;
+  TABIAI_BASE_URL?: string;
+  TABIAI_MODELS?: string;
+  TABIAI_MODEL?: string;
+  TABIAI_VISION_MODELS?: string;
+  TABIAI_TIMEOUT_MS?: string;
   TOKENROUTER_API_KEY?: string;
   TOKENROUTER_BASE_URL?: string;
   TOKENROUTER_MODELS?: string;
   TOKENROUTER_MODEL?: string;
   TOKENROUTER_VISION_MODELS?: string;
   TOKENROUTER_TIMEOUT_MS?: string;
+  AI_ENABLE_AGENTROUTER_FALLBACK?: string;
+  AI_ENABLE_TABIAI_FALLBACK?: string;
   AI_ENABLE_TOKENROUTER_FALLBACK?: string;
   AI_RATE_LIMIT_PER_MINUTE?: string;
+  AI_ALLOWED_ORIGINS?: string;
 }
+
+const rateLimiters = new Map<number, ReturnType<typeof createRateLimiter>>();
+
+const rateLimiterFor = (limit: number) => {
+  let limiter = rateLimiters.get(limit);
+  if (!limiter) {
+    limiter = createRateLimiter(limit);
+    rateLimiters.set(limit, limiter);
+  }
+  return limiter;
+};
 
 const DEFAULT_GEMINI_BASE_URL =
   'https://generativelanguage.googleapis.com/v1beta';
 const DEFAULT_TOKENROUTER_BASE_URL = 'https://api.tokenrouter.com/v1';
+const DEFAULT_AGENTROUTER_BASE_URL = 'https://agentrouter.org/v1';
+const DEFAULT_TABIAI_BASE_URL = 'https://tabitoken.com/v1';
 const DEFAULT_GEMINI_TEXT_MODELS = [
   'gemini-3.1-flash-lite',
   'gemini-3.5-flash',
@@ -76,6 +113,33 @@ const configFromEnvironment = (env: SitesEnvironment): AIGatewayConfig => ({
       ? Number(env.GEMINI_THINKING_BUDGET)
       : 0,
   },
+  agentRouter: {
+    apiKey: env.AGENTROUTER_API_KEY ?? '',
+    baseUrl: (env.AGENTROUTER_BASE_URL ?? DEFAULT_AGENTROUTER_BASE_URL).replace(
+      /\/+$/,
+      '',
+    ),
+    models: parseList(env.AGENTROUTER_MODELS ?? env.AGENTROUTER_MODEL, [
+      'glm-5.1',
+      'kimi-k2.6',
+    ]),
+    visionModels: parseList(env.AGENTROUTER_VISION_MODELS),
+    timeoutMs: positiveNumber(env.AGENTROUTER_TIMEOUT_MS, 45_000),
+    rateLimitPerMinute: positiveNumber(env.AI_RATE_LIMIT_PER_MINUTE, 60),
+  },
+  tabiAI: {
+    apiKey: env.TABIAI_API_KEY ?? '',
+    baseUrl: (env.TABIAI_BASE_URL ?? DEFAULT_TABIAI_BASE_URL).replace(/\/+$/, ''),
+    models: parseList(env.TABIAI_MODELS ?? env.TABIAI_MODEL, [
+      'claude-opus-5-thinking',
+      'claude-opus-5',
+      'claude-opus-4-8-thinking',
+      'claude-opus-4-8',
+    ]),
+    visionModels: parseList(env.TABIAI_VISION_MODELS),
+    timeoutMs: positiveNumber(env.TABIAI_TIMEOUT_MS, 60_000),
+    rateLimitPerMinute: positiveNumber(env.AI_RATE_LIMIT_PER_MINUTE, 60),
+  },
   tokenRouter: {
     apiKey: env.TOKENROUTER_API_KEY ?? '',
     baseUrl: (env.TOKENROUTER_BASE_URL ?? DEFAULT_TOKENROUTER_BASE_URL).replace(
@@ -89,6 +153,8 @@ const configFromEnvironment = (env: SitesEnvironment): AIGatewayConfig => ({
     timeoutMs: positiveNumber(env.TOKENROUTER_TIMEOUT_MS, 90_000),
     rateLimitPerMinute: positiveNumber(env.AI_RATE_LIMIT_PER_MINUTE, 60),
   },
+  enableAgentRouterFallback: env.AI_ENABLE_AGENTROUTER_FALLBACK === 'true',
+  enableTaBiAIFallback: env.AI_ENABLE_TABIAI_FALLBACK === 'true',
   enableTokenRouterFallback: env.AI_ENABLE_TOKENROUTER_FALLBACK === 'true',
   rateLimitPerMinute: positiveNumber(env.AI_RATE_LIMIT_PER_MINUTE, 60),
 });
@@ -97,55 +163,86 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
     headers: {
+      ...Object.fromEntries(
+        Object.entries(SECURITY_HEADERS).map(([key, value]) => [key.toLowerCase(), value]),
+      ),
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
-      'x-content-type-options': 'nosniff',
-      'referrer-policy': 'same-origin',
+      'x-robots-tag': 'noindex, nofollow, nosnippet',
     },
   });
 
 const handleHealth = (env: SitesEnvironment) => {
   const config = configFromEnvironment(env);
-  const provider = config.gemini.apiKey
-    ? 'Gemini'
-    : config.tokenRouter.apiKey
-      ? 'TokenRouter'
-      : 'None';
+  return json(getAIGatewayHealth(config));
+};
 
-  return json({
-    ok: true,
-    provider,
-    configured: provider !== 'None',
-    fallbackEnabled: config.enableTokenRouterFallback,
-    providers: {
-      gemini: {
-        configured: Boolean(config.gemini.apiKey),
-        baseUrl: config.gemini.baseUrl,
-        textModels: config.gemini.textModels,
-        jsonModels: config.gemini.jsonModels,
-        visionModels: config.gemini.visionModels,
-      },
-      tokenRouter: {
-        configured: Boolean(config.tokenRouter.apiKey),
-        enabledAsFallback: config.enableTokenRouterFallback,
-        baseUrl: config.tokenRouter.baseUrl,
-        models: config.tokenRouter.models,
-        visionModels: config.tokenRouter.visionModels,
-      },
-    },
-  });
+const readLimitedJson = async (request: Request): Promise<unknown> => {
+  if (!request.body) return {};
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_JSON_BODY_BYTES) {
+      await reader.cancel();
+      throw new RangeError('BODY_TOO_LARGE');
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  const raw = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  return raw ? JSON.parse(raw) : {};
 };
 
 const handleGenerate = async (request: Request, env: SitesEnvironment) => {
+  if (!isJsonContentType(request.headers.get('content-type') ?? undefined)) {
+    return json(
+      { error: 'Content-Type must be application/json.', code: 'UNSUPPORTED_MEDIA_TYPE' },
+      415,
+    );
+  }
+  const url = new URL(request.url);
+  if (
+    !isAllowedRequestOrigin({
+      origin: request.headers.get('origin') ?? undefined,
+      host: url.host,
+      allowedOrigins: env.AI_ALLOWED_ORIGINS,
+    })
+  ) {
+    return json({ error: 'Request origin is not allowed.', code: 'ORIGIN_NOT_ALLOWED' }, 403);
+  }
+
+  const config = configFromEnvironment(env);
+  const rateLimit = rateLimiterFor(config.rateLimitPerMinute)(
+    request.headers.get('cf-connecting-ip') ?? 'unknown',
+  );
+  if (!rateLimit.allowed) {
+    return json(
+      { error: 'Too many AI requests. Try again shortly.', code: 'LOCAL_RATE_LIMIT' },
+      429,
+    );
+  }
+
   const contentLength = Number(request.headers.get('content-length') ?? 0);
-  if (contentLength > 15 * 1024 * 1024) {
+  if (contentLength > MAX_JSON_BODY_BYTES) {
     return json({ error: 'Request body is too large.', code: 'BODY_TOO_LARGE' }, 413);
   }
 
   let body: GenerateRequest;
   try {
-    body = (await request.json()) as GenerateRequest;
-  } catch {
+    body = (await readLimitedJson(request)) as GenerateRequest;
+  } catch (error) {
+    if (error instanceof RangeError && error.message === 'BODY_TOO_LARGE') {
+      return json({ error: 'Request body is too large.', code: 'BODY_TOO_LARGE' }, 413);
+    }
     return json({ error: 'Invalid JSON body.', code: 'INVALID_JSON' }, 400);
   }
 
@@ -155,16 +252,10 @@ const handleGenerate = async (request: Request, env: SitesEnvironment) => {
   }
 
   try {
-    return json(await requestAI(body, configFromEnvironment(env)));
+    return json(toPublicAIResult(await requestAI(body, config)));
   } catch (error) {
-    const upstream =
-      error instanceof UpstreamError
-        ? error
-        : new UpstreamError('Unexpected AI gateway error.', 500, 'INTERNAL_ERROR');
-    const status = [422, 429, 503, 504].includes(upstream.status)
-      ? upstream.status
-      : 502;
-    return json({ error: upstream.message, code: upstream.code }, status);
+    const publicError = publicAIError(error);
+    return json(publicError.body, publicError.status);
   }
 };
 
@@ -184,9 +275,9 @@ export default {
 
     const response = await env.ASSETS.fetch(request);
     const headers = new Headers(response.headers);
-    headers.set('x-content-type-options', 'nosniff');
-    headers.set('referrer-policy', 'strict-origin-when-cross-origin');
-    headers.set('x-frame-options', 'SAMEORIGIN');
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+      headers.set(name, value);
+    }
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,

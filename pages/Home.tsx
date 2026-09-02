@@ -62,12 +62,41 @@ const audienceIcons: Record<AudienceId, LucideIcon> = {
   government: MapPinned,
 };
 
+const capabilityAccentClasses = {
+  emerald: {
+    icon: 'bg-emerald-500/10 text-emerald-500',
+    glow: 'from-emerald-400/70 via-emerald-300/35',
+    chip: 'border-emerald-500/20 bg-emerald-500/[0.07] text-emerald-500',
+  },
+  blue: {
+    icon: 'bg-sky-500/10 text-sky-500',
+    glow: 'from-sky-400/70 via-sky-300/35',
+    chip: 'border-sky-500/20 bg-sky-500/[0.07] text-sky-500',
+  },
+  amber: {
+    icon: 'bg-amber-500/10 text-amber-500',
+    glow: 'from-amber-400/70 via-amber-300/35',
+    chip: 'border-amber-500/20 bg-amber-500/[0.07] text-amber-500',
+  },
+  violet: {
+    icon: 'bg-violet-500/10 text-violet-500',
+    glow: 'from-violet-400/70 via-violet-300/35',
+    chip: 'border-violet-500/20 bg-violet-500/[0.07] text-violet-500',
+  },
+  cyan: {
+    icon: 'bg-cyan-500/10 text-cyan-500',
+    glow: 'from-cyan-400/70 via-cyan-300/35',
+    chip: 'border-cyan-500/20 bg-cyan-500/[0.07] text-cyan-500',
+  },
+} as const;
+
 const Home: React.FC = () => {
   const { theme, dir, language } = useApp();
   const reduceMotion = useReducedMotion();
   const isLight = theme === 'light';
   const isAr = language === 'ar';
   const currentLanguage = isAr ? 'ar' : 'en';
+  const [selectedAudience, setSelectedAudience] = React.useState<AudienceId>('individual');
 
   const textMain = isLight ? 'text-slate-950' : 'text-white';
   const textSub = isLight ? 'text-slate-600' : 'text-slate-400';
@@ -151,6 +180,11 @@ const Home: React.FC = () => {
     },
   ];
 
+  const activeAudience = getAudienceProfile(selectedAudience) ?? audienceProfiles[0];
+  const recommendedCapabilities = kairoCapabilities
+    .filter((capability) => capability.audiences.includes(selectedAudience))
+    .slice(0, 3);
+
   return (
     <main
       className={`min-h-screen overflow-hidden transition-colors duration-500 ${
@@ -158,20 +192,20 @@ const Home: React.FC = () => {
       }`}
       dir={dir}
     >
-      <section className={`relative min-h-[96svh] border-b ${border}`}>
+      <section className={`relative min-h-[92svh] border-b ${border}`}>
         <div className="kairo-grid absolute inset-0 opacity-75" />
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="kairo-ambient-orb absolute -top-28 start-[4%] h-[34rem] w-[34rem] rounded-full bg-kairo-green/[0.12] blur-[115px]" />
           <div className="absolute -bottom-48 end-[-4rem] h-[32rem] w-[32rem] rounded-full bg-cyan-400/[0.07] blur-[125px]" />
         </div>
 
-        <div className="kairo-shell relative z-10 flex min-h-[96svh] items-center pb-16 pt-32 lg:pb-24 lg:pt-36">
+        <div className="kairo-shell relative z-10 flex min-h-[92svh] items-center pb-16 pt-28 sm:pt-32 lg:pb-24 lg:pt-36">
           <div className="grid w-full items-center gap-14 lg:grid-cols-[1.08fr_.92fr] lg:gap-20">
             <MotionDiv
               initial={reduceMotion ? false : { opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-4xl"
+              className="max-w-4xl lg:order-2"
             >
               <div className="mb-7 flex flex-wrap items-center gap-3">
                 <Chip color="success" size="sm" variant="soft">
@@ -215,15 +249,15 @@ const Home: React.FC = () => {
                     }`}
                   />
                 </Link>
-                <Link
-                  to="/dashboard"
+                <a
+                  href="#capabilities"
                   className={`btn-tactile inline-flex min-h-14 items-center justify-center gap-3 rounded-full border px-7 text-sm font-bold backdrop-blur-xl ${border} ${textMain} ${
                     isLight ? 'bg-white/65 hover:bg-white' : 'bg-white/[0.045] hover:bg-white/[0.08]'
                   }`}
                 >
                   <Leaf className="h-4 w-4 text-kairo-green" />
                   {isAr ? 'استكشف كل الخواص' : 'Explore every capability'}
-                </Link>
+                </a>
               </div>
 
               <div className={`mt-12 grid max-w-3xl grid-cols-3 border-t pt-7 ${border}`}>
@@ -246,7 +280,7 @@ const Home: React.FC = () => {
               initial={reduceMotion ? false : { opacity: 0, scale: 0.95, y: 22 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
-              className="relative mx-auto w-full max-w-[580px]"
+              className="relative mx-auto w-full max-w-[580px] lg:order-1"
             >
               <div className="absolute -inset-10 rounded-full bg-kairo-green/[0.07] blur-3xl" />
               <div className="kairo-glass relative overflow-hidden rounded-[2.2rem] p-5 shadow-glow sm:p-7">
@@ -355,15 +389,17 @@ const Home: React.FC = () => {
           <div className="mt-14 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {kairoCapabilities.map((capability, index) => {
               const Icon = capabilityIcons[capability.id];
+              const accent = capabilityAccentClasses[capability.accent];
               return (
                 <MotionDiv
                   key={capability.id}
                   {...reveal}
                   transition={{ ...reveal.transition, delay: (index % 4) * 0.055 }}
-                  className={`group flex min-h-[410px] flex-col rounded-[1.8rem] border p-6 transition duration-300 hover:-translate-y-1 ${border} ${surface}`}
+                  className={`kairo-feature-card group flex min-h-[390px] flex-col rounded-[1.8rem] border p-6 ${border} ${surface}`}
                 >
+                  <span className={`kairo-feature-accent bg-gradient-to-r ${accent.glow} to-transparent`} aria-hidden="true" />
                   <div className="flex items-center justify-between">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${accent.icon}`}>
                       <Icon className="h-5 w-5" />
                     </div>
                     <span className={`font-mono text-[10px] ${textSoft}`}>0{index + 1}</span>
@@ -377,7 +413,7 @@ const Home: React.FC = () => {
                   </p>
 
                   <div className={`mt-5 rounded-2xl border p-4 ${border} ${isLight ? 'bg-slate-50/80' : 'bg-black/20'}`}>
-                    <p className="text-[10px] font-black uppercase tracking-[.14em] text-kairo-green">
+                    <p className={`w-fit rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[.14em] ${accent.chip}`}>
                       {isAr ? 'الغرض' : 'Purpose'}
                     </p>
                     <p className={`mt-2 text-xs leading-5 ${textSub}`}>
@@ -406,7 +442,7 @@ const Home: React.FC = () => {
 
                   <Link
                     to={capability.path}
-                    className={`mt-auto inline-flex items-center gap-2 pt-7 text-xs font-black ${textMain}`}
+                    className={`mt-auto inline-flex min-h-11 items-center gap-2 pt-6 text-xs font-black ${textMain}`}
                   >
                     {isAr ? 'افهم الخاصية واستخدمها' : 'Understand and use it'}
                     <ArrowUpRight className={`h-3.5 w-3.5 text-kairo-green ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
@@ -435,7 +471,80 @@ const Home: React.FC = () => {
             </p>
           </MotionDiv>
 
-          <div className="mt-14 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <div className="mt-10 flex gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:justify-center" role="tablist" aria-label={isAr ? 'اختر الفئة المستهدفة' : 'Choose an audience'}>
+            {audienceProfiles.map((audience) => {
+              const Icon = audienceIcons[audience.id];
+              const active = audience.id === selectedAudience;
+              return (
+                <button
+                  key={audience.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setSelectedAudience(audience.id)}
+                  className={`inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full border px-4 text-xs font-extrabold transition duration-200 ${
+                    active
+                      ? 'border-kairo-green bg-kairo-green text-[#052019] shadow-[0_12px_28px_rgba(43,212,167,.18)]'
+                      : `${border} ${surface} ${textSub} hover:border-kairo-green/35 hover:text-kairo-green`
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {localize(audience.shortLabel, currentLanguage)}
+                </button>
+              );
+            })}
+          </div>
+
+          <MotionDiv
+            key={selectedAudience}
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.24 }}
+            className={`kairo-audience-spotlight mt-6 grid gap-6 rounded-[2rem] border p-6 sm:p-8 lg:grid-cols-[.85fr_1.15fr] ${border} ${surface}`}
+          >
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[.16em] text-kairo-green">
+                {isAr ? 'القيمة المناسبة لدورك' : 'Value matched to your role'}
+              </p>
+              <h3 className={`mt-3 text-2xl font-black sm:text-3xl ${textMain}`}>
+                {localize(activeAudience.label, currentLanguage)}
+              </h3>
+              <p className={`mt-4 text-sm leading-7 ${textSub}`}>
+                {localize(activeAudience.description, currentLanguage)}
+              </p>
+              <p className={`mt-5 border-s-2 border-kairo-green ps-4 text-sm font-semibold leading-7 ${textMain}`}>
+                {localize(activeAudience.value, currentLanguage)}
+              </p>
+            </div>
+            <div className="grid gap-3">
+              {recommendedCapabilities.map((capability) => {
+                const Icon = capabilityIcons[capability.id];
+                const accent = capabilityAccentClasses[capability.accent];
+                return (
+                  <Link
+                    key={capability.id}
+                    to={capability.path}
+                    className={`group flex min-h-[5.5rem] items-center gap-4 rounded-2xl border p-4 transition duration-200 hover:border-kairo-green/35 ${border} ${isLight ? 'bg-white/75' : 'bg-black/20'}`}
+                  >
+                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${accent.icon}`}>
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <strong className={`block text-sm ${textMain}`}>{localize(capability.title, currentLanguage)}</strong>
+                      <span className={`mt-1 block text-xs leading-5 ${textSub}`}>{localize(capability.outcome, currentLanguage)}</span>
+                    </span>
+                    <ArrowUpRight className={`h-4 w-4 shrink-0 text-kairo-green transition-transform group-hover:-translate-y-0.5 ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
+                  </Link>
+                );
+              })}
+            </div>
+          </MotionDiv>
+
+          <details className={`kairo-audience-details mt-5 rounded-2xl border ${border} ${surface}`}>
+            <summary className={`cursor-pointer px-5 py-4 text-sm font-extrabold ${textMain}`}>
+              {isAr ? 'عرض مقارنة كل الفئات' : 'Compare every audience'}
+            </summary>
+          <div className={`grid gap-4 border-t p-4 md:grid-cols-2 xl:grid-cols-5 ${border}`}>
             {audienceProfiles.map((audience, index) => {
               const Icon = audienceIcons[audience.id];
               return (
@@ -443,7 +552,7 @@ const Home: React.FC = () => {
                   key={audience.id}
                   {...reveal}
                   transition={{ ...reveal.transition, delay: index * 0.055 }}
-                  className={`rounded-[1.75rem] border p-6 ${border} ${surface}`}
+                  className={`rounded-[1.5rem] border p-5 ${border} ${isLight ? 'bg-white/65' : 'bg-black/15'}`}
                 >
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
                     <Icon className="h-5 w-5" />
@@ -461,6 +570,7 @@ const Home: React.FC = () => {
               );
             })}
           </div>
+          </details>
         </div>
       </section>
 

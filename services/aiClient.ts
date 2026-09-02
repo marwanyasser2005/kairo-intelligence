@@ -1,7 +1,7 @@
 // Browser-safe AI client. All provider requests go through the same-origin
 // server gateway, so provider API keys never enter the Vite bundle or browser.
 
-export const DEFAULT_AI_MODEL = 'gemini-3.5-flash';
+export const DEFAULT_AI_MODEL = 'kairo-intelligence';
 
 interface GatewayMessage {
     role: 'system' | 'user' | 'assistant';
@@ -11,8 +11,6 @@ interface GatewayMessage {
 interface GatewayResponse {
     text: string;
     model: string;
-    provider?: string;
-    usage?: Record<string, unknown>;
 }
 
 interface GeneratePayload {
@@ -25,17 +23,21 @@ interface GeneratePayload {
     imageMimeType?: string;
 }
 
-const dispatchModelEvent = (model: string) => {
-    if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-            new CustomEvent('ai-model-used', { detail: { model } }),
-        );
-    }
+export type KairoAIRequestStatus = 'busy' | 'ready' | 'error';
+
+const emitAIStatus = (status: KairoAIRequestStatus, message?: string) => {
+    if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+    window.dispatchEvent(
+        new CustomEvent('kairo:ai-status', {
+            detail: { status, message, timestamp: Date.now() },
+        }),
+    );
 };
 
 const callGateway = async (payload: GeneratePayload): Promise<GatewayResponse> => {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 95_000);
+    emitAIStatus('busy');
 
     try {
         const response = await fetch('/api/ai/generate', {
@@ -60,21 +62,19 @@ const callGateway = async (payload: GeneratePayload): Promise<GatewayResponse> =
 
         const result: GatewayResponse = {
             text: data.text,
-            model:
-                typeof data.model === 'string'
-                    ? data.model
-                    : DEFAULT_AI_MODEL,
-            usage:
-                data.usage && typeof data.usage === 'object'
-                    ? data.usage
-                    : undefined,
+            // Upstream provider and model identities intentionally remain
+            // server-side; the browser only receives the KAIRO product label.
+            model: DEFAULT_AI_MODEL,
         };
-        dispatchModelEvent(result.model);
+        emitAIStatus('ready');
         return result;
     } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
-            throw new Error('The AI request timed out.');
+            const timeoutError = new Error('The AI request timed out.');
+            emitAIStatus('error', timeoutError.message);
+            throw timeoutError;
         }
+        emitAIStatus('error', error instanceof Error ? error.message : 'AI request failed.');
         throw error;
     } finally {
         window.clearTimeout(timeout);

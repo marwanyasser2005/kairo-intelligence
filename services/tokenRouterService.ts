@@ -583,6 +583,26 @@ const FOOD_RECEIPT_SCHEMA = {
     required: ['total_cost_egp', 'items_count', 'receipt_date']
 };
 
+const TRANSPORT_RECEIPT_SCHEMA = {
+    type: "OBJECT",
+    properties: {
+        document_type: {
+            type: "STRING",
+            enum: ['Fuel Receipt', 'Ride Hailing', 'Public Transit', 'EV Charging', 'Other']
+        },
+        provider: { type: "STRING" },
+        amount_egp: { type: "NUMBER" },
+        transport_mode: {
+            type: "STRING",
+            enum: ['Private Car', 'Uber', 'Careem', 'Metro', 'Bus', 'Train', 'Microbus', 'Motorcycle', 'Bicycle', 'Walking', 'Unknown']
+        },
+        receipt_date: { type: "STRING" },
+        confidence: { type: "NUMBER" },
+        evidence_note: { type: "STRING" }
+    },
+    required: ['document_type', 'provider', 'amount_egp', 'transport_mode', 'receipt_date', 'confidence', 'evidence_note']
+};
+
 // --- AGENTS (Updated for API Backend calls) ---
 
 export const runExposureAgent = async (inputs: ExposureAgentInputs, language: string = 'en'): Promise<ExposureAnalysis> => {
@@ -742,26 +762,43 @@ export interface FoodReceiptExtraction {
     isStub?: boolean;
 }
 
+export interface TransportReceiptExtraction {
+    document_type: 'Fuel Receipt' | 'Ride Hailing' | 'Public Transit' | 'EV Charging' | 'Other';
+    provider: string;
+    amount_egp: number;
+    transport_mode: 'Private Car' | 'Uber' | 'Careem' | 'Metro' | 'Bus' | 'Train' | 'Microbus' | 'Motorcycle' | 'Bicycle' | 'Walking' | 'Unknown';
+    receipt_date: string;
+    confidence: number;
+    evidence_note: string;
+}
+
 export const analyzeEwasteOCR = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<any> => {
-    try {
-        const prompt = language === 'ar' 
-            ? 'حلّل صورة الجهاز الإلكتروني أو فاتورة الشراء أو تقرير صحة البطارية. استخرج فقط المعلومات الظاهرة أو التي يمكن قراءتها بثقة: نوع الجهاز (deviceType)، الماركة (brand)، الموديل الدقيق (model)، سنة الشراء (purchaseYear)، السعر المذكور أو التقريبي (approximatePurchasePrice)، وصحة البطارية (batteryHealth). لا تخمّن موديلًا غير ظاهر. أرجع JSON فقط بدون Markdown. Keys: deviceType, brand, model, purchaseYear, approximatePurchasePrice, batteryHealth.'
-            : 'Analyze this electronic-device image, receipt, or battery-health report. Extract only visible or confidently readable information: deviceType, brand, exact model, purchaseYear, stated or approximatePurchasePrice, and batteryHealth. Do not invent a model that is not visible. Return raw JSON only. Keys: deviceType, brand, model, purchaseYear, approximatePurchasePrice, batteryHealth.';
-        return await generateFromAPI(prompt, EWASTE_OCR_SCHEMA, undefined, base64Image, imageMimeType);
-    } catch (e) {
-        console.error('OCR Extraction failed:', e);
-        return { deviceType: 'smartphone', brand: 'Unknown' };
-    }
+    const prompt = language === 'ar'
+        ? 'حلّل صورة الجهاز الإلكتروني أو فاتورة الشراء أو تقرير صحة البطارية. استخرج فقط المعلومات الظاهرة أو التي يمكن قراءتها بثقة: نوع الجهاز (deviceType)، الماركة (brand)، الموديل الدقيق (model)، سنة الشراء (purchaseYear)، السعر المذكور أو التقريبي (approximatePurchasePrice)، وصحة البطارية (batteryHealth). لا تخمّن موديلًا غير ظاهر. أرجع JSON فقط بدون Markdown. Keys: deviceType, brand, model, purchaseYear, approximatePurchasePrice, batteryHealth.'
+        : 'Analyze this electronic-device image, receipt, or battery-health report. Extract only visible or confidently readable information: deviceType, brand, exact model, purchaseYear, stated or approximatePurchasePrice, and batteryHealth. Do not invent a model that is not visible. Return raw JSON only. Keys: deviceType, brand, model, purchaseYear, approximatePurchasePrice, batteryHealth.';
+    return generateFromAPI(prompt, EWASTE_OCR_SCHEMA, undefined, base64Image, imageMimeType);
 };
 
 export const analyzeFoodReceiptOCR = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<FoodReceiptExtraction> => {
-    try {
-        const prompt = language === 'ar' 
-            ? 'قم بتحليل إيصال المشتريات/البقالة هذا. استخرج القيمة الإجمالية (total_cost_egp) وعدد العناصر المشتراة (items_count) وتاريخ الإيصال (receipt_date). قم بإرجاع JSON فقط بدون Markdown. استخدم Keys: total_cost_egp, items_count, receipt_date.'
-            : 'Analyze this grocery receipt. Extract the total cost in EGP (total_cost_egp), the number of items (items_count), and the date (receipt_date). Return ONLY raw JSON. Keys: total_cost_egp, items_count, receipt_date.';
-        return await generateFromAPI(prompt, FOOD_RECEIPT_SCHEMA, undefined, base64Image, imageMimeType);
-    } catch (e) {
-        console.error('Food receipt OCR failed', e);
-        return { total_cost_egp: 200, items_count: 5, receipt_date: '2024-01-01', isStub: true };
-    }
+    const prompt = language === 'ar'
+        ? 'قم بتحليل إيصال المشتريات أو البقالة. استخرج فقط القيمة الإجمالية الظاهرة (total_cost_egp)، وعدد العناصر المقروءة (items_count)، وتاريخ الإيصال (receipt_date). لا تخمّن قيمة غير ظاهرة. أرجع JSON فقط بدون Markdown.'
+        : 'Analyze this grocery receipt. Extract only the visible total in EGP (total_cost_egp), the count of readable items (items_count), and the receipt date (receipt_date). Do not invent missing values. Return raw JSON only.';
+    return generateFromAPI(prompt, FOOD_RECEIPT_SCHEMA, undefined, base64Image, imageMimeType);
+};
+
+export const analyzeTransportReceiptOCR = async (
+    base64Image: string,
+    language: string = 'en',
+    imageMimeType?: string,
+): Promise<TransportReceiptExtraction> => {
+    const prompt = language === 'ar'
+        ? `حلّل صورة إيصال تنقّل أو وقود أو شحن مركبة. استخرج فقط البيانات المقروءة، وحدد نوع المستند ومقدم الخدمة والمبلغ بالجنيه ووسيلة النقل والتاريخ ودرجة الثقة. لا تحوّل إيصالًا واحدًا إلى إنفاق شهري ولا تخمّن وسيلة غير مدعومة بالنص الظاهر. اكتب evidence_note بالعربية لتوضيح أساس الاستخراج.`
+        : `Analyze this mobility, fuel, ride-hailing, public-transit, or EV-charging receipt. Extract only readable evidence: document type, provider, EGP amount, transport mode, date, and confidence. Do not infer monthly spending from one receipt and do not invent an unsupported transport mode. Explain the extraction basis in evidence_note.`;
+    return generateFromAPI(
+        prompt,
+        TRANSPORT_RECEIPT_SCHEMA,
+        undefined,
+        base64Image,
+        imageMimeType,
+    );
 };

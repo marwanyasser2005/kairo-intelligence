@@ -1,5 +1,28 @@
 
 @import "tailwindcss";
+
+.kairo-static-shell {
+  box-sizing: border-box;
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  padding: 7rem 1.5rem 4rem;
+  text-align: center;
+  color: #f8fafc;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(43, 212, 167, 0.12), transparent 32rem),
+    #07100e;
+}
+
+.kairo-static-shell img { height: auto; }
+.kairo-static-shell h1 { max-width: 54rem; margin: 0; font-size: clamp(2rem, 5vw, 4.5rem); line-height: 1.1; }
+.kairo-static-shell > p:not(.kairo-static-kicker) { max-width: 46rem; margin: 0; color: #a8b8b2; font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.9; }
+.kairo-static-kicker { margin: 0; color: #2bd4a7; font: 800 0.72rem/1.2 Manrope, sans-serif; letter-spacing: 0.2em; }
+.kairo-static-shell nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.65rem; margin-top: 1rem; }
+.kairo-static-shell a { border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: .7rem 1rem; color: #d9e5e1; text-decoration: none; }
+.kairo-static-shell a:hover { border-color: rgba(43,212,167,.55); color: #2bd4a7; }
 @import "@heroui/styles";
 @config "./tailwind.config.cjs";
 
@@ -25,6 +48,35 @@
     --border: rgba(255, 255, 255, 0.1);
     --focus: #60e9c4;
     --radius: 1rem;
+    --chart-grid: rgba(148, 163, 184, 0.14);
+    --chart-label: #a8bbb4;
+    --chart-surface: rgba(11, 27, 22, 0.92);
+    --metric-shadow: 0 22px 70px rgba(0, 0, 0, 0.18);
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+    --radius-sm: 0.75rem;
+    --radius-md: 1rem;
+    --radius-lg: 1.5rem;
+    --radius-xl: 2rem;
+    --motion-fast: 160ms;
+    --motion-standard: 240ms;
+    --ease-kairo: cubic-bezier(0.22, 1, 0.36, 1);
+    --z-surface: 10;
+    --z-sticky: 40;
+    --z-nav: 50;
+    --z-overlay: 100;
+    --glass-surface: rgba(13, 28, 23, 0.72);
+    --glass-surface-strong: rgba(10, 23, 19, 0.88);
+    --glass-surface-soft: rgba(255, 255, 255, 0.045);
+    --glass-border: rgba(209, 255, 242, 0.13);
+    --glass-highlight: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+    --glass-blur: 24px;
   }
 
   :root[data-theme='light'] {
@@ -43,6 +95,16 @@
     --danger: #b83f58;
     --border: rgba(11, 83, 63, 0.13);
     --focus: #0b8062;
+    --chart-grid: rgba(15, 92, 71, 0.12);
+    --chart-label: #526b62;
+    --chart-surface: rgba(255, 255, 255, 0.94);
+    --metric-shadow: 0 20px 60px rgba(13, 54, 43, 0.09);
+    --glass-surface: rgba(249, 253, 251, 0.76);
+    --glass-surface-strong: rgba(247, 252, 249, 0.91);
+    --glass-surface-soft: rgba(255, 255, 255, 0.62);
+    --glass-border: rgba(9, 104, 76, 0.14);
+    --glass-highlight: rgba(255, 255, 255, 0.88);
+    --glass-shadow: 0 24px 72px rgba(20, 77, 60, 0.1);
   }
 
   html {
@@ -160,6 +222,7 @@
   button,
   a {
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   :focus-visible {
@@ -220,6 +283,37 @@
 }
 
 @layer components {
+  .kairo-skip-link {
+    position: fixed;
+    inset-block-start: 0.75rem;
+    inset-inline-start: 0.75rem;
+    z-index: 120;
+    min-height: 2.75rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid rgba(43, 212, 167, 0.45);
+    border-radius: 999px;
+    color: #052019;
+    background: var(--kairo-green);
+    font-size: 0.78rem;
+    font-weight: 850;
+    transform: translateY(-180%);
+    transition: transform var(--motion-fast) var(--ease-kairo);
+  }
+
+  .kairo-skip-link:focus {
+    transform: translateY(0);
+  }
+
+  .kairo-navbar::after {
+    position: absolute;
+    inset-inline: 8%;
+    inset-block-end: -1px;
+    height: 1px;
+    content: '';
+    opacity: 0.55;
+    background: linear-gradient(90deg, transparent, rgba(43, 212, 167, 0.42), transparent);
+  }
+
   .kairo-logo-wrapper {
     display: inline-flex;
     align-items: center;
@@ -263,8 +357,83 @@
     @apply transition duration-300 ease-out hover:-translate-y-1 hover:border-kairo-green/30 hover:shadow-glow;
   }
 
+  .kairo-feature-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255,255,255,.035);
+    transition:
+      transform var(--motion-standard) var(--ease-kairo),
+      border-color var(--motion-standard) ease,
+      box-shadow var(--motion-standard) ease;
+  }
+
+  @supports (content-visibility: auto) {
+    .kairo-feature-card {
+      content-visibility: auto;
+      contain-intrinsic-size: 390px;
+    }
+  }
+
+  .kairo-feature-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+
+  .kairo-feature-accent {
+    position: absolute;
+    inset-inline: 1.5rem;
+    inset-block-start: 0;
+    height: 2px;
+    pointer-events: none;
+  }
+
+  .kairo-audience-spotlight {
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--metric-shadow);
+  }
+
+  .kairo-audience-spotlight::before {
+    position: absolute;
+    inset-block-start: -8rem;
+    inset-inline-end: -7rem;
+    width: 19rem;
+    height: 19rem;
+    border-radius: 999px;
+    content: '';
+    pointer-events: none;
+    background: rgba(43, 212, 167, 0.08);
+    filter: blur(70px);
+  }
+
+  .kairo-audience-details > summary {
+    display: flex;
+    min-height: 3.25rem;
+    align-items: center;
+    justify-content: space-between;
+    list-style: none;
+  }
+
+  .kairo-audience-details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .kairo-audience-details > summary::after {
+    content: '+';
+    color: var(--kairo-green);
+    font-size: 1.25rem;
+    font-weight: 700;
+    transition: transform var(--motion-fast) ease;
+  }
+
+  .kairo-audience-details[open] > summary::after {
+    transform: rotate(45deg);
+  }
+
   .kairo-shell {
-    @apply mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-12;
+    @apply mx-auto w-full max-w-[1440px] px-4 sm:px-7 lg:px-10 xl:px-12;
   }
 
   .kairo-eyebrow {
@@ -321,26 +490,91 @@
   }
 
   .kairo-chart {
+    position: relative;
+    isolation: isolate;
     min-width: 0;
     overflow: hidden;
     border: 1px solid var(--border);
-    border-radius: 1.25rem;
-    background-color: var(--surface);
-    background-image: linear-gradient(180deg, rgba(43, 212, 167, 0.025), transparent 42%);
+    border-radius: clamp(1rem, 2.2vw, 1.65rem);
+    background-color: var(--chart-surface);
+    background-image:
+      radial-gradient(circle at 92% 0%, rgba(43, 212, 167, 0.11), transparent 34%),
+      linear-gradient(180deg, rgba(43, 212, 167, 0.035), transparent 48%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 18px 55px rgba(0, 0, 0, 0.08);
+  }
+
+  .kairo-chart::before {
+    position: absolute;
+    inset-inline: 1.1rem;
+    top: 0;
+    z-index: -1;
+    height: 1px;
+    content: '';
+    background: linear-gradient(90deg, transparent, rgba(43, 212, 167, 0.6), transparent);
+  }
+
+  .kairo-chart-responsive {
+    height: clamp(17rem, 32vw, 23rem) !important;
+    min-height: 17rem;
+  }
+
+  .kairo-chart-dashboard {
+    height: clamp(19rem, 38vw, 25rem) !important;
+    min-height: 19rem;
   }
 
   .kairo-chart .recharts-cartesian-axis-tick-value {
     font-size: 11px;
     font-weight: 700;
+    fill: var(--chart-label);
+  }
+
+  .kairo-chart .recharts-cartesian-grid line {
+    stroke: var(--chart-grid);
+  }
+
+  .kairo-chart .recharts-legend-item-text {
+    color: var(--chart-label) !important;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .kairo-chart .recharts-tooltip-wrapper {
+    max-width: min(18rem, calc(100vw - 2.5rem));
+    z-index: 20;
+  }
+
+  .kairo-chart :is(.recharts-bar-rectangle, .recharts-pie-sector, .recharts-dot) {
+    outline: none;
+  }
+
+  .kairo-chart :is(.recharts-bar-rectangle, .recharts-pie-sector, .recharts-dot):focus-visible {
+    filter: drop-shadow(0 0 8px rgba(43, 212, 167, 0.75));
   }
 
   @media (max-width: 640px) {
+    .kairo-chart {
+      margin-inline: 0 !important;
+      padding: 0.65rem !important;
+      border-radius: 1.15rem;
+    }
+
     .kairo-chart .recharts-cartesian-axis-tick-value {
-      font-size: 9px;
+      font-size: 8.5px;
     }
 
     .recharts-default-legend {
       font-size: 10px;
+    }
+
+    .kairo-page h1 {
+      font-size: clamp(2.35rem, 12vw, 3.75rem) !important;
+      line-height: 1.08 !important;
+    }
+
+    .kairo-page h2 {
+      font-size: clamp(1.85rem, 9vw, 2.75rem) !important;
+      line-height: 1.16 !important;
     }
   }
 
@@ -359,6 +593,653 @@
     box-shadow: 0 18px 55px rgba(0, 0, 0, 0.22) !important;
     color: #ecfdf5 !important;
     backdrop-filter: blur(18px);
+    padding: 0.75rem 0.9rem !important;
+  }
+
+  .kairo-analysis-panel {
+    position: relative;
+    isolation: isolate;
+    min-width: 0;
+    overflow: hidden;
+    border-color: var(--border);
+    border-radius: clamp(1.3rem, 2.5vw, 2rem) !important;
+    background-color: var(--surface);
+    background-image:
+      radial-gradient(circle at 100% 0%, rgba(43, 212, 167, 0.07), transparent 30%),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 52%);
+    box-shadow: var(--metric-shadow);
+  }
+
+  .kairo-analysis-panel::after {
+    position: absolute;
+    inset-inline: 1.4rem;
+    top: 0;
+    height: 1px;
+    content: '';
+    background: linear-gradient(90deg, transparent, rgba(43, 212, 167, 0.45), transparent);
+  }
+
+  .kairo-metric-grid {
+    container-type: inline-size;
+  }
+
+  .kairo-metric-card {
+    position: relative;
+    isolation: isolate;
+    min-width: 0;
+    min-height: 10.5rem;
+    overflow: hidden;
+    border-color: var(--border) !important;
+    border-radius: clamp(1.15rem, 2vw, 1.65rem) !important;
+    background-color: var(--surface) !important;
+    background-image:
+      radial-gradient(circle at 100% 0%, rgba(43, 212, 167, 0.1), transparent 42%),
+      linear-gradient(155deg, rgba(255, 255, 255, 0.035), transparent 55%);
+    box-shadow: 0 16px 45px rgba(0, 0, 0, 0.09);
+    transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  }
+
+  .kairo-metric-card::before {
+    position: absolute;
+    inset-block: 1rem;
+    inset-inline-start: 0;
+    width: 2px;
+    border-radius: 99px;
+    content: '';
+    background: linear-gradient(180deg, transparent, var(--kairo-green), transparent);
+    opacity: 0.72;
+  }
+
+  .kairo-metric-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(43, 212, 167, 0.28) !important;
+    box-shadow: 0 22px 58px rgba(0, 0, 0, 0.13);
+  }
+
+  .kairo-metric-card.kairo-metric-compact {
+    min-height: 0;
+  }
+
+  .kairo-metric-value {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: clamp(1.65rem, 4cqw, 2.45rem) !important;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.04;
+    letter-spacing: -0.045em;
+  }
+
+  .kairo-score-track {
+    height: 0.45rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--muted) 16%, transparent);
+  }
+
+  .kairo-score-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #139a75, #2bd4a7 60%, #84f5d5);
+    box-shadow: 0 0 18px rgba(43, 212, 167, 0.34);
+  }
+
+  .kairo-data-table-shell {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    border: 1px solid var(--border);
+    border-radius: 1.5rem;
+    background: var(--surface);
+    box-shadow: var(--metric-shadow);
+    scrollbar-gutter: stable;
+  }
+
+  .kairo-data-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kairo-data-table th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 92%, var(--accent) 8%);
+    color: var(--muted);
+    font-size: 0.66rem;
+    font-weight: 800;
+    text-align: start;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    white-space: nowrap;
+  }
+
+  .kairo-data-table td {
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+    color: var(--foreground);
+    font-size: 0.8rem;
+    vertical-align: middle;
+  }
+
+  .kairo-data-table tbody tr {
+    transition: background-color 160ms ease;
+  }
+
+  .kairo-data-table tbody tr:hover {
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+  }
+
+  .kairo-data-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .kairo-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: fit-content;
+    border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+    border-radius: 999px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .kairo-site {
+    background-color: var(--background);
+    background-image:
+      radial-gradient(circle at 88% 7%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 32rem),
+      radial-gradient(circle at 8% 48%, rgba(28, 112, 88, 0.045), transparent 30rem);
+  }
+
+  .kairo-site :is(main, [class*='min-h-screen']) {
+    background-color: transparent;
+  }
+
+  .kairo-page {
+    min-width: 0;
+    color: var(--foreground);
+  }
+
+  @supports (content-visibility: auto) {
+    .kairo-page > main > section:nth-of-type(n + 3) {
+      content-visibility: auto;
+      contain-intrinsic-size: 780px;
+    }
+  }
+
+  .kairo-page h1 {
+    text-wrap: balance;
+    letter-spacing: -0.045em;
+  }
+
+  .kairo-page h2,
+  .kairo-page h3 {
+    text-wrap: balance;
+  }
+
+  .kairo-page :is(input, textarea, select) {
+    border-color: var(--border);
+    border-radius: 0.9rem;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  }
+
+  .kairo-page :is(input, textarea, select):focus {
+    border-color: color-mix(in srgb, var(--focus) 72%, transparent) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 14%, transparent);
+  }
+
+  .kairo-page button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  .kairo-decision-layer {
+    --decision-accent: var(--kairo-green);
+    --decision-accent-rgb: 43, 212, 167;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: clamp(1.45rem, 3vw, 2.25rem);
+    padding: clamp(1.15rem, 2.8vw, 2rem);
+    color: var(--foreground);
+    background:
+      radial-gradient(circle at 93% 0%, rgba(var(--decision-accent-rgb), 0.14), transparent 27rem),
+      linear-gradient(145deg, color-mix(in srgb, var(--surface) 96%, #193f34 4%), var(--surface));
+    box-shadow: var(--metric-shadow);
+  }
+
+  .kairo-decision--mobility {
+    --decision-accent: #8b5cf6;
+    --decision-accent-rgb: 139, 92, 246;
+    border-color: color-mix(in srgb, var(--decision-accent) 24%, var(--border));
+  }
+
+  .kairo-decision--exposure {
+    --decision-accent: #f97316;
+    --decision-accent-rgb: 249, 115, 22;
+    border-color: color-mix(in srgb, var(--decision-accent) 25%, var(--border));
+  }
+
+  .kairo-decision--mobility .kairo-decision-kicker,
+  .kairo-decision--mobility .kairo-reference-note > svg,
+  .kairo-decision--mobility .kairo-reference-note a,
+  .kairo-decision--exposure .kairo-decision-kicker,
+  .kairo-decision--exposure .kairo-reference-note > svg,
+  .kairo-decision--exposure .kairo-reference-note a {
+    color: var(--decision-accent);
+  }
+
+  .kairo-decision-layer::before {
+    position: absolute;
+    inset-inline: clamp(1.5rem, 5vw, 5rem);
+    top: 0;
+    height: 1px;
+    content: '';
+    background: linear-gradient(90deg, transparent, var(--decision-accent), transparent);
+  }
+
+  .kairo-decision-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kairo-decision-heading h2 {
+    margin-top: 0.55rem;
+    font-size: clamp(1.25rem, 2.7vw, 1.8rem);
+    font-weight: 850;
+    line-height: 1.3;
+  }
+
+  .kairo-decision-kicker,
+  .kairo-confidence-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .kairo-decision-kicker {
+    color: var(--kairo-green);
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+  }
+
+  .kairo-decision-kicker svg,
+  .kairo-confidence-chip svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  .kairo-confidence-chip {
+    flex: 0 0 auto;
+    border: 1px solid color-mix(in srgb, var(--success) 24%, transparent);
+    border-radius: 999px;
+    padding: 0.5rem 0.7rem;
+    color: var(--success);
+    background: color-mix(in srgb, var(--success) 8%, transparent);
+    font-size: 0.68rem;
+    font-weight: 850;
+  }
+
+  .kairo-decision-grid {
+    display: grid;
+    grid-template-columns: minmax(17rem, 0.78fr) minmax(20rem, 1.22fr);
+    gap: clamp(1rem, 2vw, 1.5rem);
+    margin-top: 1.35rem;
+  }
+
+  .kairo-score-zone,
+  .kairo-benchmark-zone {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 1.45rem;
+    padding: clamp(1rem, 2.4vw, 1.45rem);
+    background: color-mix(in srgb, var(--surface-secondary) 68%, transparent);
+  }
+
+  .kairo-score-zone {
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 2.5vw, 1.5rem);
+  }
+
+  .kairo-score-ring {
+    --ring-size: clamp(8.2rem, 15vw, 10.25rem);
+    position: relative;
+    display: grid;
+    flex: 0 0 auto;
+    width: var(--ring-size);
+    height: var(--ring-size);
+    place-items: center;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at center, var(--surface) 0 54%, transparent 55%),
+      conic-gradient(from -90deg, var(--decision-accent) calc(var(--kairo-score) * 1%), color-mix(in srgb, var(--border) 78%, transparent) 0);
+    filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.18));
+  }
+
+  .kairo-score-ring::before {
+    position: absolute;
+    inset: 0.7rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
+    border-radius: inherit;
+    content: '';
+  }
+
+  .kairo-score-ring-core {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: baseline;
+  }
+
+  .kairo-score-ring-core strong {
+    font-size: clamp(1.8rem, 4vw, 2.65rem);
+    font-weight: 900;
+    letter-spacing: -0.06em;
+  }
+
+  .kairo-score-ring-core span {
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+
+  .kairo-score-copy {
+    min-width: 0;
+  }
+
+  .kairo-score-copy > span,
+  .kairo-audience-recommendation > span {
+    color: var(--muted);
+    font-size: 0.66rem;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .kairo-score-copy strong {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+  }
+
+  .kairo-score-copy p {
+    margin-top: 0.5rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.7;
+  }
+
+  .kairo-benchmark-zone {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+
+  .kairo-benchmark-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.45rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 0.85rem;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+  }
+
+  .kairo-benchmark-row span {
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+
+  .kairo-benchmark-row strong {
+    font-size: 0.78rem;
+  }
+
+  .kairo-benchmark-track {
+    grid-column: 1 / -1;
+    height: 0.42rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--border) 76%, transparent);
+  }
+
+  .kairo-benchmark-track i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #0b8062, #60e9c4);
+    box-shadow: 0 0 18px rgba(43, 212, 167, 0.34);
+  }
+
+  .kairo-benchmark-row.is-target .kairo-benchmark-track i {
+    background: linear-gradient(90deg, #64748b, #b4c5bf);
+    box-shadow: none;
+  }
+
+  .kairo-reference-note {
+    display: flex;
+    grid-column: 1 / -1;
+    gap: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    border-radius: 1rem;
+    padding: 0.9rem;
+    background: color-mix(in srgb, var(--accent) 5%, transparent);
+  }
+
+  .kairo-reference-note > svg {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    margin-top: 0.2rem;
+    color: var(--kairo-green);
+  }
+
+  .kairo-reference-note p {
+    color: var(--foreground);
+    font-size: 0.76rem;
+    line-height: 1.75;
+  }
+
+  .kairo-exposure-summary::after {
+    background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.55), transparent);
+  }
+
+  .kairo-mobility-yield-panel::after {
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.6), transparent);
+  }
+
+  [data-kairo-export-surface] {
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  [data-kairo-export-surface] [dir='rtl'] {
+    text-align: start;
+    font-family: 'IBM Plex Sans Arabic', Arial, sans-serif !important;
+    letter-spacing: normal !important;
+    word-spacing: 0.09em !important;
+  }
+
+  [data-kairo-export-surface] [dir='ltr'] {
+    font-family: 'Manrope', 'IBM Plex Sans Arabic', Arial, sans-serif !important;
+    letter-spacing: normal !important;
+    word-spacing: 0.035em !important;
+  }
+
+  .kairo-reference-note a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+    color: var(--kairo-green);
+    font-size: 0.68rem;
+    font-weight: 850;
+    text-decoration: none;
+  }
+
+  .kairo-reference-note a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
+  }
+
+  .kairo-reference-note a svg {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+
+  .kairo-audience-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(16rem, 0.9fr);
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+  }
+
+  .kairo-audience-tabs {
+    display: flex;
+    gap: 0.4rem;
+    min-width: 0;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 0.4rem;
+    background: color-mix(in srgb, var(--surface-secondary) 58%, transparent);
+    scrollbar-width: thin;
+  }
+
+  .kairo-audience-tabs button {
+    display: inline-flex;
+    min-height: 2.6rem;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border: 1px solid transparent;
+    border-radius: 0.72rem;
+    padding: 0.55rem 0.72rem;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 850;
+    transition: 160ms ease;
+  }
+
+  .kairo-audience-tabs button svg {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+
+  .kairo-audience-tabs button:hover {
+    color: var(--foreground);
+    background: color-mix(in srgb, var(--surface-tertiary) 74%, transparent);
+  }
+
+  .kairo-audience-tabs button.is-active {
+    border-color: color-mix(in srgb, var(--kairo-green) 32%, transparent);
+    color: #052019;
+    background: var(--kairo-green);
+    box-shadow: 0 8px 24px rgba(43, 212, 167, 0.18);
+  }
+
+  .kairo-audience-recommendation {
+    border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+    border-radius: 1rem;
+    padding: 0.8rem 0.95rem;
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+  }
+
+  .kairo-audience-recommendation p {
+    margin-top: 0.25rem;
+    color: var(--foreground);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.75;
+  }
+
+  .kairo-chart .recharts-bar-rectangle path,
+  .kairo-chart .recharts-pie-sector path,
+  .kairo-chart .recharts-area-area {
+    transition: opacity 160ms ease, filter 160ms ease, transform 160ms ease;
+  }
+
+  .kairo-chart .recharts-bar-rectangle path {
+    filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.13));
+  }
+
+  .kairo-chart .recharts-bar-rectangle:hover path,
+  .kairo-chart .recharts-pie-sector:hover path {
+    opacity: 0.86;
+    filter: drop-shadow(0 10px 16px rgba(43, 212, 167, 0.2));
+  }
+
+  @media (max-width: 767px) {
+    .kairo-analysis-panel {
+      border-radius: 1.35rem !important;
+    }
+
+    .kairo-metric-card {
+      min-height: 9.25rem;
+      padding: 1.1rem !important;
+    }
+
+    .kairo-metric-value {
+      font-size: clamp(1.45rem, 8.5vw, 2rem) !important;
+    }
+
+    .kairo-decision-heading,
+    .kairo-score-zone {
+      align-items: flex-start;
+    }
+
+    .kairo-decision-grid,
+    .kairo-audience-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .kairo-score-zone {
+      flex-direction: column;
+    }
+
+    .kairo-benchmark-zone {
+      grid-template-columns: 1fr;
+    }
+
+    .kairo-reference-note {
+      grid-column: auto;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .kairo-decision-heading {
+      flex-direction: column;
+    }
+
+    .kairo-score-ring {
+      --ring-size: 8.5rem;
+      align-self: center;
+    }
+  }
+
+  @media (pointer: coarse) {
+    button,
+    a,
+    input,
+    select,
+    textarea,
+    summary {
+      min-height: 44px;
+    }
   }
 
   .light-mode .recharts-default-tooltip {
@@ -436,4 +1317,390 @@
 .kairo-ambient-orb {
   animation: ambient-drift 18s ease-in-out infinite;
   will-change: transform;
+}
+
+/* Apple-inspired Glassify layer. The glass remains opaque enough for WCAG
+   contrast and degrades to solid semantic surfaces when blur is unavailable. */
+.kairo-glass-panel,
+.kairo-glass-tile {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid color-mix(in srgb, var(--border) 86%, rgba(255, 255, 255, 0.22));
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+    color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 24px 80px rgba(0, 0, 0, 0.18);
+  -webkit-backdrop-filter: blur(28px) saturate(145%);
+  backdrop-filter: blur(28px) saturate(145%);
+}
+
+.kairo-glass-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.07), transparent 28%, transparent 72%, rgba(43, 212, 167, 0.045));
+}
+
+.kairo-glass-tile {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)),
+    color-mix(in srgb, var(--surface-secondary) 82%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.065), 0 14px 36px rgba(0, 0, 0, 0.1);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  backdrop-filter: blur(18px) saturate(130%);
+}
+
+.light-mode .kairo-glass-panel,
+.light-mode .kairo-glass-tile {
+  border-color: rgba(16, 86, 65, 0.13);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(241, 249, 246, 0.7)),
+    rgba(244, 250, 247, 0.88);
+  box-shadow: inset 0 1px 0 white, 0 24px 72px rgba(16, 72, 56, 0.1);
+}
+
+.kairo-proof-hero::after {
+  content: '';
+  position: absolute;
+  inset: auto -9rem -11rem auto;
+  width: 28rem;
+  height: 28rem;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(43, 212, 167, 0.24), rgba(56, 189, 248, 0.07) 42%, transparent 72%);
+  filter: blur(12px);
+}
+
+.kairo-icon-well {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(43, 212, 167, 0.22);
+  border-radius: 0.95rem;
+  color: var(--kairo-green);
+  background: rgba(43, 212, 167, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.kairo-primary-button,
+.kairo-secondary-button,
+.kairo-icon-button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+  transition: border-color var(--motion-standard) var(--ease-kairo), background-color var(--motion-standard) var(--ease-kairo), box-shadow var(--motion-standard) var(--ease-kairo), filter var(--motion-standard) var(--ease-kairo);
+}
+
+.kairo-primary-button {
+  border: 1px solid rgba(126, 255, 220, 0.4);
+  color: #032219;
+  background: linear-gradient(180deg, #62edc7, #2bd4a7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 10px 30px rgba(43, 212, 167, 0.2);
+}
+
+.kairo-primary-button:hover { filter: brightness(1.055); }
+
+.kairo-secondary-button {
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.kairo-secondary-button:hover { border-color: rgba(43, 212, 167, 0.4); background: rgba(43, 212, 167, 0.08); }
+
+.kairo-icon-button {
+  width: 2.75rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.kairo-field-label {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.kairo-field-label :is(input, textarea, select),
+.kairo-glass-tile > select {
+  width: 100%;
+  min-height: 2.875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  padding: 0.72rem 0.9rem;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--surface) 76%, transparent);
+  outline: none;
+}
+
+.kairo-field-label textarea { resize: vertical; }
+
+.kairo-field-label :is(input, textarea, select):focus,
+.kairo-glass-tile > select:focus {
+  border-color: color-mix(in srgb, var(--focus) 72%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 14%, transparent);
+}
+
+.kairo-proof-ring {
+  --proof-score: 0;
+  display: grid;
+  width: clamp(6.25rem, 20vw, 8rem);
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(from -90deg, var(--kairo-green) calc(var(--proof-score) * 1%), rgba(148, 163, 184, 0.14) 0);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.kairo-proof-ring::before {
+  content: '';
+  grid-area: 1 / 1;
+  width: calc(100% - 0.7rem);
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: inherit;
+  background: var(--surface);
+}
+
+.kairo-proof-ring span {
+  grid-area: 1 / 1;
+  z-index: 1;
+  color: var(--foreground);
+  font-size: clamp(1.65rem, 4vw, 2.4rem);
+  font-weight: 850;
+}
+
+.kairo-proof-ring small { font-size: 0.62rem; color: var(--muted); }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .kairo-glass-panel,
+  .kairo-glass-tile { background: var(--surface); }
+}
+
+@media (max-width: 640px) {
+  .kairo-glass-panel { border-radius: 1.5rem; }
+  .kairo-glass-panel,
+  .kairo-glass-tile { -webkit-backdrop-filter: blur(16px) saturate(125%); backdrop-filter: blur(16px) saturate(125%); }
+  .kairo-proof-hero::after { width: 20rem; height: 20rem; }
+}
+
+@media (forced-colors: active) {
+  .kairo-glass-panel,
+  .kairo-glass-tile,
+  .kairo-primary-button,
+  .kairo-secondary-button { border: 1px solid CanvasText; background: Canvas; color: CanvasText; }
+}
+
+/* Content-copy deterrence. Inputs and explicitly opted-in content remain fully
+   selectable so forms, accessibility tools, and intentional exports still work. */
+.kairo-content-protected,
+.kairo-content-protected :not(input):not(textarea):not(select):not([contenteditable='true']):not([data-allow-copy='true']) {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.kairo-content-protected input,
+.kairo-content-protected textarea,
+.kairo-content-protected select,
+.kairo-content-protected [contenteditable='true'],
+.kairo-content-protected [data-allow-copy='true'],
+.kairo-content-protected [data-allow-copy='true'] * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* KAIRO 2026 universal Apple-inspired glass system. It deliberately targets
+   existing semantic page panels so legacy modules inherit the same visual
+   language without changing their data or report structure. */
+.kairo-site {
+  background:
+    radial-gradient(circle at 9% 5%, rgba(56, 189, 248, 0.07), transparent 30rem),
+    radial-gradient(circle at 92% 13%, rgba(43, 212, 167, 0.105), transparent 34rem),
+    radial-gradient(circle at 52% 72%, rgba(139, 92, 246, 0.055), transparent 38rem),
+    var(--background) !important;
+}
+
+.kairo-site::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: '';
+  opacity: 0.52;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.kairo-page > :first-child {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+.kairo-page :where(section, article, div)[class*='rounded-'][class*='border']:not([class*='rounded-full']) {
+  border-color: var(--glass-border) !important;
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow);
+}
+
+.kairo-page :where(section, article, div)[class*='rounded-'][class*='border']:not([class*='rounded-full']):not([class*='bg-red-']):not([class*='bg-rose-']):not([class*='bg-orange-']):not([class*='bg-yellow-']):not([class*='bg-amber-']):not([class*='bg-green-']):not([class*='bg-emerald-']):not([class*='bg-blue-']):not([class*='bg-purple-']):not([class*='bg-violet-']) {
+  background-color: var(--glass-surface) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(145%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(145%);
+}
+
+.kairo-page :where(header, section, article, div)[class*='rounded-'][class*='border']::before {
+  border-radius: inherit;
+}
+
+.kairo-page :where(input, select, textarea) {
+  min-height: 2.875rem;
+  border-color: var(--glass-border) !important;
+  border-radius: 0.95rem !important;
+  color: var(--foreground) !important;
+  background-color: var(--glass-surface-soft) !important;
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  backdrop-filter: blur(16px) saturate(130%);
+  transition: border-color var(--motion-standard) var(--ease-kairo), background-color var(--motion-standard) var(--ease-kairo), box-shadow var(--motion-standard) var(--ease-kairo);
+}
+
+.kairo-page :where(input, select, textarea):focus {
+  border-color: color-mix(in srgb, var(--focus) 68%, transparent) !important;
+  background-color: var(--glass-surface-strong) !important;
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 0 0 3px color-mix(in srgb, var(--focus) 15%, transparent) !important;
+}
+
+.kairo-page button:not(:disabled),
+.kairo-page a[href] {
+  cursor: pointer;
+}
+
+.kairo-page button {
+  transition-duration: var(--motion-standard) !important;
+  transition-timing-function: var(--ease-kairo) !important;
+}
+
+.kairo-page button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.kairo-page :where(h1, h2, h3) {
+  text-wrap: balance;
+}
+
+.kairo-page h1 {
+  letter-spacing: -0.035em;
+}
+
+html[dir='rtl'] .kairo-page h1 {
+  letter-spacing: 0;
+}
+
+.kairo-page :where(.recharts-wrapper, .recharts-surface) {
+  max-width: 100%;
+}
+
+.kairo-page .recharts-cartesian-grid line {
+  stroke: var(--chart-grid);
+}
+
+.kairo-page .recharts-text {
+  fill: var(--chart-label);
+  font-family: inherit;
+}
+
+.kairo-ai-status {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 18px 56px rgba(0, 0, 0, 0.25);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+}
+
+.light-mode .kairo-ai-status {
+  border-color: rgba(9, 104, 76, 0.16);
+  color: #16372d;
+  background: rgba(249, 253, 251, 0.86);
+  box-shadow: inset 0 1px 0 white, 0 18px 52px rgba(20, 77, 60, 0.14);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .kairo-page :where(section, article, div)[class*='rounded-'][class*='border'],
+  .kairo-page :where(input, select, textarea),
+  .kairo-ai-status {
+    background-color: var(--surface) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --glass-blur: 16px;
+    --glass-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
+  }
+
+  .kairo-page > :first-child {
+    padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+
+  .kairo-page :where(section, article, div)[class*='rounded-'][class*='border']:not([class*='rounded-full']) {
+    border-radius: clamp(1rem, 5vw, 1.5rem) !important;
+  }
+
+  .kairo-ai-status {
+    bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    left: max(0.75rem, env(safe-area-inset-left));
+    max-width: min(19rem, calc(100vw - 5.5rem));
+  }
+}
+
+@media (orientation: landscape) and (max-height: 540px) {
+  .kairo-page > :first-child {
+    padding-top: 6.25rem !important;
+  }
+
+  .kairo-ai-status {
+    bottom: 0.5rem;
+  }
+}
+
+@media print {
+  .kairo-site,
+  .kairo-page > :first-child,
+  .kairo-page :where(section, article, div)[class*='rounded-'][class*='border'] {
+    background: #fff !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .kairo-ai-status {
+    display: none !important;
+  }
 }

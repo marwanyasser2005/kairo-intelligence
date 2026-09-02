@@ -272,7 +272,7 @@ const CompareScenarios: React.FC = () => {
           </div>
         </header>
 
-        <section className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <section className="kairo-metric-grid mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           {[
             {
               Icon: Droplet,
@@ -300,10 +300,10 @@ const CompareScenarios: React.FC = () => {
               value: `${baseline.connectedModules}/5`,
             },
           ].map(({ Icon, label, value }) => (
-            <div key={label} className={`rounded-[1.5rem] border p-5 ${border} ${surface}`}>
+            <div key={label} className={`kairo-metric-card rounded-[1.5rem] border p-5 ${border} ${surface}`}>
               <Icon className="h-5 w-5 text-kairo-green" />
               <p className={`mt-5 text-[11px] font-bold ${textSub}`}>{label}</p>
-              <p className={`mt-2 text-xl font-black ${textMain}`}>{value}</p>
+              <p className={`kairo-metric-value mt-2 text-xl font-black ${textMain}`}>{value}</p>
             </div>
           ))}
         </section>
@@ -334,7 +334,7 @@ const CompareScenarios: React.FC = () => {
         )}
 
         <section className="mt-8 grid gap-6 xl:grid-cols-[1.08fr_.92fr]">
-          <MotionDiv {...reveal} className={`rounded-[2rem] border p-5 sm:p-7 ${border} ${surface}`}>
+          <MotionDiv {...reveal} className={`kairo-analysis-panel rounded-[2rem] border p-5 sm:p-7 ${border} ${surface}`}>
             <div className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[.14em] text-kairo-green">
@@ -642,7 +642,7 @@ const CompareScenarios: React.FC = () => {
                   key={scenario.id}
                   {...reveal}
                   transition={{ ...reveal.transition, delay: (index % 3) * 0.05 }}
-                  className={`rounded-[1.7rem] border p-5 ${border} ${surface}`}
+                  className={`kairo-analysis-panel rounded-[1.7rem] border p-5 ${border} ${surface}`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -712,7 +712,7 @@ const CompareScenarios: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
-              className={`mt-8 overflow-hidden rounded-[2rem] border ${border} ${surface}`}
+              className={`kairo-analysis-panel mt-8 overflow-hidden rounded-[2rem] border ${border} ${surface}`}
             >
               <div className={`border-b p-6 sm:p-8 ${border} ${isLight ? 'bg-violet-50/70' : 'bg-violet-500/[0.07]'}`}>
                 <div className="flex items-center gap-3">

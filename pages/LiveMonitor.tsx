@@ -512,7 +512,7 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
                     />
                   </div>
 
-                  <div className="kairo-chart mt-5 h-72 w-full p-3" dir="ltr">
+                  <div className="kairo-chart kairo-chart-responsive mt-5 h-72 w-full p-3" dir="ltr">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={chartData} margin={{ top: 12, right: 8, left: -24, bottom: 0 }}>
                         <defs>

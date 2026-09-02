@@ -10,10 +10,11 @@ import ModuleToolbar from '../../components/ModuleToolbar';
 import { exportAsPdf } from '../../utils/export';
 import BillUploader from '../../components/BillUploader';
 import CapabilityContext from '../../components/CapabilityContext';
+import DecisionIntelligence from '../../components/DecisionIntelligence';
 import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 
 const MotionDiv = motion.div as any;
-const COLORS = ['#38bdf8', '#ef4444', '#94a3b8']; // User, Benchmark, National
+const COLORS = ['#94a3b8', '#60a5fa', '#2bd4a7'];
 
 interface WaterScarcityProps {
     report: WaterAnalysisReport | null;
@@ -382,20 +383,20 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                     </div>
 
                     {/* KPI Cards */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className={`${bgCard} border rounded-2xl p-6 relative overflow-hidden`}>
+                    <div className="kairo-metric-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                        <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'كفاءة المياه' : 'Efficiency Score'}</div>
-                            <div className={`text-4xl font-bold ${textMain}`}>{report.metrics?.water_efficiency_score || 0}<span className="text-xl text-gray-400">/100</span></div>
+                            <div className={`kairo-metric-value text-4xl font-bold ${textMain}`}>{report.metrics?.water_efficiency_score || 0}<span className="text-xl text-gray-400">/100</span></div>
                         </div>
-                        <div className={`${bgCard} border rounded-2xl p-6 relative overflow-hidden`}>
+                        <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'احتمالية التسرب' : 'Leak Probability'}</div>
-                            <div className="text-4xl font-bold text-orange-500">{report.metrics?.leak_probability_score || 0}%</div>
+                            <div className="kairo-metric-value text-4xl font-bold text-orange-500">{report.metrics?.leak_probability_score || 0}%</div>
                         </div>
-                        <div className={`${bgCard} border rounded-2xl p-6 relative overflow-hidden`}>
+                        <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'فاقد مالي مقدر' : 'Financial Loss'}</div>
-                            <div className={`text-4xl font-bold text-red-500`}>{(report.metrics?.financial_loss_estimate_egp || 0).toLocaleString()} <span className="text-sm text-gray-400">EGP/Yr</span></div>
+                            <div className={`kairo-metric-value text-4xl font-bold text-red-500`}>{(report.metrics?.financial_loss_estimate_egp || 0).toLocaleString()} <span className="text-sm text-gray-400">EGP/Yr</span></div>
                         </div>
-                        <div className={`${bgCard} border rounded-2xl p-6 relative overflow-hidden`}>
+                        <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'مستوى المخاطرة' : 'Risk Level'}</div>
                             <div className={`text-2xl mt-2 font-bold ${getRiskColor(report.metrics?.water_risk_level || '')}`}>
                                 {localizeLevel(report.metrics?.water_risk_level || (language === 'ar' ? 'غير متاح' : 'N/A'))}
@@ -403,15 +404,22 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                         </div>
                     </div>
 
+                    <DecisionIntelligence
+                        module="water"
+                        score={report.metrics?.water_efficiency_score || 0}
+                        status={localizeLevel(report.metrics?.water_risk_level || '')}
+                        confidence="medium"
+                    />
+
                     <div className="grid lg:grid-cols-3 gap-8">
                         {/* Benchmarks & Charts */}
                         <div className="lg:col-span-2 space-y-8">
-                            <div className={`${bgCard} border rounded-2xl p-8`}>
+                            <div className={`${bgCard} kairo-analysis-panel border rounded-2xl p-5 sm:p-8`}>
                                 <h2 className={`text-xl font-bold mb-6 flex items-center gap-2 ${textMain}`}>
                                     <Scale className="w-5 h-5 text-blue-500" />
                                     {language === 'ar' ? 'مقارنة مرجعية' : 'Benchmarking'}
                                 </h2>
-                                <div className="kairo-chart h-72 p-3" dir="ltr">
+                                <div className="kairo-chart kairo-chart-responsive h-72 p-3" dir="ltr">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart
                                             data={[
@@ -436,7 +444,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                             </div>
 
                             {/* Recommendations */}
-                            <div className={`${bgCard} border rounded-2xl p-8`}>
+                            <div className={`${bgCard} kairo-analysis-panel border rounded-2xl p-5 sm:p-8`}>
                                 <h2 className={`text-xl font-bold mb-6 flex items-center gap-2 ${textMain}`}>
                                     <Target className="w-5 h-5 text-green-500" />
                                     {language === 'ar' ? 'توصيات الذكاء الاصطناعي القابلة للتنفيذ' : 'Actionable AI Recommendations'}

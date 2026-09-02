@@ -566,7 +566,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </header>
 
-        <section className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="kairo-metric-grid mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
             {
               Icon: CircleGauge,
@@ -606,11 +606,11 @@ const Dashboard: React.FC<DashboardProps> = ({
               detail: isAr ? 'من نتائج الجلسة المحفوظة' : 'From saved session results',
             },
           ].map(({ Icon, label, value, detail }) => (
-            <div key={label} className={`rounded-[1.6rem] border p-5 ${border} ${surface}`}>
+            <div key={label} className={`kairo-metric-card rounded-[1.6rem] border p-5 ${border} ${surface}`}>
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className={`text-xs font-bold ${textSub}`}>{label}</p>
-                  <p className={`mt-3 text-3xl font-black tracking-tight ${textMain}`}>{value}</p>
+                  <p className={`kairo-metric-value mt-3 text-3xl font-black tracking-tight ${textMain}`}>{value}</p>
                 </div>
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-kairo-green/10 text-kairo-green">
                   <Icon className="h-4 w-4" />
@@ -625,7 +625,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           {...reveal}
           className="mt-6 grid gap-5 xl:grid-cols-[1.08fr_.92fr]"
         >
-          <section className={`overflow-hidden rounded-[2rem] border ${border} ${surface}`}>
+          <section className={`kairo-analysis-panel overflow-hidden rounded-[2rem] border ${border} ${surface}`}>
             <div className={`flex flex-col gap-3 border-b p-6 sm:flex-row sm:items-end sm:justify-between ${border}`}>
               <div>
                 <span className="kairo-eyebrow">
@@ -645,12 +645,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {scoreChartData.length} {isAr ? 'مؤشرات جاهزة' : 'scores ready'}
               </span>
             </div>
-            <div className="kairo-chart m-4 h-[350px] min-w-0 p-4 sm:m-6 sm:p-5" dir="ltr">
+            <div className="kairo-chart kairo-chart-dashboard m-4 h-[350px] min-w-0 p-4 sm:m-6 sm:p-5" dir="ltr" role="img" aria-label={isAr ? 'مقارنة درجات الكفاءة المتاحة من صفر إلى مئة' : 'Comparison of available efficiency scores from zero to one hundred'}>
               {scoreChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={scoreChartData}
                     layout="vertical"
+                    accessibilityLayer
                     margin={{ top: 8, right: 54, left: 18, bottom: 8 }}
                   >
                     <CartesianGrid
@@ -717,7 +718,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </section>
 
-          <section className={`overflow-hidden rounded-[2rem] border ${border} ${surface}`}>
+          <section className={`kairo-analysis-panel overflow-hidden rounded-[2rem] border ${border} ${surface}`}>
             <div className={`border-b p-6 ${border}`}>
               <span className="kairo-eyebrow">
                 <Leaf className="h-3.5 w-3.5" />
@@ -732,10 +733,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                   : 'Water, food, and energy show estimated loss; mobility shows current monthly cost.'}
               </p>
             </div>
-            <div className="kairo-chart m-4 h-[350px] min-w-0 p-4 sm:m-6 sm:p-5" dir="ltr">
+            <div className="kairo-chart kairo-chart-dashboard m-4 h-[350px] min-w-0 p-4 sm:m-6 sm:p-5" dir="ltr" role="img" aria-label={isAr ? 'مقارنة التكلفة الشهرية حسب القطاع بالجنيه المصري' : 'Monthly cost comparison by sector in Egyptian pounds'}>
               {costChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={costChartData} margin={{ top: 12, right: 12, left: 0, bottom: 8 }}>
+                  <BarChart data={costChartData} accessibilityLayer margin={{ top: 12, right: 12, left: 0, bottom: 8 }}>
                     <CartesianGrid
                       strokeDasharray="3 6"
                       vertical={false}
@@ -973,6 +974,75 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
+          <div className="kairo-data-table-shell mt-6" role="region" aria-label={isAr ? 'سجل نتائج خصائص كايرو' : 'Kairo capability results ledger'} tabIndex={0}>
+            <table className="kairo-data-table">
+              <thead>
+                <tr>
+                  <th>{isAr ? 'الخاصية' : 'Capability'}</th>
+                  <th>{isAr ? 'الحالة' : 'Status'}</th>
+                  <th>{isAr ? 'النتيجة الحالية' : 'Current result'}</th>
+                  <th>{isAr ? 'التقييم' : 'Score'}</th>
+                  <th>{isAr ? 'أساس النتيجة' : 'Evidence basis'}</th>
+                  <th><span className="sr-only">{isAr ? 'الإجراء' : 'Action'}</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCapabilities.map((capability) => {
+                  const state = capabilityStates[capability.id];
+                  const Icon = capabilityIcons[capability.id];
+                  return (
+                    <tr key={`ledger-${capability.id}`}>
+                      <td>
+                        <div className="flex min-w-48 items-center gap-3">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-kairo-green/10 text-kairo-green">
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <div>
+                            <p className="font-extrabold">{localize(capability.title, currentLanguage)}</p>
+                            <p className={`mt-1 max-w-56 text-[10px] ${textSoft}`}>{localize(capability.purpose, currentLanguage)}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`kairo-status-pill ${state.ready ? 'text-emerald-500' : textSoft}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${state.ready ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                          {state.ready ? (isAr ? 'جاهزة' : 'Ready') : (isAr ? 'لم تبدأ' : 'Not started')}
+                        </span>
+                      </td>
+                      <td className="font-extrabold">{state.value}</td>
+                      <td>
+                        {state.score !== undefined ? (
+                          <div className="min-w-32">
+                            <div className="mb-2 flex items-center justify-between gap-3 text-[11px] font-black">
+                              <span>{Math.round(state.score)}/100</span>
+                              <span className={textSoft}>{Math.round(state.score)}%</span>
+                            </div>
+                            <div className="kairo-score-track">
+                              <div className="kairo-score-fill" style={{ width: `${Math.max(0, Math.min(100, state.score))}%` }} />
+                            </div>
+                          </div>
+                        ) : (
+                          <span className={textSoft}>—</span>
+                        )}
+                      </td>
+                      <td><p className={`max-w-64 text-[11px] leading-5 ${textSub}`}>{state.evidence}</p></td>
+                      <td>
+                        <button
+                          type="button"
+                          onClick={() => navigate(capability.path)}
+                          className="inline-flex min-h-10 items-center gap-2 whitespace-nowrap rounded-full border border-kairo-green/20 bg-kairo-green/[0.07] px-4 text-[11px] font-black text-kairo-green transition hover:bg-kairo-green/15"
+                        >
+                          {state.ready ? (isAr ? 'عرض النتيجة' : 'View result') : (isAr ? 'ابدأ' : 'Start')}
+                          <ArrowUpRight className={`h-3.5 w-3.5 ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filteredCapabilities.map((capability, index) => {
               const Icon = capabilityIcons[capability.id];
@@ -983,7 +1053,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   key={capability.id}
                   {...reveal}
                   transition={{ ...reveal.transition, delay: (index % 3) * 0.055 }}
-                  className={`group relative flex min-h-[430px] flex-col overflow-hidden rounded-[1.9rem] border p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,.16)] ${border} ${surface} ${accent.border}`}
+                  className={`kairo-analysis-panel group relative flex min-h-[410px] flex-col overflow-hidden rounded-[1.9rem] border p-5 sm:p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,.16)] ${border} ${surface} ${accent.border}`}
                 >
                   <div className={`absolute inset-x-0 top-0 h-1 ${accent.soft}`} />
                   <span className={`pointer-events-none absolute end-5 top-14 text-6xl font-black opacity-[0.035] ${textMain}`}>
@@ -1041,9 +1111,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                       )}
                     </div>
                     {state.score !== undefined && (
-                      <div className={`mt-3 h-1.5 overflow-hidden rounded-full ${isLight ? 'bg-slate-200' : 'bg-white/10'}`}>
+                      <div className={`kairo-score-track mt-3 h-1.5 overflow-hidden rounded-full ${isLight ? 'bg-slate-200' : 'bg-white/10'}`}>
                         <div
-                          className="h-full rounded-full bg-kairo-green transition-[width] duration-700"
+                          className="kairo-score-fill h-full rounded-full bg-kairo-green transition-[width] duration-700"
                           style={{ width: `${Math.max(4, Math.min(100, state.score))}%` }}
                         />
                       </div>

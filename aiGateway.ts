@@ -1,4 +1,9 @@
 import {
+  getAgentRouterConfig,
+  requestAgentRouter,
+  type AgentRouterConfig,
+} from './agentRouterGateway.js';
+import {
   getGeminiConfig,
   requestGemini,
   type GeminiConfig,
@@ -12,12 +17,21 @@ import {
   type GenerateRequest,
   type TokenRouterConfig,
 } from './tokenRouterGateway.js';
+import {
+  getTaBiAIConfig,
+  requestTaBiAI,
+  type TaBiAIConfig,
+} from './tabiGateway.js';
 
 const DEFAULT_RATE_LIMIT = 60;
 
 export interface AIGatewayConfig {
   gemini: GeminiConfig;
+  agentRouter: AgentRouterConfig;
+  tabiAI: TaBiAIConfig;
   tokenRouter: TokenRouterConfig;
+  enableAgentRouterFallback: boolean;
+  enableTaBiAIFallback: boolean;
   enableTokenRouterFallback: boolean;
   rateLimitPerMinute: number;
 }
@@ -25,13 +39,18 @@ export interface AIGatewayConfig {
 export interface AIResult {
   text: string;
   model: string;
-  provider: 'Gemini' | 'TokenRouter';
+  provider: 'Gemini' | 'AgentRouter' | 'TaBiAI' | 'TokenRouter';
   usage?: Record<string, unknown>;
 }
 
 export const getAIGatewayConfig = (): AIGatewayConfig => ({
   gemini: getGeminiConfig(),
+  agentRouter: getAgentRouterConfig(),
+  tabiAI: getTaBiAIConfig(),
   tokenRouter: getTokenRouterConfig(),
+  enableAgentRouterFallback:
+    process.env.AI_ENABLE_AGENTROUTER_FALLBACK === 'true',
+  enableTaBiAIFallback: process.env.AI_ENABLE_TABIAI_FALLBACK === 'true',
   enableTokenRouterFallback:
     process.env.AI_ENABLE_TOKENROUTER_FALLBACK === 'true',
   rateLimitPerMinute:
@@ -48,15 +67,45 @@ export const requestAI = async (
       return await requestGemini(request, config.gemini, fetchImpl);
     } catch (error) {
       if (
-        !config.enableTokenRouterFallback ||
-        !config.tokenRouter.apiKey
+        (!config.enableAgentRouterFallback || !config.agentRouter.apiKey) &&
+        (!config.enableTaBiAIFallback || !config.tabiAI.apiKey) &&
+        (!config.enableTokenRouterFallback || !config.tokenRouter.apiKey)
       ) {
         throw error;
       }
     }
   }
 
-  if (config.tokenRouter.apiKey) {
+  if (config.enableAgentRouterFallback && config.agentRouter.apiKey) {
+    try {
+      const result = await requestAgentRouter(
+        request,
+        config.agentRouter,
+        fetchImpl,
+      );
+      return { ...result, provider: 'AgentRouter' };
+    } catch (error) {
+      if (
+        (!config.enableTaBiAIFallback || !config.tabiAI.apiKey) &&
+        (!config.enableTokenRouterFallback || !config.tokenRouter.apiKey)
+      ) {
+        throw error;
+      }
+    }
+  }
+
+  if (config.enableTaBiAIFallback && config.tabiAI.apiKey) {
+    try {
+      const result = await requestTaBiAI(request, config.tabiAI, fetchImpl);
+      return { ...result, provider: 'TaBiAI' };
+    } catch (error) {
+      if (!config.enableTokenRouterFallback || !config.tokenRouter.apiKey) {
+        throw error;
+      }
+    }
+  }
+
+  if (config.enableTokenRouterFallback && config.tokenRouter.apiKey) {
     const result = await requestTokenRouter(
       request,
       config.tokenRouter,
@@ -73,42 +122,56 @@ export const requestAI = async (
 };
 
 export const getAIGatewayHealth = (config = getAIGatewayConfig()) => {
-  const activeProvider = config.gemini.apiKey
-    ? 'Gemini'
-    : config.tokenRouter.apiKey
-      ? 'TokenRouter'
-      : 'None';
+  const configured = Boolean(
+    config.gemini.apiKey ||
+      (config.enableAgentRouterFallback && config.agentRouter.apiKey) ||
+      (config.enableTaBiAIFallback && config.tabiAI.apiKey) ||
+      (config.enableTokenRouterFallback && config.tokenRouter.apiKey),
+  );
+  const redundancy =
+    [
+      Boolean(config.gemini.apiKey),
+      Boolean(config.enableAgentRouterFallback && config.agentRouter.apiKey),
+      Boolean(config.enableTaBiAIFallback && config.tabiAI.apiKey),
+      Boolean(config.enableTokenRouterFallback && config.tokenRouter.apiKey),
+    ].filter(Boolean).length > 1;
 
   return {
     ok: true,
-    provider: activeProvider,
-    configured: activeProvider !== 'None',
-    fallbackEnabled: config.enableTokenRouterFallback,
-    providers: {
-      gemini: {
-        configured: Boolean(config.gemini.apiKey),
-        baseUrl: config.gemini.baseUrl,
-        textModels: config.gemini.textModels,
-        jsonModels: config.gemini.jsonModels,
-        visionModels: config.gemini.visionModels,
-      },
-      tokenRouter: {
-        configured: Boolean(config.tokenRouter.apiKey),
-        enabledAsFallback: config.enableTokenRouterFallback,
-        baseUrl: config.tokenRouter.baseUrl,
-        models: config.tokenRouter.models,
-        visionModels: config.tokenRouter.visionModels,
-      },
+    service: 'KAIRO Intelligence',
+    configured,
+    redundancy,
+    capabilities: {
+      text: configured,
+      structured: configured,
+      vision: Boolean(
+        config.gemini.apiKey ||
+          (config.enableAgentRouterFallback &&
+            config.agentRouter.apiKey &&
+            config.agentRouter.visionModels.length > 0) ||
+          (config.enableTaBiAIFallback &&
+            config.tabiAI.apiKey &&
+            config.tabiAI.visionModels.length > 0) ||
+          (config.enableTokenRouterFallback &&
+            config.tokenRouter.apiKey &&
+            config.tokenRouter.visionModels.length > 0),
+      ),
     },
   };
 };
+
+export const toPublicAIResult = (result: AIResult) => ({
+  text: result.text,
+  model: 'kairo-intelligence',
+});
 
 export {
   UpstreamError,
   validateGenerateRequest,
   type GenerateRequest,
+  type AgentRouterConfig,
   type GeminiConfig,
   type GeminiResult,
+  type TaBiAIConfig,
   type TokenRouterConfig,
 };
-

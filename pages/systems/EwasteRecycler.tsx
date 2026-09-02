@@ -10,6 +10,7 @@ import BillUploader from '../../components/BillUploader';
 import SdgBadge from '../../components/SdgBadge';
 import CapabilityContext from '../../components/CapabilityContext';
 import ReportActions from '../../components/ReportActions';
+import DecisionIntelligence from '../../components/DecisionIntelligence';
 
 const MotionDiv = motion.div as any;
 
@@ -454,7 +455,7 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                             </div>
                         )}
                         {/* Executive Summary */}
-                        <div className={`${bgCard} border rounded-3xl p-8 md:p-10 text-center relative overflow-hidden`}>
+                        <div className={`${bgCard} kairo-analysis-panel border rounded-3xl p-6 sm:p-8 md:p-10 text-center relative overflow-hidden`}>
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-500"></div>
                             <h2 className="text-sm font-bold uppercase text-gray-500 tracking-widest mb-6">{isAr ? 'التوصية النهائية' : 'Executive Recommendation'}</h2>
                             <div className={`text-4xl md:text-5xl font-black mb-6 ${textMain}`}>{localizePathway(report.recommended_pathway)}</div>
@@ -462,28 +463,35 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                         </div>
 
                         {/* Grading & Key Indicators */}
-                        <div className="grid md:grid-cols-3 gap-6">
-                            <div className={`${bgCard} border rounded-3xl p-6 flex flex-col items-center text-center`}>
+                        <div className="kairo-metric-grid grid sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                            <div className={`${bgCard} kairo-metric-card border rounded-3xl p-6 flex flex-col items-center text-center`}>
                                 <div className="text-xs font-bold uppercase text-gray-500 mb-4">{isAr ? 'تقييم الجهاز' : 'Device Grade'}</div>
                                 <div className={`text-4xl font-black mb-2 ${getGradeColor(report.device_grade)}`}>{localizeGrade(report.device_grade)}</div>
                                 <div className={`text-sm ${textSub}`}>{isAr ? 'الحالة العامة للجهاز' : 'Overall Hardware State'}</div>
                             </div>
-                            <div className={`${bgCard} border rounded-3xl p-6 flex flex-col items-center text-center`}>
+                            <div className={`${bgCard} kairo-metric-card border rounded-3xl p-6 flex flex-col items-center text-center`}>
                                 <div className="text-xs font-bold uppercase text-gray-500 mb-4">{isAr ? 'صحة الجهاز' : 'Device Health'}</div>
-                                <div className={`text-4xl font-black mb-2 ${textMain}`}>{report.device_health_score}<span className="text-xl text-gray-400">/100</span></div>
+                                <div className={`kairo-metric-value text-4xl font-black mb-2 ${textMain}`}>{report.device_health_score}<span className="text-xl text-gray-400">/100</span></div>
                                 <div className={`text-sm ${textSub}`}>{isAr ? 'مؤشر الصلاحية التقنية' : 'Technical Viability Index'}</div>
                             </div>
-                            <div className={`${bgCard} border rounded-3xl p-6 flex flex-col items-center text-center`}>
+                            <div className={`${bgCard} kairo-metric-card border rounded-3xl p-6 flex flex-col items-center text-center`}>
                                 <div className="text-xs font-bold uppercase text-gray-500 mb-4">{isAr ? 'مؤشر الاقتصاد الدائري' : 'Circularity Score'}</div>
-                                <div className={`text-4xl font-black mb-2 text-blue-500`}>{report.circular_economy_score}<span className="text-xl text-gray-400">/100</span></div>
+                                <div className={`kairo-metric-value text-4xl font-black mb-2 text-blue-500`}>{report.circular_economy_score}<span className="text-xl text-gray-400">/100</span></div>
                                 <div className={`text-sm ${textSub}`}>{isAr ? 'تأثير الاستدامة' : 'Sustainability Impact'}</div>
                             </div>
                         </div>
 
+                        <DecisionIntelligence
+                            module="ewaste"
+                            score={report.circular_economy_score}
+                            status={localizePathway(report.recommended_pathway)}
+                            confidence="medium"
+                        />
+
                         {/* Economic & Environmental Columns */}
                         <div className="grid lg:grid-cols-2 gap-8">
                             {/* Economic Section */}
-                            <div className={`${bgCard} border rounded-3xl p-8`}>
+                            <div className={`${bgCard} kairo-analysis-panel border rounded-3xl p-5 sm:p-8`}>
                                 <h3 className={`font-bold text-xl mb-6 flex items-center gap-2 ${textMain}`}><TrendingUp className="text-emerald-500" /> {isAr ? 'التحليل الاقتصادي' : 'Economic Analysis'}</h3>
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center pb-4 border-b border-black/5 dark:border-white/5">
@@ -518,7 +526,7 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                             </div>
 
                             {/* Enivronmental Section */}
-                            <div className={`${bgCard} border rounded-3xl p-8`}>
+                            <div className={`${bgCard} kairo-analysis-panel border rounded-3xl p-5 sm:p-8`}>
                                 <h3 className={`font-bold text-xl mb-6 flex items-center gap-2 ${textMain}`}><Recycle className="text-blue-500" /> {isAr ? 'الأثر البيئي' : 'Environmental Impact'}</h3>
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center pb-4 border-b border-black/5 dark:border-white/5">
@@ -542,7 +550,7 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
                         </div>
 
                         {/* Alternate Pathways */}
-                        <div className={`${bgCard} border rounded-3xl p-8`}>
+                        <div className={`${bgCard} kairo-analysis-panel border rounded-3xl p-5 sm:p-8`}>
                             <h3 className={`font-bold text-xl mb-6 flex items-center gap-2 ${textMain}`}><Network className="text-purple-500" /> {isAr ? 'المسارات البديلة المتاحة' : 'Alternative Pathways'}</h3>
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {(report.alternative_pathways || []).map((path, idx) => (

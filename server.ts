@@ -10,11 +10,20 @@ import {
   getAIGatewayConfig,
   getAIGatewayHealth,
   requestAI,
+  toPublicAIResult,
   type GenerateRequest,
   type AIGatewayConfig,
-  UpstreamError,
   validateGenerateRequest,
 } from './aiGateway.js';
+import {
+  MAX_JSON_BODY_BYTES,
+  applySecurityHeaders,
+  createRateLimiter,
+  isAllowedRequestOrigin,
+  isJsonContentType,
+  publicAIError,
+  setRateLimitHeaders,
+} from './security.js';
 
 export {
   getAIGatewayConfig,
@@ -23,11 +32,21 @@ export {
   type AIGatewayConfig,
 } from './aiGateway.js';
 export {
+  getAgentRouterConfig,
+  requestAgentRouter,
+  type AgentRouterConfig,
+} from './agentRouterGateway.js';
+export {
   getTokenRouterConfig,
   normalizeJsonSchema,
   requestTokenRouter,
   type TokenRouterConfig,
 } from './tokenRouterGateway.js';
+export {
+  getTaBiAIConfig,
+  requestTaBiAI,
+  type TaBiAIConfig,
+} from './tabiGateway.js';
 export {
   getGeminiConfig,
   requestGemini,
@@ -43,24 +62,60 @@ export const createApp = (
   config: AIGatewayConfig = getAIGatewayConfig(),
 ) => {
   const app = express();
-  const rateBuckets = new Map<
-    string,
-    { count: number; resetAt: number }
-  >();
+  const consumeRateLimit = createRateLimiter(config.rateLimitPerMinute);
+  const trustProxyHops = Number(process.env.AI_TRUST_PROXY_HOPS);
 
   app.disable('x-powered-by');
-  app.use(express.json({ limit: '15mb' }));
+  if (Number.isInteger(trustProxyHops) && trustProxyHops > 0) {
+    app.set('trust proxy', trustProxyHops);
+  }
   app.use((_request, response, next) => {
-    response.setHeader('X-Content-Type-Options', 'nosniff');
-    response.setHeader('Referrer-Policy', 'same-origin');
+    applySecurityHeaders(response);
     next();
   });
+  app.use('/api/', (_request, response, next) => {
+    response.setHeader('Cache-Control', 'no-store');
+    response.setHeader('X-Robots-Tag', 'noindex, nofollow, nosnippet');
+    next();
+  });
+  app.use(express.json({ limit: MAX_JSON_BODY_BYTES, strict: true }));
 
   app.get('/api/ai/health', (_request, response) => {
     response.json(getAIGatewayHealth(config));
   });
 
   app.post('/api/ai/generate', async (request, response) => {
+    if (!isJsonContentType(request.get('content-type'))) {
+      response.status(415).json({
+        error: 'Content-Type must be application/json.',
+        code: 'UNSUPPORTED_MEDIA_TYPE',
+      });
+      return;
+    }
+    if (
+      !isAllowedRequestOrigin({
+        origin: request.get('origin'),
+        host: request.get('host'),
+        allowedOrigins: process.env.AI_ALLOWED_ORIGINS,
+      })
+    ) {
+      response.status(403).json({
+        error: 'Request origin is not allowed.',
+        code: 'ORIGIN_NOT_ALLOWED',
+      });
+      return;
+    }
+
+    const rateLimit = consumeRateLimit(request.ip || 'unknown');
+    setRateLimitHeaders(response, rateLimit);
+    if (!rateLimit.allowed) {
+      response.status(429).json({
+        error: 'Too many AI requests. Try again shortly.',
+        code: 'LOCAL_RATE_LIMIT',
+      });
+      return;
+    }
+
     const validationError = validateGenerateRequest(request.body);
     if (validationError) {
       response
@@ -69,52 +124,32 @@ export const createApp = (
       return;
     }
 
-    if (config.rateLimitPerMinute > 0) {
-      const now = Date.now();
-      const key = request.ip || 'unknown';
-      const current = rateBuckets.get(key);
-      const bucket =
-        !current || current.resetAt <= now
-          ? { count: 0, resetAt: now + 60_000 }
-          : current;
-      bucket.count += 1;
-      rateBuckets.set(key, bucket);
-
-      if (bucket.count > config.rateLimitPerMinute) {
-        response.status(429).json({
-          error: 'Too many AI requests. Try again shortly.',
-          code: 'LOCAL_RATE_LIMIT',
-        });
-        return;
-      }
-    }
-
     try {
       const result = await requestAI(
         request.body as GenerateRequest,
         config,
       );
-      response.json(result);
+      response.json(toPublicAIResult(result));
     } catch (error) {
-      const upstream =
-        error instanceof UpstreamError
-          ? error
-          : new UpstreamError(
-              'Unexpected AI gateway error.',
-              500,
-              'INTERNAL_ERROR',
-            );
-      const status =
-        upstream.status === 422 || upstream.status === 429
-          ? upstream.status
-          : upstream.status === 503 || upstream.status === 504
-            ? upstream.status
-            : 502;
-      response.status(status).json({
-        error: upstream.message,
-        code: upstream.code,
-      });
+      const publicError = publicAIError(error);
+      response.status(publicError.status).json(publicError.body);
     }
+  });
+
+  app.all('/api/ai/generate', (_request, response) => {
+    response.setHeader('Allow', 'POST');
+    response.status(405).json({
+      error: 'Method not allowed.',
+      code: 'METHOD_NOT_ALLOWED',
+    });
+  });
+
+  app.all('/api/ai/health', (_request, response) => {
+    response.setHeader('Allow', 'GET');
+    response.status(405).json({
+      error: 'Method not allowed.',
+      code: 'METHOD_NOT_ALLOWED',
+    });
   });
 
   app.use(
@@ -124,6 +159,18 @@ export const createApp = (
       response: Response,
       _next: NextFunction,
     ) => {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'status' in error &&
+        Number((error as { status?: unknown }).status) === 413
+      ) {
+        response.status(413).json({
+          error: 'Request body is too large.',
+          code: 'BODY_TOO_LARGE',
+        });
+        return;
+      }
       if (error instanceof SyntaxError) {
         response
           .status(400)
@@ -147,7 +194,13 @@ export const startServer = async () => {
 
   if (isProduction) {
     const distPath = path.join(projectRoot, 'dist');
-    app.use(express.static(distPath));
+    app.get(['/features', '/capabilities'], (_request, response) => {
+      response.redirect(308, '/dashboard');
+    });
+    app.get(['/en/features', '/en/capabilities'], (_request, response) => {
+      response.redirect(308, '/en/dashboard');
+    });
+    app.use(express.static(distPath, { extensions: ['html'] }));
     app.use((request, response, next) => {
       if (
         request.method !== 'GET' ||
@@ -156,7 +209,7 @@ export const startServer = async () => {
         next();
         return;
       }
-      response.sendFile(path.join(distPath, 'index.html'));
+      response.status(404).sendFile(path.join(distPath, '404.html'));
     });
   } else {
     const { createServer: createViteServer } = await import('vite');

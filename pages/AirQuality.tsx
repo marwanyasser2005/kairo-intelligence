@@ -5,6 +5,7 @@ import { Wind, MapPin, Loader2, Info, Activity } from 'lucide-react';
 import { EnvironmentalSnapshot } from '../types';
 import { runContextEngine } from '../services/tokenRouterService';
 import { useApp } from '../contexts/AppContext';
+import DecisionIntelligence from '../components/DecisionIntelligence';
 
 // Type casting to bypass strict environment checks
 const MotionDiv = motion.div as any;
@@ -32,8 +33,8 @@ const AirQuality: React.FC = () => {
   const cardBg = isLight ? 'bg-white border-slate-200' : 'bg-white/5 border-white/10';
 
   return (
-    <div className={`min-h-screen pt-32 lg:pt-36 px-6 pb-20 ${bgMain}`} dir={dir}>
-      <div className="max-w-4xl mx-auto">
+    <div className={`min-h-screen pt-28 sm:pt-32 lg:pt-36 px-4 sm:px-6 pb-20 ${bgMain}`} dir={dir}>
+      <div className="max-w-6xl mx-auto">
         <header className="mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold uppercase tracking-wider mb-4 border border-blue-500/20">
             <Activity className="w-3 h-3" />
@@ -45,7 +46,7 @@ const AirQuality: React.FC = () => {
           </p>
         </header>
 
-        <div className={`rounded-3xl p-8 md:p-12 text-center min-h-[400px] flex flex-col items-center justify-center border ${cardBg}`}>
+        <div className={`kairo-analysis-panel rounded-3xl p-5 sm:p-8 md:p-12 text-center min-h-[400px] flex flex-col items-center justify-center border ${cardBg}`}>
             {!data && !loading && (
                 <>
                     <Wind className="w-16 h-16 text-gray-600 mb-6" />
@@ -64,29 +65,37 @@ const AirQuality: React.FC = () => {
             )}
 
             {data && (
-                <MotionDiv initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full text-left">
-                    <div className="flex justify-between items-start mb-12">
+                <MotionDiv initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full text-start">
+                    <div className="flex flex-col gap-5 sm:flex-row sm:justify-between sm:items-start mb-8 sm:mb-12">
                         <div>
                             <div className="text-sm text-gray-500 uppercase tracking-wide mb-1">{t.airQuality.location}</div>
                             <div className={`text-3xl font-bold ${textPrimary}`}>{data.location}</div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-start sm:text-end">
                              <div className="text-xs bg-white/10 px-2 py-1 rounded text-gray-400 inline-block">{data.methodology}</div>
                         </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-12 mb-12">
-                        <div>
+                    <div className="kairo-metric-grid grid sm:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-12">
+                        <div className="kairo-metric-card border p-5 sm:p-6 text-start">
                             <div className="text-sm text-gray-400 mb-2">{t.monitor.aqi}</div>
-                            <div className={`text-6xl font-bold ${textPrimary}`}>{data.aqi_estimate}</div>
+                            <div className={`kairo-metric-value text-5xl sm:text-6xl font-bold ${textPrimary}`}>{data.aqi_estimate}</div>
                             <div className="text-sm text-blue-400 font-bold mt-2">{data.status}</div>
                         </div>
-                        <div>
+                        <div className="kairo-metric-card border p-5 sm:p-6 text-start">
                             <div className="text-sm text-gray-400 mb-2">Ambient CO₂ (ppm)</div>
-                            <div className={`text-6xl font-bold ${textPrimary}`}>{data.co2_estimate_ppm}</div>
+                            <div className={`kairo-metric-value text-5xl sm:text-6xl font-bold ${textPrimary}`}>{data.co2_estimate_ppm}</div>
                             <div className="text-sm text-gray-500 mt-2">Global Avg: ~420</div>
                         </div>
                     </div>
+
+                    <DecisionIntelligence
+                        module="exposure"
+                        score={Math.max(0, 100 - Math.min(100, data.aqi_estimate / 2))}
+                        status={data.status}
+                        confidence="estimated"
+                        className="mb-8 sm:mb-12"
+                    />
 
                     <div className={`p-6 rounded-2xl border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-black/40 border-white/5'}`}>
                         <div className="flex items-center gap-2 mb-2">

@@ -75,6 +75,46 @@ const applyStyles = (element: HTMLElement, styles: Partial<CSSStyleDeclaration>)
   return element;
 };
 
+const ARABIC_TEXT = /[\u0600-\u06ff\u0750-\u077f\u08a0-\u08ff]/;
+
+/** Keep exported text on the same font metrics and bidi rules as the live UI. */
+const stabilizeExportTypography = (root: HTMLElement, language: 'ar' | 'en') => {
+  root.style.fontFamily = language === 'ar'
+    ? "'IBM Plex Sans Arabic', Arial, sans-serif"
+    : "'Manrope', 'IBM Plex Sans Arabic', Arial, sans-serif";
+
+  root.querySelectorAll<HTMLElement>('*').forEach((candidate) => {
+    candidate.style.animation = 'none';
+    candidate.style.transition = 'none';
+    candidate.style.caretColor = 'transparent';
+
+    if (!['svg', 'path'].includes(candidate.tagName.toLowerCase())) {
+      candidate.style.fontFamily = 'inherit';
+      candidate.style.fontKerning = 'normal';
+      candidate.style.fontVariantLigatures = 'common-ligatures';
+      candidate.style.textRendering = 'optimizeLegibility';
+    }
+
+    if (candidate.style.overflow === 'auto' || candidate.style.overflow === 'scroll') {
+      candidate.style.overflow = 'visible';
+    }
+
+    const hasDirectText = Array.from(candidate.childNodes).some(
+      (node) => node.nodeType === Node.TEXT_NODE && Boolean(node.textContent?.trim()),
+    );
+    if (!hasDirectText) return;
+
+    const isArabicRun = ARABIC_TEXT.test(candidate.textContent || '');
+    candidate.setAttribute('dir', isArabicRun ? 'rtl' : 'ltr');
+    candidate.style.direction = isArabicRun ? 'rtl' : 'ltr';
+    candidate.style.unicodeBidi = 'plaintext';
+    candidate.style.letterSpacing = 'normal';
+    candidate.style.wordSpacing = isArabicRun ? '0.09em' : '0.035em';
+    candidate.style.overflowWrap = 'break-word';
+    candidate.style.wordBreak = 'normal';
+  });
+};
+
 const addExportHeader = (
   clonedDocument: Document,
   clonedElement: HTMLElement,
@@ -299,7 +339,14 @@ const generateCanvas = async (
     const contentWidth = Math.max(element.scrollWidth, element.clientWidth, 960);
     const contentHeight = Math.max(element.scrollHeight, element.clientHeight);
     const maxSafeCanvasHeight = 25_000;
-    const scale = Math.max(1, Math.min(2, maxSafeCanvasHeight / Math.max(contentHeight, 1)));
+    const maxSafeCanvasPixels = 10_000_000;
+    const pixelSafeScale = Math.sqrt(
+      maxSafeCanvasPixels / Math.max(contentWidth * contentHeight, 1),
+    );
+    const scale = Math.max(
+      1,
+      Math.min(1.25, pixelSafeScale, maxSafeCanvasHeight / Math.max(contentHeight, 1)),
+    );
 
     const renderCanvas = (renderScale: number) =>
       html2canvas(element, {
@@ -329,26 +376,12 @@ const generateCanvas = async (
         clonedElement.style.height = 'max-content';
         clonedElement.style.overflow = 'visible';
         clonedElement.style.backgroundColor = isLight ? '#f5f8f6' : '#07110f';
+        clonedElement.setAttribute('data-kairo-export-surface', language);
 
         clonedElement.querySelectorAll<HTMLElement>('.no-export').forEach((candidate) => {
           candidate.remove();
         });
-        clonedElement.querySelectorAll<HTMLElement>('*').forEach((candidate) => {
-          candidate.style.animation = 'none';
-          candidate.style.transition = 'none';
-          candidate.style.caretColor = 'transparent';
-          if (!['svg', 'path'].includes(candidate.tagName.toLowerCase())) {
-            candidate.style.fontFamily = "'Cairo', 'Inter', Arial, sans-serif";
-            candidate.style.fontVariantLigatures = 'normal';
-            candidate.style.textRendering = 'geometricPrecision';
-          }
-          if (
-            candidate.style.overflow === 'auto' ||
-            candidate.style.overflow === 'scroll'
-          ) {
-            candidate.style.overflow = 'visible';
-          }
-        });
+        stabilizeExportTypography(clonedElement, language);
 
         clonedElement.querySelectorAll<SVGElement>('svg').forEach((svg) => {
           const box = svg.getBoundingClientRect();

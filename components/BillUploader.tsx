@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, Zap, Droplet, Check, AlertCircle, X, Loader2, FileText, ArrowDown } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { analyzeElectricityBill, analyzeWaterBillOCR, analyzeFoodReceiptOCR } from '../services/tokenRouterService';
+import { MAX_UPLOAD_BYTES, validateImageFile } from '../utils/fileSecurity';
 
 // Type casting to bypass strict environment checks
 const MotionDiv = motion.div as any;
@@ -33,16 +34,16 @@ const BillUploader: React.FC<BillUploaderProps> = ({ onDataExtracted, onUpload, 
         }
     };
 
-    const processFile = (file: File) => {
+    const processFile = async (file: File) => {
         setError(null);
         setResult(null);
         
         // Validation
-        if (file.size > 5 * 1024 * 1024) {
+        if (file.size <= 0 || file.size > MAX_UPLOAD_BYTES) {
             setError(t.bill.errorSize);
             return;
         }
-        if (!file.type.startsWith('image/')) {
+        if (!(await validateImageFile(file))) {
             setError(t.bill.errorType);
             return;
         }

@@ -4,18 +4,63 @@ import { ensureKairoIdentity, isSupabaseConfigured, supabase } from '../utils/su
 
 type ReportModule = Exclude<CapabilityId, 'foresight' | 'scenarios'> | 'carbon';
 
-const requireClient = () => {
-  if (!supabase || !isSupabaseConfigured) {
-    throw new Error('Supabase is not configured.');
-  }
-  return supabase;
+const CLOUD_RETRY_COOLDOWN_MS = 5 * 60 * 1000;
+let cloudReadinessPromise: Promise<boolean> | null = null;
+let cloudRetryAfter = 0;
+
+const isMissingTableError = (error: unknown) => {
+  if (!error || typeof error !== 'object') return false;
+  const value = error as { code?: string; message?: string };
+  return (
+    value.code === 'PGRST205' ||
+    /could not find the table|schema cache/i.test(value.message ?? '')
+  );
+};
+
+/**
+ * Probe the KAIRO schema once per cooldown window. This lets the current-device
+ * experience keep working when the remote project is unavailable or has not
+ * received its migrations, without repeating failing REST requests.
+ */
+export const isKairoCloudReady = async () => {
+  if (!supabase || !isSupabaseConfigured) return false;
+  if (cloudRetryAfter > Date.now()) return false;
+  if (cloudReadinessPromise) return cloudReadinessPromise;
+
+  cloudReadinessPromise = (async () => {
+    try {
+      await ensureKairoIdentity();
+      const { error } = await supabase
+        .from('kairo_profiles')
+        .select('user_id', { head: true, count: 'exact' })
+        .limit(0);
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      cloudRetryAfter = Date.now() + CLOUD_RETRY_COOLDOWN_MS;
+      if (!isMissingTableError(error) && import.meta.env.DEV) {
+        console.info('KAIRO cloud sync is temporarily unavailable.');
+      }
+      return false;
+    } finally {
+      cloudReadinessPromise = null;
+    }
+  })();
+
+  return cloudReadinessPromise;
+};
+
+const getReadyClient = async () => {
+  if (!supabase || !isSupabaseConfigured) return null;
+  return (await isKairoCloudReady()) ? supabase : null;
 };
 
 export const upsertKairoProfile = async (
   audience: AudienceId,
   preferredLanguage: 'ar' | 'en',
 ) => {
-  const client = requireClient();
+  const client = await getReadyClient();
+  if (!client) return false;
   const userId = await ensureKairoIdentity();
   const { error } = await client.from('kairo_profiles').upsert(
     {
@@ -26,6 +71,7 @@ export const upsertKairoProfile = async (
     { onConflict: 'user_id' },
   );
   if (error) throw error;
+  return true;
 };
 
 export const upsertModuleReport = async (
@@ -33,8 +79,9 @@ export const upsertModuleReport = async (
   payload: unknown,
   score?: number | null,
 ) => {
-  if (!payload) return;
-  const client = requireClient();
+  if (!payload) return false;
+  const client = await getReadyClient();
+  if (!client) return false;
   const userId = await ensureKairoIdentity();
   const { error } = await client.from('kairo_module_reports').upsert(
     {
@@ -46,10 +93,12 @@ export const upsertModuleReport = async (
     { onConflict: 'user_id,module' },
   );
   if (error) throw error;
+  return true;
 };
 
 export const loadModuleReports = async (): Promise<Record<string, unknown>> => {
-  const client = requireClient();
+  const client = await getReadyClient();
+  if (!client) return {};
   await ensureKairoIdentity();
   const { data, error } = await client
     .from('kairo_module_reports')
@@ -69,7 +118,8 @@ export const saveEnvironmentalSnapshot = async (snapshot: {
   water?: unknown;
   deviceContext?: unknown;
 }) => {
-  const client = requireClient();
+  const client = await getReadyClient();
+  if (!client) return false;
   const userId = await ensureKairoIdentity();
   const { error } = await client.from('kairo_environmental_snapshots').insert({
     user_id: userId,
@@ -79,6 +129,7 @@ export const saveEnvironmentalSnapshot = async (snapshot: {
     device_context: snapshot.deviceContext ?? null,
   });
   if (error) throw error;
+  return true;
 };
 
 const rowToScenario = (row: any): Scenario => ({
@@ -94,7 +145,8 @@ const rowToScenario = (row: any): Scenario => ({
 });
 
 export const listCloudScenarios = async (): Promise<Scenario[]> => {
-  const client = requireClient();
+  const client = await getReadyClient();
+  if (!client) return [];
   await ensureKairoIdentity();
   const { data, error } = await client
     .from('kairo_scenarios')
@@ -105,7 +157,8 @@ export const listCloudScenarios = async (): Promise<Scenario[]> => {
 };
 
 export const saveCloudScenario = async (scenario: Scenario): Promise<Scenario> => {
-  const client = requireClient();
+  const client = await getReadyClient();
+  if (!client) return { ...scenario, synced: false };
   const userId = await ensureKairoIdentity();
   const { data, error } = await client
     .from('kairo_scenarios')
@@ -126,8 +179,10 @@ export const saveCloudScenario = async (scenario: Scenario): Promise<Scenario> =
 };
 
 export const deleteCloudScenario = async (id: string) => {
-  const client = requireClient();
+  const client = await getReadyClient();
+  if (!client) return false;
   await ensureKairoIdentity();
   const { error } = await client.from('kairo_scenarios').delete().eq('id', id);
   if (error) throw error;
+  return true;
 };

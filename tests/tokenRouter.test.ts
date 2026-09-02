@@ -33,8 +33,26 @@ const testAIConfig = (
     maxOutputTokens: 256,
     thinkingBudget: 0,
   },
+  agentRouter: {
+    apiKey: '',
+    baseUrl: 'https://agent-router.test/v1',
+    models: ['agent-test'],
+    visionModels: [],
+    timeoutMs: 1_000,
+    rateLimitPerMinute: 0,
+  },
+  tabiAI: {
+    apiKey: '',
+    baseUrl: 'https://tabi.test/v1',
+    models: ['tabi-test'],
+    visionModels: [],
+    timeoutMs: 1_000,
+    rateLimitPerMinute: 0,
+  },
   tokenRouter,
-  enableTokenRouterFallback: false,
+  enableAgentRouterFallback: false,
+  enableTaBiAIFallback: false,
+  enableTokenRouterFallback: true,
   rateLimitPerMinute: 0,
 });
 
@@ -213,7 +231,8 @@ test('gateway health is secret-free and invalid requests are rejected locally', 
     const health = JSON.parse(healthText);
     assert.equal(healthResponse.status, 200);
     assert.equal(health.configured, true);
-    assert.equal(health.provider, 'TokenRouter');
+    assert.equal(health.service, 'KAIRO Intelligence');
+    assert.equal('provider' in health, false);
     assert.equal(healthText.includes('test-secret-key'), false);
 
     const invalidResponse = await fetch(`${baseUrl}/api/ai/generate`, {

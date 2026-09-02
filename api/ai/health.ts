@@ -3,12 +3,15 @@ import {
   getAIGatewayConfig,
   getAIGatewayHealth,
 } from '../../aiGateway.js';
+import { applySecurityHeaders } from '../../security.js';
 
 const sendJson = (
   response: ServerResponse,
   status: number,
   body: unknown,
 ) => {
+  applySecurityHeaders(response);
+  response.setHeader('Cache-Control', 'no-store');
   response.statusCode = status;
   response.setHeader('Content-Type', 'application/json; charset=utf-8');
   response.end(JSON.stringify(body));
@@ -18,6 +21,7 @@ export default function handler(
   request: IncomingMessage,
   response: ServerResponse,
 ): void {
+  applySecurityHeaders(response);
   if (request.method !== 'GET') {
     response.setHeader('Allow', 'GET');
     sendJson(

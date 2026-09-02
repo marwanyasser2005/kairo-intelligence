@@ -121,19 +121,19 @@ const CsrDashboard: React.FC = () => {
         </header>
 
         {/* Metrics Grid */}
-        <div className="grid md:grid-cols-4 gap-6 mb-12">
+        <div className="kairo-metric-grid grid sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-12">
             {[
                 { label: t.csr.employees, val: '1,240', sub: 'Active Accounts', icon: <Users className="w-5 h-5 text-blue-400"/> },
                 { label: t.csr.intensity, val: '12.4', sub: 'Tons CO2e / Year', icon: <TrendingDown className="w-5 h-5 text-green-400"/> },
                 { label: t.csr.audit, val: '86%', sub: 'Department Wide', icon: <FileCheck className="w-5 h-5 text-yellow-400"/> },
                 { label: t.csr.offset, val: '150', sub: 'Trees Planted', icon: <CheckCircle2 className="w-5 h-5 text-purple-400"/> },
             ].map((metric, i) => (
-                <div key={i} className={`p-6 rounded-2xl border ${cardBg}`}>
+                <div key={i} className={`kairo-metric-card p-6 rounded-2xl border ${cardBg}`}>
                     <div className="flex justify-between items-start mb-4">
                         <span className={`text-sm font-medium ${textSub}`}>{metric.label}</span>
                         <div className={`p-2 rounded-lg ${isLight ? 'bg-gray-100' : 'bg-black'}`}>{metric.icon}</div>
                     </div>
-                    <div className={`text-3xl font-bold mb-1 ${textMain}`}>{metric.val}</div>
+                    <div className={`kairo-metric-value text-3xl font-bold mb-1 ${textMain}`}>{metric.val}</div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide">{metric.sub}</div>
                 </div>
             ))}
@@ -142,15 +142,15 @@ const CsrDashboard: React.FC = () => {
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
             
             {/* Chart Area */}
-            <div className={`lg:col-span-2 border rounded-3xl p-8 ${cardBg}`}>
-                <div className="flex justify-between items-center mb-8">
+            <div className={`kairo-analysis-panel lg:col-span-2 border rounded-3xl p-5 sm:p-8 ${cardBg}`}>
+                <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-8">
                     <h3 className={`text-xl font-bold ${textMain}`}>{t.csr.chartTitle}</h3>
-                    <div className="flex gap-4 text-sm">
+                    <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm">
                         <div className={`flex items-center gap-2 ${textSub}`}><span className="w-3 h-3 rounded-full bg-kairo-green"></span> {t.csr.scopeActual}</div>
                         <div className={`flex items-center gap-2 ${textSub}`}><span className="w-3 h-3 rounded-full bg-gray-500"></span> {t.csr.scopeTarget}</div>
                     </div>
                 </div>
-                <div className="kairo-chart h-[320px] w-full p-3" dir="ltr">
+                <div className="kairo-chart kairo-chart-responsive h-[320px] w-full p-3" dir="ltr">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={chartData}>
                             <defs>
@@ -171,10 +171,44 @@ const CsrDashboard: React.FC = () => {
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
+                <details className="mt-5 rounded-2xl border border-black/5 bg-black/[0.025] p-3 dark:border-white/5 dark:bg-white/[0.025]">
+                    <summary className={`cursor-pointer px-2 py-1 text-sm font-bold ${textMain}`}>
+                        {language === 'ar' ? 'عرض جدول البيانات والفجوة عن الهدف' : 'View data table and target gap'}
+                    </summary>
+                    <div className="kairo-data-table-shell mt-3" role="region" aria-label={language === 'ar' ? 'جدول الانبعاثات والأهداف' : 'Emissions and targets table'} tabIndex={0}>
+                        <table className="kairo-data-table">
+                            <thead>
+                                <tr>
+                                    <th>{language === 'ar' ? 'الشهر' : 'Month'}</th>
+                                    <th>{language === 'ar' ? 'الانبعاثات' : 'Emissions'}</th>
+                                    <th>{language === 'ar' ? 'الهدف' : 'Target'}</th>
+                                    <th>{language === 'ar' ? 'الفجوة' : 'Gap'}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {chartData.map((row) => {
+                                    const gap = row.emissions - row.target;
+                                    return (
+                                        <tr key={`csr-${row.month}`}>
+                                            <td className="font-bold">{row.month}</td>
+                                            <td>{row.emissions.toLocaleString()}</td>
+                                            <td>{row.target.toLocaleString()}</td>
+                                            <td>
+                                                <span className={`kairo-status-pill ${gap <= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                    {gap > 0 ? '+' : ''}{gap.toLocaleString()}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
             </div>
 
             {/* Anti-Greenwashing Tool */}
-            <div className={`border rounded-3xl p-8 flex flex-col ${isLight ? 'bg-white border-gray-200' : 'bg-gradient-to-br from-gray-900 to-black border-white/10'}`}>
+            <div className={`kairo-analysis-panel border rounded-3xl p-5 sm:p-8 flex flex-col ${isLight ? 'bg-white border-gray-200' : 'bg-gradient-to-br from-gray-900 to-black border-white/10'}`}>
                 <div className="mb-6">
                     <h3 className={`text-xl font-bold mb-2 flex items-center gap-2 ${textMain}`}>
                         <AlertOctagon className="w-5 h-5 text-red-500" /> {t.csr.greenwashing}
@@ -206,13 +240,21 @@ const CsrDashboard: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className={`mt-6 pt-6 border-t ${isLight ? 'border-gray-200' : 'border-white/10'}`}
                     >
-                        <div className="flex justify-between items-center mb-2">
-                            <span className={`font-bold ${getVerdictColor(verificationResult.verdict)}`}>
-                                {verificationResult.verdict}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                                {t.csr.confidence}: {verificationResult.confidence_score}%
-                            </span>
+                        <div className="mb-4 flex items-center gap-4">
+                            <div
+                                className="kairo-score-ring !h-20 !w-20"
+                                style={{ '--kairo-score': verificationResult.confidence_score } as React.CSSProperties}
+                                role="img"
+                                aria-label={`${t.csr.confidence}: ${verificationResult.confidence_score}%`}
+                            >
+                                <div className="kairo-score-ring-core"><strong className="!text-xl">{verificationResult.confidence_score}</strong><span>%</span></div>
+                            </div>
+                            <div>
+                                <div className="text-[10px] font-black uppercase tracking-wider text-gray-500">{t.csr.confidence}</div>
+                                <span className={`mt-1 block font-bold ${getVerdictColor(verificationResult.verdict)}`}>
+                                    {verificationResult.verdict}
+                                </span>
+                            </div>
                         </div>
                         <p className={`text-xs mb-3 leading-relaxed ${textSub}`}>
                             {verificationResult.analysis}

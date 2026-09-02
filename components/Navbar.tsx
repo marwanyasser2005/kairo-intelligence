@@ -68,6 +68,7 @@ const Navbar: React.FC = () => {
   const navItems = [
     { label: t.nav.home, path: "/" },
     { label: t.nav.dashboard, path: "/dashboard" },
+    { label: language === 'ar' ? 'إثبات الأثر' : 'Proof of impact', path: "/proof" },
     { label: t.nav.logic, path: "/architecture" },
     { label: t.common.methodology || "Methodology", path: "/impact" },
     { label: t.nav.about, path: "/about" },
@@ -82,11 +83,11 @@ const Navbar: React.FC = () => {
     : 'bg-transparent border-transparent';
 
   return (
-    <nav className={`fixed top-0 z-50 w-full border-b backdrop-blur-2xl transition-all duration-500 ${bgGlass}`} dir={dir}>
-      <div className={`mx-auto flex max-w-[1600px] items-center justify-between px-4 transition-all duration-500 sm:px-6 md:px-8 ${scrolled ? 'h-16' : 'h-20'}`}>
+    <nav className={`kairo-navbar fixed top-0 z-50 w-full border-b backdrop-blur-2xl transition-all duration-300 ${bgGlass}`} dir={dir} aria-label={language === 'ar' ? 'التنقل الرئيسي' : 'Primary navigation'}>
+      <div className={`mx-auto flex max-w-[1440px] items-center justify-between px-4 transition-all duration-300 sm:px-7 lg:px-10 xl:px-12 ${scrolled ? 'h-16' : 'h-20'}`}>
         
         {/* LOGO */}
-        <Link to="/" className="group flex shrink-0 items-center outline-none" onClick={() => playSound('click')} aria-label={language === 'ar' ? 'العودة إلى الرئيسية' : 'Back to home'}>
+        <Link to="/" className="group flex min-h-11 shrink-0 items-center outline-none" onClick={() => playSound('click')} aria-label={language === 'ar' ? 'العودة إلى الرئيسية' : 'Back to home'}>
           <div className="relative flex items-center justify-center">
              <KairoBrandMark className={`${scrolled ? 'h-14 sm:h-16 xl:h-[4.5rem]' : 'h-16 sm:h-[4.5rem] xl:h-20'} aspect-[822/938] transition-all duration-500 group-hover:scale-105`} />
           </div>
@@ -99,7 +100,8 @@ const Navbar: React.FC = () => {
                 key={item.path}
                 to={item.path} 
                 onClick={() => playSound('click')}
-                className={`relative isolate overflow-hidden rounded-full px-4 py-2 text-xs font-bold transition-colors ${isActive(item.path) ? textColor : (isLight ? 'text-gray-500 hover:text-black' : 'text-gray-400 hover:text-white')}`}
+                aria-current={isActive(item.path) ? 'page' : undefined}
+                className={`relative isolate inline-flex min-h-11 items-center overflow-hidden rounded-full px-4 py-2 text-xs font-bold transition-colors ${isActive(item.path) ? textColor : (isLight ? 'text-gray-500 hover:text-black' : 'text-gray-400 hover:text-white')}`}
              >
                  {isActive(item.path) && (
                    <motion.span
@@ -114,7 +116,7 @@ const Navbar: React.FC = () => {
 
           {/* Systems Dropdown */}
           <div className="relative ms-1 block" onMouseEnter={() => setSystemsOpen(true)} onMouseLeave={() => setSystemsOpen(false)}>
-              <button className={`px-4 py-2 text-sm font-bold rounded-full transition-all flex items-center gap-1.5 ${location.pathname.includes('/systems') || ['/energy', '/transport', '/monitor', '/scenarios'].includes(location.pathname) ? (isLight ? 'bg-gray-100 text-black' : 'bg-white/10 text-white') : (isLight ? 'text-gray-500 hover:text-black hover:bg-gray-50' : 'text-gray-400 hover:text-white hover:bg-white/5')}`}>
+              <button onClick={() => setSystemsOpen((open) => !open)} aria-expanded={systemsOpen} aria-haspopup="menu" className={`min-h-11 px-4 py-2 text-sm font-bold rounded-full transition-all flex items-center gap-1.5 ${location.pathname.includes('/systems') || ['/energy', '/transport', '/monitor', '/scenarios'].includes(location.pathname) ? (isLight ? 'bg-gray-100 text-black' : 'bg-white/10 text-white') : (isLight ? 'text-gray-500 hover:text-black hover:bg-gray-50' : 'text-gray-400 hover:text-white hover:bg-white/5')}`}>
                   {t.nav.systems} <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${systemsOpen ? 'rotate-180' : ''}`} />
               </button>
               <AnimatePresence>
@@ -124,14 +126,16 @@ const Navbar: React.FC = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className={`absolute top-full ${dir === 'rtl' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} mt-2 w-72 rounded-2xl shadow-2xl overflow-hidden py-2 border ${isLight ? 'bg-white border-gray-200' : 'bg-[#0a0a0a] border-white/10'}`}
+                        role="menu"
+                        className={`absolute top-full ${dir === 'rtl' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} mt-2 w-80 rounded-2xl shadow-2xl overflow-hidden p-2 border ${isLight ? 'bg-white border-gray-200' : 'bg-[#0a1713] border-white/10'}`}
                       >
                           {systems.map((sys) => (
                               <Link 
                                 key={sys.path} 
                                 to={sys.path}
-                                onClick={() => playSound('click')}
-                                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${isLight ? 'text-gray-600 hover:bg-gray-50 hover:text-black' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                                onClick={() => { setSystemsOpen(false); playSound('click'); }}
+                                role="menuitem"
+                                className={`flex min-h-12 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${isLight ? 'text-gray-600 hover:bg-gray-50 hover:text-black' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}
                               >
                                   <span className={`p-1.5 rounded-lg ${isLight ? 'bg-gray-100' : 'bg-white/5'}`}>{sys.icon}</span> {sys.label}
                               </Link>

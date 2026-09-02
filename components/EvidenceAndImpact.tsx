@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   CheckCircle2,
@@ -12,6 +13,7 @@ import {
   Save,
   ShieldCheck,
   Sparkles,
+  ArrowUpRight,
 } from 'lucide-react';
 import { usePersistentState } from '../utils/storage';
 
@@ -138,7 +140,7 @@ const EvidenceAndImpact: React.FC<EvidenceAndImpactProps> = ({
   return (
     <section className="mt-10" aria-labelledby="evidence-impact-title">
       <div className="grid gap-6 xl:grid-cols-[1.18fr_.82fr]">
-        <div className={`overflow-hidden rounded-[2rem] border ${border} ${surface}`}>
+        <div className={`kairo-analysis-panel overflow-hidden rounded-[2rem] border ${border} ${surface}`}>
           <div className={`border-b p-6 sm:p-8 ${border}`}>
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-2xl">
@@ -177,7 +179,7 @@ const EvidenceAndImpact: React.FC<EvidenceAndImpactProps> = ({
               return (
                 <article
                   key={item.id}
-                  className={`rounded-[1.5rem] border p-5 ${border} ${
+                  className={`kairo-metric-card rounded-[1.5rem] border p-5 ${border} ${
                     item.ready ? nested : 'bg-transparent opacity-65'
                   }`}
                 >
@@ -186,7 +188,7 @@ const EvidenceAndImpact: React.FC<EvidenceAndImpactProps> = ({
                       <p className={`truncate text-sm font-extrabold ${textMain}`}>
                         {item.title}
                       </p>
-                      <p className={`mt-2 text-xl font-black ${textMain}`}>
+                      <p className={`kairo-metric-value mt-2 text-xl font-black ${textMain}`}>
                         {item.ready ? item.value : isArabic ? 'لا توجد نتيجة بعد' : 'No result yet'}
                       </p>
                     </div>
@@ -252,7 +254,7 @@ const EvidenceAndImpact: React.FC<EvidenceAndImpactProps> = ({
         </div>
 
         <div className="grid content-start gap-6">
-          <div className={`rounded-[2rem] border p-6 sm:p-8 ${border} ${surface}`}>
+          <div className={`kairo-analysis-panel rounded-[2rem] border p-6 sm:p-8 ${border} ${surface}`}>
             <span className="kairo-eyebrow">
               <History className="h-3.5 w-3.5" />
               {isArabic ? 'متابعة الأثر' : 'Impact tracking'}
@@ -286,7 +288,7 @@ const EvidenceAndImpact: React.FC<EvidenceAndImpactProps> = ({
               ].map((metric) => (
                 <div
                   key={metric.label}
-                  className={`rounded-2xl border px-3 py-4 text-center ${border} ${nested}`}
+                  className={`kairo-metric-card kairo-metric-compact rounded-2xl border px-3 py-4 text-center ${border} ${nested}`}
                 >
                   <p className={`text-lg font-black ${textMain}`}>{metric.value}</p>
                   <p className={`mt-1 text-[9px] font-bold leading-4 ${textSoft}`}>
@@ -311,6 +313,14 @@ const EvidenceAndImpact: React.FC<EvidenceAndImpactProps> = ({
                   ? 'سجّل متابعة جديدة'
                   : 'Capture follow-up'}
             </button>
+
+            <Link
+              to="/proof"
+              className="kairo-secondary-button mt-3 w-full justify-center"
+            >
+              <ArrowUpRight className="h-4 w-4" />
+              {isArabic ? 'افتح مساحة إثبات الأثر' : 'Open proof-of-impact workspace'}
+            </Link>
 
             <div className="mt-6 space-y-3">
               {history.length > 0 ? (

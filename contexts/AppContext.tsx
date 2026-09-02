@@ -26,8 +26,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   
   const [language, setLanguage] = useState<Language>(() => {
     if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('kairo_lang');
-      return (savedLang === 'en' || savedLang === 'ar') ? savedLang : 'ar';
+      return /^\/en(?:\/|$)/.test(window.location.pathname) ? 'en' : 'ar';
     }
     return 'ar';
   });
@@ -68,7 +67,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const toggleLanguage = () => {
     playSound('click');
-    setLanguage(prev => prev === 'en' ? 'ar' : 'en');
+    const currentPath = window.location.pathname;
+    const isEnglishPath = /^\/en(?:\/|$)/.test(currentPath);
+    const routePath = currentPath.replace(/^\/en(?=\/|$)/, '') || '/';
+    const nextPath = isEnglishPath
+      ? routePath
+      : routePath === '/'
+        ? '/en'
+        : `/en${routePath}`;
+    const nextLanguage: Language = isEnglishPath ? 'ar' : 'en';
+    setLanguage(nextLanguage);
+    localStorage.setItem('kairo_lang', nextLanguage);
+    window.location.assign(`${nextPath}${window.location.search}${window.location.hash}`);
   };
 
   const playSound = (type: 'click' | 'success') => {

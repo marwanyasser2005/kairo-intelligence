@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
     Train, Car, Bus, Loader2, Save, Download, RefreshCw, AlertTriangle, 
     Clock, DollarSign, CloudRain, Briefcase, Map as MapIcon, Target, UploadCloud, 
     Scale, Activity, ArrowRight, Zap, Target as TargetIcon, Search, FileText, Image as ImageIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { runMobilityIntelligence } from '../services/tokenRouterService';
+import {
+    analyzeTransportReceiptOCR,
+    runMobilityIntelligence,
+    type TransportReceiptExtraction,
+} from '../services/tokenRouterService';
 import { MobilityIntelligenceReport, MobilityInputs } from '../types';
 import { usePersistentState } from '../utils/storage';
 import { useApp } from '../contexts/AppContext';
 import SdgBadge from '../components/SdgBadge';
 import CapabilityContext from '../components/CapabilityContext';
 import ReportActions from '../components/ReportActions';
+import DecisionIntelligence from '../components/DecisionIntelligence';
+import { MAX_UPLOAD_BYTES, validateImageFile } from '../utils/fileSecurity';
 
 const MotionDiv = motion.div as any;
 
@@ -89,7 +95,10 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
     const [analyzing, setAnalyzing] = useState(false);
     const [ocrLoading, setOcrLoading] = useState(false);
     const [routeLoading, setRouteLoading] = useState(false);
+    const [interactionError, setInteractionError] = useState<string | null>(null);
+    const [ocrResult, setOcrResult] = useState<TransportReceiptExtraction | null>(null);
     const [activeTab, setActiveTab] = useState<'profile' | 'route' | 'ocr'>('profile');
+    const receiptInputRef = useRef<HTMLInputElement>(null);
 
     // Inputs
     const [inputs, setInputs] = usePersistentState<MobilityInputs>('kairo_mobility_inputs', {
@@ -117,12 +126,14 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
     const optionLabel = (value: string) => isAr ? (AR_OPTION_LABELS[value] || value) : value;
 
     const handleAnalysis = async () => {
+        setInteractionError(null);
         setAnalyzing(true);
         try {
             const result = await runMobilityIntelligence(inputs, language);
             if (setGlobalReport) setGlobalReport(result);
         } catch (e) {
             console.error(e);
+            setInteractionError(e instanceof Error ? e.message : (isAr ? 'تعذر تشغيل التحليل الآن.' : 'The analysis could not run right now.'));
         } finally {
             setAnalyzing(false);
         }
@@ -132,23 +143,58 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
         if (setGlobalReport) setGlobalReport(null);
     };
 
-    const simulateOCR = () => {
+    const handleReceiptFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        setInteractionError(null);
+        setOcrResult(null);
+        if (file.size <= 0 || file.size > MAX_UPLOAD_BYTES || !(await validateImageFile(file))) {
+            setInteractionError(isAr ? 'اختر صورة PNG أو JPEG سليمة وبحجم مسموح.' : 'Choose a valid PNG or JPEG image within the upload limit.');
+            event.target.value = '';
+            return;
+        }
+
         setOcrLoading(true);
-        setTimeout(() => {
-            updateInput('monthlySpending', '2000+');
-            updateInput('isCar', true);
-            updateInput('primaryTransport', 'Careem');
+        try {
+            const dataUrl = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(String(reader.result || ''));
+                reader.onerror = () => reject(new Error(isAr ? 'تعذرت قراءة الصورة.' : 'The image could not be read.'));
+                reader.readAsDataURL(file);
+            });
+            const base64 = dataUrl.split(',')[1];
+            if (!base64) throw new Error(isAr ? 'ملف الصورة غير صالح.' : 'The image file is invalid.');
+            const extracted = await analyzeTransportReceiptOCR(base64, language, file.type);
+            setOcrResult(extracted);
+            if (extracted.transport_mode !== 'Unknown') {
+                updateInput('primaryTransport', extracted.transport_mode);
+                updateInput('isCar', extracted.transport_mode === 'Private Car');
+            }
+        } catch (error) {
+            console.error(error);
+            setInteractionError(error instanceof Error ? error.message : (isAr ? 'فشل استخراج بيانات الإيصال.' : 'Receipt extraction failed.'));
+        } finally {
             setOcrLoading(false);
-        }, 1500);
+            event.target.value = '';
+        }
     };
 
-    const simulateRoute = () => {
+    const handleRouteAnalysis = async () => {
+        setInteractionError(null);
+        if (!inputs.fromLocation?.trim() || !inputs.toLocation?.trim()) {
+            setInteractionError(isAr ? 'أدخل نقطة البداية والوجهة قبل تحليل المسار.' : 'Enter both origin and destination before analyzing the route.');
+            return;
+        }
         setRouteLoading(true);
-        setTimeout(() => {
-            updateInput('commuteTime', '90+');
-            updateInput('trafficExposure', 'Extreme');
+        try {
+            const result = await runMobilityIntelligence(inputs, language);
+            if (setGlobalReport) setGlobalReport(result);
+        } catch (error) {
+            console.error(error);
+            setInteractionError(error instanceof Error ? error.message : (isAr ? 'تعذر تحليل المسار الآن.' : 'The route analysis could not run right now.'));
+        } finally {
             setRouteLoading(false);
-        }, 1500);
+        }
     };
 
     const bgApp = isLight ? 'bg-[#edf4f1]' : 'bg-[#0a0a0c]';
@@ -187,6 +233,11 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                     <div className="lg:col-span-4 space-y-6 flex flex-col">
                         
                         {/* TABS */}
+                        {interactionError && (
+                            <div role="alert" className="rounded-2xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm leading-6 text-rose-300">
+                                {interactionError}
+                            </div>
+                        )}
                         <div className={`flex rounded-lg overflow-hidden border ${borderSubtle} ${bgCard} p-1 max-w-full font-mono text-xs uppercase tracking-wider`}>
                             {['profile', 'route', 'ocr'].map(t => (
                                 <button 
@@ -206,14 +257,37 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                     <h3 className={`text-sm font-semibold uppercase tracking-widest ${textDim}`}>{isAr ? 'التحليل الذكي للإيصالات (OCR)' : 'Smart Receipt Analysis'}</h3>
                                     <p className={`text-xs ${textMuted} mb-6`}>{isAr ? 'ارفع إيصال بنزين، أو فاتورة أوبر/كريم، أو تقرير مصاريف، وسنقوم باستخراج الاستهلاك والتكلفة.' : 'Upload a fuel receipt, Uber/Careem invoice, or EV charging bill.'}</p>
                                     
-                                    <div className={`border-2 border-dashed ${borderSubtle} rounded-2xl p-8 text-center flex flex-col items-center justify-center cursor-pointer hover:border-purple-500/50 transition-colors group ${isLight ? 'bg-slate-50' : 'bg-black/20'}`} onClick={simulateOCR}>
+                                    <input
+                                        ref={receiptInputRef}
+                                        type="file"
+                                        accept="image/png,image/jpeg"
+                                        className="sr-only"
+                                        onChange={handleReceiptFile}
+                                        aria-label={isAr ? 'اختر صورة إيصال التنقل' : 'Choose a mobility receipt image'}
+                                    />
+                                    <button
+                                        type="button"
+                                        disabled={ocrLoading}
+                                        className={`w-full border-2 border-dashed ${borderSubtle} rounded-2xl p-8 text-center flex flex-col items-center justify-center cursor-pointer hover:border-purple-500/50 transition-colors group ${isLight ? 'bg-slate-50' : 'bg-black/20'} disabled:cursor-wait disabled:opacity-70`}
+                                        onClick={() => receiptInputRef.current?.click()}
+                                    >
                                         {ocrLoading ? (
                                             <Loader2 className="w-8 h-8 text-purple-500 animate-spin mb-4" />
                                         ) : (
                                             <UploadCloud className="w-8 h-8 text-purple-300 group-hover:text-purple-500 transition-colors mb-4" />
                                         )}
-                                        <span className={`text-sm font-bold ${textMain}`}>{isAr ? 'اختر ملف للإستخراج' : 'Select Receipt Image'}</span>
-                                    </div>
+                                        <span className={`text-sm font-bold ${textMain}`}>{isAr ? 'اختر ملفًا للاستخراج' : 'Select Receipt Image'}</span>
+                                    </button>
+                                    {ocrResult && (
+                                        <div className={`rounded-2xl border ${borderSubtle} p-4 ${isLight ? 'bg-emerald-50/80' : 'bg-emerald-500/[0.07]'}`}>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <span className="text-xs font-bold text-emerald-500">{ocrResult.provider || (isAr ? 'إيصال تنقل' : 'Mobility receipt')}</span>
+                                                <span className={`text-sm font-black tabular-nums ${textMain}`}>{Number(ocrResult.amount_egp || 0).toLocaleString(isAr ? 'ar-EG' : 'en-EG')} {isAr ? 'جنيه' : 'EGP'}</span>
+                                            </div>
+                                            <p className={`mt-2 text-xs leading-6 ${textMuted}`}>{ocrResult.evidence_note}</p>
+                                            <p className={`mt-2 text-[11px] ${textDim}`}>{isAr ? 'درجة ثقة الاستخراج' : 'Extraction confidence'}: {Math.round(Math.max(0, Math.min(1, Number(ocrResult.confidence || 0))) * 100)}%</p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -229,7 +303,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                             <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>{isAr ? 'إلى الموقع' : 'To Location'}</label>
                                             <input type="text" placeholder={isAr ? 'مثل: المهندسين' : 'e.g., Mohandeseen'} className={`w-full rounded-xl px-4 py-3 text-sm border focus:outline-none transition-colors ${inputBg}`} value={inputs.toLocation || ''} onChange={(e) => updateInput('toLocation', e.target.value)} />
                                         </div>
-                                        <button onClick={simulateRoute} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 text-xs uppercase tracking-wider rounded-xl transition-all flex justify-center items-center gap-2">
+                                        <button disabled={routeLoading} onClick={handleRouteAnalysis} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 text-xs uppercase tracking-wider rounded-xl transition-all flex justify-center items-center gap-2 disabled:cursor-wait disabled:opacity-70">
                                             {routeLoading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Search className="w-4 h-4" />} {isAr ? 'تقدير الوقت والتكلفة' : 'Estimate Route Engine'}
                                         </button>
                                     </div>
@@ -367,10 +441,10 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                     <div className="lg:col-span-8 flex flex-col space-y-6" id="mobility-report-container">
                         
                         {/* Toolbar */}
-                        <div className="flex justify-between items-center no-export">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between no-export">
                             <h2 className={`text-sm font-bold uppercase tracking-widest ${textMain}`}>{isAr ? 'لوحة القيادة' : 'Output Matrix'}</h2>
                             {report && (
-                                <div className="flex gap-3">
+                                <div className="flex flex-wrap gap-3">
                                     <ReportActions
                                         targetId="mobility-report-container"
                                         filename="Kairo_Mobility_Intelligence"
@@ -393,7 +467,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                     className="space-y-8"
                                 >
                                     {/* SCORE CARDS */}
-                                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="kairo-metric-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                                         {[
                                             { t: isAr ? 'كفاءة التنقل' : 'Mobility Efficiency', v: `${report.scores.mobility_efficiency}/100`, p: report.scores.mobility_efficiency, i: TargetIcon, c: 'text-emerald-500', bar: 'bg-emerald-500' },
                                             { t: isAr ? 'تكلفة التنقل الشهرية' : 'Monthly Transport Cost', v: `${report.metrics.monthly_cost_egp.toLocaleString()} ${isAr ? 'جنيه' : 'EGP'}`, i: DollarSign, c: 'text-red-500' },
@@ -402,23 +476,30 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                             { t: isAr ? 'التعرض للزحام' : 'Urban Exposure Risk', v: optionLabel(String(report.scores.urban_exposure)), i: AlertTriangle, c: 'text-orange-500' },
                                             { t: isAr ? 'مؤشر هدر المال' : 'Financial Waste Index', v: `${report.scores.financial_waste_index}/100`, p: report.scores.financial_waste_index, i: Activity, c: 'text-rose-500', bar: 'bg-rose-500' },
                                         ].map((card, i) => (
-                                            <div key={i} className={`min-w-0 p-5 sm:p-6 rounded-3xl border ${borderSubtle} ${bgCard} flex flex-col justify-between shadow-[0_14px_40px_rgba(10,60,45,.04)]`}>
+                                            <div key={i} className={`kairo-metric-card min-w-0 p-5 sm:p-6 rounded-3xl border ${borderSubtle} ${bgCard} flex flex-col justify-between shadow-[0_14px_40px_rgba(10,60,45,.04)]`}>
                                                 <div className="flex justify-between items-start mb-4">
                                                     <span className={`text-[10px] font-bold uppercase tracking-widest ${textMuted} w-2/3`}>{card.t}</span>
                                                     <card.i className={`w-4 h-4 ${card.c}`} />
                                                 </div>
-                                                <div className={`break-words text-xl sm:text-2xl md:text-3xl font-black tracking-tight ${textMain}`}>{card.v}</div>
+                                                <div className={`kairo-metric-value break-words text-xl sm:text-2xl md:text-3xl font-black tracking-tight ${textMain}`}>{card.v}</div>
                                                 {typeof card.p === 'number' && (
-                                                    <div className={`mt-4 h-1.5 overflow-hidden rounded-full ${isLight ? 'bg-emerald-950/8' : 'bg-white/10'}`}>
-                                                        <div className={`h-full rounded-full ${card.bar}`} style={{ width: `${Math.max(0, Math.min(100, card.p))}%` }} />
+                                                    <div className={`kairo-score-track mt-4 h-1.5 overflow-hidden rounded-full ${isLight ? 'bg-emerald-950/8' : 'bg-white/10'}`}>
+                                                        <div className={`kairo-score-fill h-full rounded-full ${card.bar}`} style={{ width: `${Math.max(0, Math.min(100, card.p))}%` }} />
                                                     </div>
                                                 )}
                                             </div>
                                         ))}
                                     </div>
 
+                                    <DecisionIntelligence
+                                        module="mobility"
+                                        score={report.scores.mobility_efficiency}
+                                        status={optionLabel(String(report.scores.urban_exposure))}
+                                        confidence="medium"
+                                    />
+
                                     {/* ADVANCED INSIGHTS */}
-                                    <div className={`p-8 rounded-3xl border ${isLight ? 'bg-indigo-50 border-indigo-100' : 'bg-indigo-950/20 border-indigo-500/20'}`}>
+                                    <div className={`kairo-analysis-panel kairo-mobility-yield-panel p-5 sm:p-8 rounded-3xl border ${isLight ? 'bg-indigo-50 border-indigo-100' : 'bg-indigo-950/20 border-indigo-500/20'}`}>
                                         <h3 className={`text-xs font-black uppercase tracking-widest text-indigo-600 mb-6 flex items-center gap-2`}><Target className="w-4 h-4"/> {isAr ? 'عائد التحسين السنوي (المتوقع)' : 'Potential Annual Yields'}</h3>
                                         <div className="grid md:grid-cols-3 gap-6 mb-8">
                                             <div>
@@ -434,24 +515,24 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                                 <div className="text-xl font-black text-teal-500">-{report.advanced_insights.potential_co2_reduction_kg * 12} kg CO₂</div>
                                             </div>
                                         </div>
-                                        <p className={`text-sm leading-relaxed ${textMain} font-medium`}>"{report.advanced_insights.before_vs_after_narrative}"</p>
+                                        <p className={`text-sm leading-relaxed ${textMain} font-medium`} dir="auto">"{report.advanced_insights.before_vs_after_narrative}"</p>
                                     </div>
 
                                     {/* RECOMMENDATIONS GRID */}
                                     <div className="grid md:grid-cols-2 gap-6">
-                                        <div className={`p-8 rounded-3xl border ${borderSubtle} ${bgCard}`}>
+                                        <div className={`kairo-analysis-panel p-5 sm:p-8 rounded-3xl border ${borderSubtle} ${bgCard}`}>
                                             <h3 className={`text-xs font-black uppercase tracking-widest mb-6 ${textDim}`}>{isAr ? 'تحسين مالي' : 'Financial Logic'}</h3>
                                             <ul className="space-y-4">
                                                 {report.recommendations.financial.map((r, i) => (
-                                                    <li key={i} className={`flex gap-3 text-sm leading-relaxed ${textMain}`}><ArrowRight className={`w-4 h-4 text-emerald-500 shrink-0 mt-0.5 ${dir === 'rtl' ? 'rotate-180' : ''}`} /> {r}</li>
+                                                    <li key={i} className={`flex gap-3 text-sm leading-relaxed ${textMain}`}><ArrowRight className={`w-4 h-4 text-emerald-500 shrink-0 mt-0.5 ${dir === 'rtl' ? 'rotate-180' : ''}`} /><span dir="auto">{r}</span></li>
                                                 ))}
                                             </ul>
                                         </div>
-                                        <div className={`p-8 rounded-3xl border ${borderSubtle} ${bgCard}`}>
+                                        <div className={`kairo-analysis-panel p-5 sm:p-8 rounded-3xl border ${borderSubtle} ${bgCard}`}>
                                             <h3 className={`text-xs font-black uppercase tracking-widest mb-6 ${textDim}`}>{isAr ? 'استرداد الزمن' : 'Time Optimization'}</h3>
                                             <ul className="space-y-4">
                                                 {report.recommendations.time_optimization.map((r, i) => (
-                                                    <li key={i} className={`flex gap-3 text-sm leading-relaxed ${textMain}`}><ArrowRight className={`w-4 h-4 text-blue-500 shrink-0 mt-0.5 ${dir === 'rtl' ? 'rotate-180' : ''}`} /> {r}</li>
+                                                    <li key={i} className={`flex gap-3 text-sm leading-relaxed ${textMain}`}><ArrowRight className={`w-4 h-4 text-blue-500 shrink-0 mt-0.5 ${dir === 'rtl' ? 'rotate-180' : ''}`} /><span dir="auto">{r}</span></li>
                                                 ))}
                                             </ul>
                                         </div>
@@ -459,7 +540,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                             <h3 className={`text-xs font-black uppercase tracking-widest mb-6 ${textDim}`}>{isAr ? 'الصحة الحضرية' : 'Urban Health'}</h3>
                                             <ul className="space-y-4">
                                                 {report.recommendations.urban_health.map((r, i) => (
-                                                    <li key={i} className={`flex gap-3 text-sm leading-relaxed ${textMain}`}><ArrowRight className={`w-4 h-4 text-orange-500 shrink-0 mt-0.5 ${dir === 'rtl' ? 'rotate-180' : ''}`} /> {r}</li>
+                                                    <li key={i} className={`flex gap-3 text-sm leading-relaxed ${textMain}`}><ArrowRight className={`w-4 h-4 text-orange-500 shrink-0 mt-0.5 ${dir === 'rtl' ? 'rotate-180' : ''}`} /><span dir="auto">{r}</span></li>
                                                 ))}
                                             </ul>
                                         </div>
@@ -467,7 +548,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                             <h3 className={`text-xs font-black uppercase tracking-widest mb-6 ${textDim}`}>{isAr ? 'بدائل حركية' : 'Transport Alternatives'}</h3>
                                             <ul className="space-y-4">
                                                 {report.recommendations.transportation.map((r, i) => (
-                                                    <li key={i} className={`flex gap-3 text-sm leading-relaxed ${textMain}`}><ArrowRight className={`w-4 h-4 text-purple-500 shrink-0 mt-0.5 ${dir === 'rtl' ? 'rotate-180' : ''}`} /> {r}</li>
+                                                    <li key={i} className={`flex gap-3 text-sm leading-relaxed ${textMain}`}><ArrowRight className={`w-4 h-4 text-purple-500 shrink-0 mt-0.5 ${dir === 'rtl' ? 'rotate-180' : ''}`} /><span dir="auto">{r}</span></li>
                                                 ))}
                                             </ul>
                                         </div>

@@ -8,11 +8,12 @@ import { exportAsPdf } from '../../utils/export';
 import ModuleToolbar from '../../components/ModuleToolbar';
 import BillUploader from '../../components/BillUploader';
 import CapabilityContext from '../../components/CapabilityContext';
+import DecisionIntelligence from '../../components/DecisionIntelligence';
 import { UploadCloud } from 'lucide-react';
 import { usePersistentState } from '../../utils/storage';
 import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, Legend } from 'recharts';
 const MotionDiv = motion.div as any;
-const COLORS = ['#22c55e', '#eab308', '#f97316', '#ef4444', '#8b5cf6'];
+const COLORS = ['#2bd4a7', '#60a5fa', '#f5b942', '#fb7185', '#a78bfa'];
 const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, setGlobalFoodData }) => {
     const { t, theme, language } = useApp();
     const isLight = theme === 'light';
@@ -233,10 +234,10 @@ const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, set
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className={`${bgCard} border rounded-2xl p-6 relative overflow-hidden`}>
+                    <div className="kairo-metric-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                        <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'مؤشر كفاءة الطعام' : 'Efficiency Score'}</div>
-                            <div className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-500">{advancedReport.metrics.food_efficiency_score}%</div>
+                            <div className="kairo-metric-value text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-500">{advancedReport.metrics.food_efficiency_score}%</div>
                             <div className={`text-xs mt-2 font-bold ${getScoreColor(advancedReport.metrics.sustainability_rating)}`}>
                                 {language === 'ar'
                                     ? ({
@@ -248,28 +249,34 @@ const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, set
                                     : advancedReport.metrics.sustainability_rating}
                             </div>
                         </div>
-                        <div className={`${bgCard} border rounded-2xl p-6 relative overflow-hidden`}>
+                        <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'خسارة مالية سنوية' : 'Annual Waste Cost'}</div>
-                            <div className={`text-4xl font-bold ${textMain}`}>{advancedReport.metrics.annual_waste_cost.toLocaleString()} <span className="text-sm">EGP</span></div>
+                            <div className={`kairo-metric-value text-4xl font-bold ${textMain}`}>{advancedReport.metrics.annual_waste_cost.toLocaleString()} <span className="text-sm">EGP</span></div>
                         </div>
-                        <div className={`${bgCard} border rounded-2xl p-6 relative overflow-hidden`}>
+                        <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'انبعاثات الميثان' : 'Methane Output'}</div>
-                            <div className={`text-4xl font-bold ${textMain}`}>{advancedReport.metrics.methane_emissions_kg} <span className="text-sm">kg</span></div>
+                            <div className={`kairo-metric-value text-4xl font-bold ${textMain}`}>{advancedReport.metrics.methane_emissions_kg} <span className="text-sm">kg</span></div>
                         </div>
-                        <div className={`${bgCard} border rounded-2xl p-6 relative overflow-hidden`}>
+                        <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'البصمة المائية' : 'Water Footprint Loss'}</div>
-                            <div className={`text-4xl font-bold ${textMain}`}>{advancedReport.metrics.water_footprint_loss_liters.toLocaleString()} <span className="text-sm">L</span></div>
+                            <div className={`kairo-metric-value text-4xl font-bold ${textMain}`}>{advancedReport.metrics.water_footprint_loss_liters.toLocaleString()} <span className="text-sm">L</span></div>
                         </div>
                     </div>
+                    <DecisionIntelligence
+                        module="food"
+                        score={advancedReport.metrics.food_efficiency_score}
+                        status={advancedReport.metrics.sustainability_rating}
+                        confidence="medium"
+                    />
                     <div className="grid lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2 space-y-8">
-                            <div className={`${bgCard} border rounded-2xl p-8`}>
+                            <div className={`${bgCard} kairo-analysis-panel border rounded-2xl p-5 sm:p-8`}>
                                 <div className="flex items-center gap-3 mb-6 border-b border-black/10 dark:border-white/10 pb-4">
                                     <BrainCircuit className="w-6 h-6 text-purple-500" />
                                     <h2 className={`text-xl font-bold ${textMain}`}>{language === 'ar' ? 'تشخيص الذكاء الاصطناعي: سلسلة الإمداد' : 'AI Supply Chain Diagnosis'}</h2>
                                 </div>
                                 <div className="grid md:grid-cols-2 gap-8 items-center">
-                                    <div className="kairo-chart h-72 p-3" dir="ltr">
+                                    <div className="kairo-chart kairo-chart-responsive h-72 p-3" dir="ltr">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <RePieChart>
                                                 <Pie data={[{ name: language==='ar'?'الشراء':'Purchase', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.purchase || 0 }, { name: language==='ar'?'التخزين':'Storage', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.storage || 0 }, { name: language==='ar'?'التحضير':'Preparation', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.preparation || 0 }, { name: language==='ar'?'الاستهلاك':'Consumption', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.consumption || 0 }, { name: language==='ar'?'التخلص':'Disposal', value: advancedReport.ai_supply_chain_diagnosis?.stage_breakdown_percentages?.disposal || 0 }]} cx="50%" cy="44%" innerRadius={55} outerRadius={78} paddingAngle={3} dataKey="value">
@@ -289,7 +296,7 @@ const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, set
                                     </div>
                                 </div>
                             </div>
-                            <div className={`${bgCard} border rounded-2xl p-8`}>
+                            <div className={`${bgCard} kairo-analysis-panel border rounded-2xl p-5 sm:p-8`}>
                                 <h2 className={`text-xl font-bold mb-4 ${textMain}`}>{language === 'ar' ? 'التحليل السلوكي' : 'Behavioral Analysis'}</h2>
                                 <p className="text-gray-500 mb-6">{advancedReport.ai_waste_analysis?.behavioral_insights}</p>
                                 <div className="grid gap-3">

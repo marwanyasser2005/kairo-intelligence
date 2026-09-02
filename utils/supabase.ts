@@ -1,19 +1,60 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
+type SupabaseRuntimeEnv = Record<string, string | boolean | undefined>;
+
 const runtimeEnv: Record<string, string | boolean | undefined> =
   (import.meta as ImportMeta & {
     env?: Record<string, string | boolean | undefined>;
   }).env ?? {};
-const supabaseUrl =
-  typeof runtimeEnv.VITE_SUPABASE_URL === 'string'
-    ? runtimeEnv.VITE_SUPABASE_URL.trim()
-    : undefined;
-const supabasePublishableKey =
-  typeof runtimeEnv.VITE_SUPABASE_PUBLISHABLE_KEY === 'string'
-    ? runtimeEnv.VITE_SUPABASE_PUBLISHABLE_KEY.trim()
-    : typeof runtimeEnv.VITE_SUPABASE_ANON_KEY === 'string'
-      ? runtimeEnv.VITE_SUPABASE_ANON_KEY.trim()
-      : undefined;
+const readString = (value: string | boolean | undefined) =>
+  typeof value === 'string' && value.trim() ? value.trim() : undefined;
+
+const getJwtRole = (key: string) => {
+  if (!key.startsWith('eyJ')) return null;
+  try {
+    const encoded = key.split('.')[1];
+    if (!encoded || typeof globalThis.atob !== 'function') return null;
+    const normalized = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(globalThis.atob(normalized)) as { role?: string };
+    return payload.role ?? null;
+  } catch {
+    return null;
+  }
+};
+
+export const resolveSupabaseConfig = (env: SupabaseRuntimeEnv) => {
+  if (env.VITE_SUPABASE_CLOUD_ENABLED === 'false') {
+    return { config: null, error: 'cloud_sync_disabled' as const };
+  }
+  const url = readString(env.VITE_SUPABASE_URL);
+  const key = readString(env.VITE_SUPABASE_PUBLISHABLE_KEY) ?? readString(env.VITE_SUPABASE_ANON_KEY);
+
+  if (!url || !key) {
+    return { config: null, error: 'missing_configuration' as const };
+  }
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' || !parsed.hostname.endsWith('.supabase.co')) {
+      return { config: null, error: 'invalid_project_url' as const };
+    }
+  } catch {
+    return { config: null, error: 'invalid_project_url' as const };
+  }
+
+  const jwtRole = getJwtRole(key);
+  if (key.startsWith('sb_secret_') || jwtRole === 'service_role') {
+    return { config: null, error: 'secret_key_in_browser' as const };
+  }
+
+  return { config: { url: url.replace(/\/$/, ''), key }, error: null };
+};
+
+const resolvedConfiguration = resolveSupabaseConfig(runtimeEnv);
+const supabaseUrl = resolvedConfiguration.config?.url;
+const supabasePublishableKey = resolvedConfiguration.config?.key;
+
+export const supabaseConfigurationError = resolvedConfiguration.error;
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
 
@@ -22,7 +63,10 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
       auth: {
         persistSession: true,
         autoRefreshToken: true,
-        detectSessionInUrl: true,
+        // Kairo uses HashRouter and anonymous sessions; parsing the route hash as
+        // an auth callback would be both unnecessary and error-prone.
+        detectSessionInUrl: false,
+        flowType: 'pkce',
         storageKey: 'kairo_supabase_session',
       },
       global: {
@@ -33,34 +77,98 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
     })
   : null;
 
-let identityPromise: Promise<string> | null = null;
+type IdentityClient = Pick<SupabaseClient, 'auth'>;
 
-export const ensureKairoIdentity = async (): Promise<string> => {
-  if (!supabase) {
-    throw new Error('Supabase is not configured.');
-  }
+const DEFAULT_IDENTITY_RETRY_COOLDOWN_MS = 5 * 60 * 1000;
 
-  if (!identityPromise) {
-    identityPromise = (async () => {
+const normalizeIdentityError = (error: unknown) =>
+  error instanceof Error
+    ? error
+    : new Error('Supabase identity could not be created.');
+
+/**
+ * Keeps anonymous authentication single-flight and applies a retry cooldown.
+ * Several KAIRO modules initialize together, so a failed signup must never be
+ * replayed once per component.
+ */
+export const createKairoIdentityManager = (
+  client: IdentityClient,
+  options: {
+    retryCooldownMs?: number;
+    now?: () => number;
+  } = {},
+) => {
+  const retryCooldownMs =
+    options.retryCooldownMs ?? DEFAULT_IDENTITY_RETRY_COOLDOWN_MS;
+  const now = options.now ?? Date.now;
+  let cachedUserId: string | null = null;
+  let pendingIdentity: Promise<string> | null = null;
+  let retryAfter = 0;
+  let lastError: Error | null = null;
+
+  const ensureIdentity = async (): Promise<string> => {
+    if (cachedUserId) return cachedUserId;
+    if (pendingIdentity) return pendingIdentity;
+    if (lastError && now() < retryAfter) throw lastError;
+
+    pendingIdentity = (async () => {
       const {
         data: { session },
         error: sessionError,
-      } = await supabase.auth.getSession();
+      } = await client.auth.getSession();
 
       if (sessionError) throw sessionError;
-      if (session?.user?.id) return session.user.id;
+      if (session?.user?.id) {
+        cachedUserId = session.user.id;
+        return cachedUserId;
+      }
 
-      const { data, error } = await supabase.auth.signInAnonymously();
+      const { data, error } = await client.auth.signInAnonymously();
       if (error) throw error;
-      if (!data.user?.id) throw new Error('Supabase did not return a user identity.');
-      return data.user.id;
-    })().catch((error) => {
-      identityPromise = null;
-      throw error;
-    });
-  }
+      if (!data.user?.id) {
+        throw new Error('Supabase did not return a user identity.');
+      }
 
-  return identityPromise;
+      cachedUserId = data.user.id;
+      return cachedUserId;
+    })()
+      .catch((error) => {
+        lastError = normalizeIdentityError(error);
+        retryAfter = now() + retryCooldownMs;
+        throw lastError;
+      })
+      .finally(() => {
+        pendingIdentity = null;
+      });
+
+    return pendingIdentity;
+  };
+
+  return {
+    ensureIdentity,
+    reset: () => {
+      cachedUserId = null;
+      pendingIdentity = null;
+      retryAfter = 0;
+      lastError = null;
+    },
+    getState: () => ({
+      userId: cachedUserId,
+      retryAfter,
+      coolingDown: Boolean(lastError && now() < retryAfter),
+    }),
+  };
+};
+
+const identityManager = supabase
+  ? createKairoIdentityManager(supabase)
+  : null;
+
+export const ensureKairoIdentity = async (): Promise<string> => {
+  if (!identityManager) {
+    throw new Error('Supabase is not configured.');
+  }
+  return identityManager.ensureIdentity();
 };
 
 export const getSupabaseConnectionState = async () => {

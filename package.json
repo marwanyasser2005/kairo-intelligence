@@ -8,15 +8,18 @@
   },
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build --configLoader runner && vite build --config vite.sites.config.ts --configLoader runner && node prepareSitesBuild.mjs",
+    "build": "vite build --configLoader runner && tsx scripts/generateSeoAssets.ts && vite build --config vite.sites.config.ts --configLoader runner && node prepareSitesBuild.mjs",
     "start": "tsx server.ts --prod",
     "preview": "tsx server.ts --prod",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "test": "tsx --test tests/tokenRouter.test.ts tests/geminiGateway.test.ts tests/earlyWarning.test.ts tests/scenarioLab.test.ts",
+    "test": "tsx --test tests/tokenRouter.test.ts tests/agentRouter.test.ts tests/tabiGateway.test.ts tests/geminiGateway.test.ts tests/earlyWarning.test.ts tests/scenarioLab.test.ts tests/security.test.ts tests/supabase.test.ts tests/uiSystem.test.ts tests/seo.test.ts tests/impactVerification.test.ts",
     "verify:gemini": "tsx scripts/verifyGemini.ts",
     "verify:kairo-ai": "tsx scripts/verifyKairoGemini.ts",
-    "verify:tokenrouter": "tsx scripts/verifyTokenRouter.ts"
+    "verify:tokenrouter": "tsx scripts/verifyTokenRouter.ts",
+    "verify:tabiai": "tsx scripts/verifyTaBiAI.ts",
+    "verify:supabase": "tsx scripts/verifySupabase.ts",
+    "verify:seo": "tsx scripts/verifySeo.ts"
   },
   "dependencies": {
     "@heroui/react": "^3.2.2",
@@ -35,7 +38,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-leaflet": "^5.0.0",
-    "react-router-dom": "7.18.2",
+    "react-router-dom": "^7.18.2",
     "recharts": "^2.15.0"
   },
   "devDependencies": {

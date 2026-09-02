@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Wind, Satellite, Activity, AlertCircle, ArrowRight, Shield, MapPin, Clock, Loader2, Info, Eye, Download, RefreshCw, Save, FileText, Image as ImageIcon } from 'lucide-react';
+import { Wind, Satellite, Activity, AlertCircle, Shield, MapPin, Clock, Loader2, Info, Eye, RefreshCw, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { runExposureAgent } from '../../services/tokenRouterService';
 import { ExposureAnalysis } from '../../types';
@@ -9,6 +9,7 @@ import { useApp } from '../../contexts/AppContext';
 import SdgBadge from '../../components/SdgBadge';
 import CapabilityContext from '../../components/CapabilityContext';
 import ReportActions from '../../components/ReportActions';
+import DecisionIntelligence from '../../components/DecisionIntelligence';
 
 // Type casting to bypass strict environment checks
 const MotionDiv = motion.div as any;
@@ -81,7 +82,7 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
         <CapabilityContext capabilityId="exposure" />
         
         {/* Workflow Toolbar */}
-        <div className="flex justify-end gap-3 mb-8 no-export">
+        <div className="flex flex-wrap justify-end gap-3 mb-8 no-export">
             {report && (
                 <>
                     <ReportActions
@@ -213,7 +214,7 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
                             </div>
 
                             {/* Summary Card */}
-                            <div className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-2xl p-8 relative overflow-hidden">
+                            <div className="kairo-analysis-panel kairo-exposure-summary bg-gradient-to-br from-slate-950 via-gray-950 to-black border border-red-500/15 rounded-[1.75rem] p-5 sm:p-8 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 p-8 opacity-10">
                                     <Shield className="w-32 h-32 text-red-500" />
                                 </div>
@@ -221,7 +222,7 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
                                     <div className="flex flex-col md:flex-row justify-between items-start mb-6 gap-6">
                                         <div>
                                             <div className="text-sm text-gray-400 mb-1 font-mono uppercase">{t.exposure.aqi}</div>
-                                            <div className={`text-6xl font-bold mb-1 ${
+                                            <div className={`kairo-metric-value text-5xl sm:text-6xl font-bold mb-1 ${
                                                 (report.estimated_aqi || 0) > 150 ? 'text-red-500' :
                                                 (report.estimated_aqi || 0) > 100 ? 'text-orange-500' :
                                                 (report.estimated_aqi || 0) > 50 ? 'text-yellow-400' : 'text-green-500'
@@ -248,16 +249,25 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
                                         <div className="flex items-center gap-2 mb-2 text-red-400 text-xs font-bold uppercase tracking-wide">
                                             <Activity className="w-3 h-3" /> {t.exposure.health}
                                         </div>
-                                        <p className="text-gray-300 text-sm leading-relaxed">
+                                        <p className="text-gray-300 text-sm leading-relaxed" dir="auto">
                                             {report.health_implication || "Data unavailable"}
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
+                            <DecisionIntelligence
+                                module="exposure"
+                                score={Math.max(0, 100 - Math.min(100, (report.estimated_aqi || 0) / 2))}
+                                status={language === 'ar'
+                                    ? ({ Low: 'منخفض', Moderate: 'متوسط', High: 'مرتفع', Critical: 'حرج' } as Record<string, string>)[report.risk_level] || report.risk_level
+                                    : report.risk_level}
+                                confidence="estimated"
+                            />
+
                             {/* Details Grid */}
                             <div className="grid md:grid-cols-2 gap-6">
-                                <div className={`border rounded-2xl p-6 ${bgCard}`}>
+                                <div className={`kairo-analysis-panel border rounded-2xl p-5 sm:p-6 ${bgCard}`}>
                                     <h3 className={`font-bold mb-4 flex items-center gap-2 ${textMain}`}>
                                         <Shield className="w-4 h-4 text-green-400" /> {t.exposure.mitigation}
                                     </h3>
@@ -265,17 +275,17 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
                                         {(report.mitigation_strategy || []).map((item, i) => (
                                             <li key={i} className={`text-sm flex items-start gap-3 ${textSub}`}>
                                                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5 shrink-0" />
-                                                {item}
+                                                    <span dir="auto">{item}</span>
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
                                 
-                                <div className={`border rounded-2xl p-6 flex flex-col justify-center ${bgCard}`}>
+                                <div className={`kairo-analysis-panel border rounded-2xl p-5 sm:p-6 flex flex-col justify-center ${bgCard}`}>
                                     <h3 className={`font-bold mb-4 flex items-center gap-2 ${textMain}`}>
                                         <Info className="w-4 h-4 text-blue-400" /> {t.exposure.methodology}
                                     </h3>
-                                    <p className={`text-xs leading-relaxed italic border-l-2 border-blue-500/20 pl-4 ${textSub}`}>
+                                    <p dir="auto" className={`text-xs leading-relaxed italic border-s-2 border-blue-500/20 ps-4 ${textSub}`}>
                                         "{report.methodology_note || "Satellite-based proxy estimation."}"
                                     </p>
                                 </div>
@@ -299,7 +309,7 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
 
         {/* Scientific Disclaimer & Output */}
         <section className={`grid md:grid-cols-2 gap-12 mb-24 border-t pt-12 no-export ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
-             <div className={`border rounded-3xl p-8 ${bgCard}`}>
+             <div className={`kairo-analysis-panel border rounded-3xl p-5 sm:p-8 ${bgCard}`}>
                 <h3 className={`text-xl font-bold mb-4 flex items-center gap-2 ${textMain}`}>
                     <AlertCircle className="w-5 h-5 text-gray-400" /> {t.exposure.disclaimer}
                 </h3>

@@ -6,12 +6,13 @@ import { useApp } from '../contexts/AppContext';
 import ModuleToolbar from '../components/ModuleToolbar';
 import BillUploader from '../components/BillUploader';
 import CapabilityContext from '../components/CapabilityContext';
+import DecisionIntelligence from '../components/DecisionIntelligence';
 import { runEnergyAnalysis } from '../services/tokenRouterService';
 import { EnergyAnalysisReport, EnergyAnalysisInputs, EnergyBillExtraction } from '../types';
 import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList, AreaChart, Area } from 'recharts';
 
 const MotionDiv = motion.div as any;
-const COLORS = ['#38bdf8', '#ef4444', '#94a3b8']; // User, Benchmark, National
+const COLORS = ['#94a3b8', '#f5b942', '#2bd4a7'];
 
 interface EnergyIntelligenceProps {
     report: EnergyAnalysisReport | null;
@@ -322,20 +323,20 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                         </div>
 
                         {/* KPI Grid */}
-                        <div className="grid lg:grid-cols-4 gap-4">
-                            <div className={`${bgCard} border rounded-3xl p-6 relative overflow-hidden`}>
+                        <div className="kairo-metric-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                            <div className={`${bgCard} kairo-metric-card border rounded-3xl p-6 relative overflow-hidden`}>
                                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{isAr?'كفاءة الاستهلاك':'Efficiency Score'}</div>
-                                <div className={`text-4xl font-black ${textMain}`}>{report.metrics?.energy_efficiency_score || 0}<span className="text-xl font-normal text-gray-400">/100</span></div>
+                                <div className={`kairo-metric-value text-4xl font-black ${textMain}`}>{report.metrics?.energy_efficiency_score || 0}<span className="text-xl font-normal text-gray-400">/100</span></div>
                             </div>
-                            <div className={`${bgCard} border rounded-3xl p-6 relative overflow-hidden`}>
+                            <div className={`${bgCard} kairo-metric-card border rounded-3xl p-6 relative overflow-hidden`}>
                                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{isAr?'استهلاك مقدر':'Est. Consumption'}</div>
-                                <div className={`text-4xl font-black text-amber-500`}>{report.metrics?.estimated_consumption_kwh || 0} <span className="text-lg font-normal text-gray-500">kWh</span></div>
+                                <div className={`kairo-metric-value text-4xl font-black text-amber-500`}>{report.metrics?.estimated_consumption_kwh || 0} <span className="text-lg font-normal text-gray-500">kWh</span></div>
                             </div>
-                            <div className={`${bgCard} border rounded-3xl p-6 relative overflow-hidden`}>
+                            <div className={`${bgCard} kairo-metric-card border rounded-3xl p-6 relative overflow-hidden`}>
                                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{isAr?'فاقد مالي مقدر':'Financial Waste'}</div>
-                                <div className={`text-4xl font-black text-red-500`}>{(report.metrics?.financial_loss_estimate_egp || 0).toLocaleString()} <span className="text-lg font-normal text-gray-500">EGP/m</span></div>
+                                <div className={`kairo-metric-value text-4xl font-black text-red-500`}>{(report.metrics?.financial_loss_estimate_egp || 0).toLocaleString()} <span className="text-lg font-normal text-gray-500">EGP/m</span></div>
                             </div>
-                            <div className={`${bgCard} border rounded-3xl p-6 relative overflow-hidden`}>
+                            <div className={`${bgCard} kairo-metric-card border rounded-3xl p-6 relative overflow-hidden`}>
                                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{isAr?'مخاطر الحمل وقت الذروة':'Peak Load Risk'}</div>
                                 <div className={`text-2xl mt-2 font-black ${getRiskColor(report.metrics?.peak_load_risk || '')}`}>
                                     {localizeRisk(report.metrics?.peak_load_risk || (isAr ? 'غير متاح' : 'N/A'))}
@@ -343,16 +344,23 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                             </div>
                         </div>
 
+                        <DecisionIntelligence
+                            module="energy"
+                            score={report.metrics?.energy_efficiency_score || 0}
+                            status={localizeRisk(report.metrics?.peak_load_risk || '')}
+                            confidence="medium"
+                        />
+
                         <div className="grid lg:grid-cols-3 gap-8">
                             {/* Analytics Col */}
                             <div className="lg:col-span-2 space-y-8">
-                                <div className={`${bgCard} border rounded-3xl p-8`}>
+                                <div className={`${bgCard} kairo-analysis-panel border rounded-3xl p-5 sm:p-8`}>
                                     <h2 className={`text-2xl font-black mb-6 flex items-center gap-3 ${textMain}`}>
                                         <PieChart className="w-6 h-6 text-amber-500" />
                                         {isAr ? 'البصمة والأداء' : 'Footprint & Performance'}
                                     </h2>
                                     <div className="grid md:grid-cols-2 gap-8">
-                                        <div className="kairo-chart h-72 p-3" dir="ltr">
+                                        <div className="kairo-chart kairo-chart-responsive h-72 p-3" dir="ltr">
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <BarChart
                                                     data={[
@@ -391,7 +399,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                     </div>
                                 </div>
 
-                                <div className={`${bgCard} border rounded-3xl p-8`}>
+                                <div className={`${bgCard} kairo-analysis-panel border rounded-3xl p-5 sm:p-8`}>
                                     <h2 className={`text-2xl font-black mb-6 flex items-center gap-3 ${textMain}`}>
                                         <Target className="w-6 h-6 text-amber-500" />
                                         {isAr ? 'تحليل ذكاء الأعمال' : 'AI Business Intelligence'}

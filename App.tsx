@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import {
   AnimatePresence,
   motion,
@@ -10,6 +10,8 @@ import {
 } from 'framer-motion';
 import Navbar from './components/Navbar';
 import { KairoBrandMark } from './components/KairoBrand';
+import SeoManager from './components/SeoManager';
+import AIServiceStatus from './components/AIServiceStatus';
 
 // Lazy loaded pages
 const Home = lazy(() => import('./pages/Home'));
@@ -28,6 +30,8 @@ const CsrDashboard = lazy(() => import('./pages/CsrDashboard'));
 const TechnicalArchitecture = lazy(() => import('./pages/TechnicalArchitecture'));
 const TokenRouterArchitecture = lazy(() => import('./pages/TokenRouterArchitecture'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const ImpactVerification = lazy(() => import('./pages/ImpactVerification'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 const CompareScenarios = lazy(() => import('./pages/CompareScenarios'));
 const WaterPage = lazy(() => import('./pages/Education').then(m => ({ default: m.WaterPage })));
 const FoodPage = lazy(() => import('./pages/Education').then(m => ({ default: m.FoodPage })));
@@ -48,10 +52,25 @@ import {
 import KairoChat from './components/KairoChat';
 import { usePersistentState, clearKairoStorage } from './utils/storage';
 import { AppProvider, useApp } from './contexts/AppContext';
-import { DEFAULT_AI_MODEL } from './services/aiClient';
 import { loadModuleReports, upsertModuleReport } from './services/kairoDatabase';
 
 const MotionDiv = motion.div as React.FC<HTMLMotionProps<"div">>;
+
+const isCopyAllowedTarget = (target: EventTarget | null) =>
+  target instanceof Element &&
+  Boolean(
+    target.closest(
+      'input, textarea, select, [contenteditable="true"], [data-allow-copy="true"]',
+    ),
+  );
+
+const preventProtectedContentAction = (
+  event: React.SyntheticEvent<HTMLElement>,
+) => {
+  if (!isCopyAllowedTarget(event.target)) {
+    event.preventDefault();
+  }
+};
 
 const useKairoCloudReportSync = (
   module: 'carbon' | 'water' | 'food' | 'exposure' | 'ewaste' | 'energy' | 'mobility',
@@ -86,32 +105,13 @@ const ScrollProgress = () => {
     );
 };
 
-const ModelBadge = () => {
-    const [model, setModel] = React.useState(DEFAULT_AI_MODEL);
-    
-    React.useEffect(() => {
-        const handleEvent = (e: any) => {
-            if (e.detail?.model) setModel(e.detail.model);
-        };
-        // Also fire off initially if there's a cached model we could import, but default is fine
-        window.addEventListener('ai-model-used', handleEvent);
-        return () => window.removeEventListener('ai-model-used', handleEvent);
-    }, []);
-
-    return (
-        <div className="pointer-events-none fixed bottom-5 left-5 z-40 hidden items-center gap-2 rounded-full border border-white/10 bg-[#07100e]/80 px-3 py-2 text-[9px] text-white shadow-2xl backdrop-blur-xl sm:flex">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-kairo-green shadow-[0_0_10px_rgba(43,212,167,.8)]" />
-            <span className="font-mono uppercase tracking-[0.14em] text-slate-400">
-                AI · {model.replace('-preview', '')}
-            </span>
-        </div>
-    );
-};
-
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   React.useEffect(() => {
     window.scrollTo(0, 0);
+    window.requestAnimationFrame(() => {
+      document.getElementById('kairo-main-content')?.focus({ preventScroll: true });
+    });
   }, [pathname]);
   return null;
 };
@@ -176,7 +176,7 @@ const AnimatedRoutes: React.FC<AnimatedRoutesProps> = ({
                exit="out"
                variants={reduceMotion ? { in: { opacity: 1 }, out: { opacity: 1 } } : pageVariants}
                transition={reduceMotion ? { duration: 0 } : pageTransition}
-               className="relative z-10 h-full w-full"
+               className="kairo-page relative z-10 h-full w-full"
             >
               <Suspense fallback={
                 <div className="flex min-h-screen items-center justify-center p-8">
@@ -200,6 +200,7 @@ const AnimatedRoutes: React.FC<AnimatedRoutesProps> = ({
                       onSystemReset={handleSystemReset}
                   />
                 } />
+                <Route path="/proof" element={<ImpactVerification />} />
                 <Route path="/action" element={<ClimateAction results={results} userProgress={userProgress} setUserProgress={setUserProgress} />} />
                 <Route path="/scenarios" element={<CompareScenarios />} />
                 <Route path="/features" element={<Navigate to="/dashboard" replace />} />
@@ -223,6 +224,7 @@ const AnimatedRoutes: React.FC<AnimatedRoutesProps> = ({
                 <Route path="/food" element={<FoodPage />} />
                 <Route path="/co2" element={<CO2Page />} />
                 <Route path="/sustainability" element={<SustainabilityPage />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
               </Suspense>
             </MotionDiv>
@@ -293,14 +295,26 @@ const AppLayout: React.FC = () => {
   };
 
   return (
-    <Router>
+    <>
+      <SeoManager />
       <ScrollProgress />
       <ScrollToTop />
-      <div className={`relative min-h-screen overflow-x-clip font-sans transition-colors duration-500 ${theme === 'light' ? 'bg-[#f5f8f6] text-slate-950' : 'bg-kairo-ink text-slate-100'}`} dir={dir}>
+      <a className="kairo-skip-link" href="#kairo-main-content">
+        {language === 'ar' ? 'انتقل إلى المحتوى الرئيسي' : 'Skip to main content'}
+      </a>
+      <div
+        className={`kairo-site kairo-content-protected relative min-h-screen overflow-x-clip font-sans transition-colors duration-500 ${theme === 'light' ? 'bg-[#f5f8f6] text-slate-950' : 'bg-kairo-ink text-slate-100'}`}
+        dir={dir}
+        onCopyCapture={preventProtectedContentAction}
+        onCutCapture={preventProtectedContentAction}
+        onContextMenuCapture={preventProtectedContentAction}
+        onDragStartCapture={preventProtectedContentAction}
+      >
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
             <div className="kairo-ambient-orb absolute -right-40 top-24 h-[32rem] w-[32rem] rounded-full bg-kairo-green/[0.035] blur-[110px]" />
         </div>
         <Navbar />
+        <div id="kairo-main-content" tabIndex={-1}>
         <AnimatedRoutes 
             results={results} setResults={setResults}
             waterData={waterData} setWaterData={setWaterData}
@@ -316,18 +330,26 @@ const AppLayout: React.FC = () => {
             userProgress={userProgress} setUserProgress={setUserProgress}
             handleSystemReset={handleSystemReset}
         />
-        <ModelBadge />
+        </div>
+        <AIServiceStatus />
         <KairoChat />
       </div>
-    </Router>
+    </>
   );
 }
 
 const App: React.FC = () => {
+  const basename =
+    typeof window !== 'undefined' && /^\/en(?:\/|$)/.test(window.location.pathname)
+      ? '/en'
+      : undefined;
+
   return (
-    <AppProvider>
+    <Router basename={basename}>
+      <AppProvider>
         <AppLayout />
-    </AppProvider>
+      </AppProvider>
+    </Router>
   );
 };
 

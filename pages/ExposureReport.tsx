@@ -5,12 +5,18 @@ import { motion } from 'framer-motion';
 import { runExposureAgent } from '../services/tokenRouterService';
 import { ExposureAnalysis } from '../types';
 import { useApp } from '../contexts/AppContext';
+import DecisionIntelligence from '../components/DecisionIntelligence';
 
 // Type casting to bypass strict environment checks
 const MotionDiv = motion.div as any;
 
 const ExposureReport: React.FC = () => {
-  const { t, dir, language } = useApp();
+  const { t, dir, language, theme } = useApp();
+  const isLight = theme === 'light';
+  const pageBg = isLight ? 'bg-[#edf4f1] text-slate-950' : 'bg-kairo-ink text-white';
+  const panelBg = isLight ? 'bg-white border-emerald-950/10' : 'bg-white/5 border-white/10';
+  const inputBg = isLight ? 'bg-slate-50 border-slate-200 text-slate-950' : 'bg-black/40 border-white/10 text-white';
+  const textSub = isLight ? 'text-slate-600' : 'text-slate-400';
   const [analyzing, setAnalyzing] = useState(false);
   const [data, setData] = useState<ExposureAnalysis | null>(null);
   
@@ -32,32 +38,32 @@ const ExposureReport: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black pt-32 lg:pt-36 px-6 pb-20" dir={dir}>
-      <div className="max-w-4xl mx-auto">
+    <div className={`min-h-screen pt-28 sm:pt-32 lg:pt-36 px-4 sm:px-6 pb-20 ${pageBg}`} dir={dir}>
+      <div className="max-w-6xl mx-auto">
         <header className="mb-12">
            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-bold uppercase tracking-wider mb-4 border border-red-500/20">
               <ShieldAlert className="w-3 h-3" /> {t.exposure.console}
            </div>
-           <h1 className="text-4xl font-bold text-white mb-4">{t.exposureReport.title}</h1>
-           <p className="text-gray-400">{t.exposureReport.desc}</p>
+           <h1 className="text-4xl font-bold mb-4">{t.exposureReport.title}</h1>
+           <p className={textSub}>{t.exposureReport.desc}</p>
         </header>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
+        <div className="grid lg:grid-cols-3 gap-5 lg:gap-8 mb-12">
             <div className="md:col-span-1 space-y-6">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                <div className={`kairo-analysis-panel border rounded-2xl p-5 sm:p-6 ${panelBg}`}>
                     <label className="block text-xs font-bold text-gray-400 uppercase mb-2">{t.exposureReport.location}</label>
-                    <div className="flex items-center bg-black border border-white/10 rounded-lg px-3 py-2 mb-4">
+                    <div className={`flex items-center border rounded-xl px-3 py-2 mb-4 ${inputBg}`}>
                         <MapPin className={`w-4 h-4 text-gray-500 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
                         <input 
                             type="text" 
                             value={locationName} 
                             onChange={(e) => setLocationName(e.target.value)}
-                            className="bg-transparent text-white text-sm w-full focus:outline-none"
+                            className="bg-transparent text-inherit text-sm w-full focus:outline-none"
                         />
                     </div>
 
                     <label className="block text-xs font-bold text-gray-400 uppercase mb-2">{t.exposureReport.hours}</label>
-                    <div className="flex items-center bg-black border border-white/10 rounded-lg px-3 py-2 mb-4">
+                    <div className={`flex items-center border rounded-xl px-3 py-2 mb-4 ${inputBg}`}>
                         <Clock className={`w-4 h-4 text-gray-500 ${dir === 'rtl' ? 'ml-2' : 'mr-2'}`} />
                         <input 
                             type="number" 
@@ -65,7 +71,7 @@ const ExposureReport: React.FC = () => {
                             max="24"
                             value={hoursOutdoors} 
                             onChange={(e) => setHoursOutdoors(Number(e.target.value))}
-                            className="bg-transparent text-white text-sm w-full focus:outline-none"
+                            className="bg-transparent text-inherit text-sm w-full focus:outline-none"
                         />
                     </div>
 
@@ -73,7 +79,7 @@ const ExposureReport: React.FC = () => {
                     <select 
                         value={transportMode}
                         onChange={(e) => setTransportMode(e.target.value)}
-                        className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none appearance-none"
+                        className={`w-full border rounded-xl px-3 py-2 text-sm focus:outline-none appearance-none ${inputBg}`}
                     >
                         <option value="Walking">{t.exposureReport.options.walking}</option>
                         <option value="Bicycle">{t.exposureReport.options.bicycle}</option>
@@ -97,8 +103,8 @@ const ExposureReport: React.FC = () => {
             <div className="md:col-span-2">
                 {data ? (
                     <MotionDiv initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                        <div className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-2xl p-8 relative overflow-hidden">
-                            <div className="relative z-10 flex justify-between items-start">
+                        <div className={`kairo-analysis-panel border rounded-2xl p-5 sm:p-8 relative overflow-hidden ${panelBg}`}>
+                            <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:justify-between sm:items-start">
                                 <div>
                                     <div className="text-sm text-gray-400 mb-1">{t.exposureReport.riskLevel}</div>
                                     <div className={`text-4xl font-bold ${
@@ -111,34 +117,41 @@ const ExposureReport: React.FC = () => {
                                 </div>
                                 <div className="text-right">
                                     <div className="text-sm text-gray-400 mb-1">{t.exposureReport.annualIntake}</div>
-                                    <div className="text-2xl font-bold text-white">{data.predicted_annual_accumulation_pm25} <span className="text-sm text-gray-500">µg</span></div>
+                                    <div className="kairo-metric-value text-2xl font-bold">{data.predicted_annual_accumulation_pm25} <span className="text-sm text-gray-500">µg</span></div>
                                 </div>
                             </div>
-                            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/5">
-                                <p className="text-gray-300 text-sm leading-relaxed">{data.health_implication}</p>
+                            <div className={`mt-6 p-4 rounded-xl border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-white/5 border-white/5'}`}>
+                                <p className={`text-sm leading-relaxed ${textSub}`}>{data.health_implication}</p>
                             </div>
                         </div>
 
+                        <DecisionIntelligence
+                            module="exposure"
+                            score={Math.max(0, 100 - Math.min(100, (data.estimated_aqi || 0) / 2))}
+                            status={data.risk_level}
+                            confidence="estimated"
+                        />
+
                         <div className="grid sm:grid-cols-2 gap-6">
-                            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                                <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                            <div className={`kairo-analysis-panel border rounded-2xl p-5 sm:p-6 ${panelBg}`}>
+                                <h3 className="font-bold mb-4 flex items-center gap-2">
                                     <AlertCircle className="w-4 h-4 text-red-400" /> {t.exposureReport.peakTimes}
                                 </h3>
                                 <ul className="space-y-2">
                                     {data.peak_exposure_times.map((time, i) => (
-                                        <li key={i} className="text-sm text-gray-400 flex items-center gap-2">
+                                        <li key={i} className={`text-sm flex items-center gap-2 ${textSub}`}>
                                             <span className="w-1.5 h-1.5 bg-red-500 rounded-full" /> {time}
                                         </li>
                                     ))}
                                 </ul>
                             </div>
-                            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-                                <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                            <div className={`kairo-analysis-panel border rounded-2xl p-5 sm:p-6 ${panelBg}`}>
+                                <h3 className="font-bold mb-4 flex items-center gap-2">
                                     <ShieldAlert className="w-4 h-4 text-green-400" /> {t.exposureReport.mitigation}
                                 </h3>
                                 <ul className="space-y-2">
                                     {data.mitigation_strategy.map((item, i) => (
-                                        <li key={i} className="text-sm text-gray-400 flex items-start gap-2">
+                                        <li key={i} className={`text-sm flex items-start gap-2 ${textSub}`}>
                                             <span className="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5" /> {item}
                                         </li>
                                     ))}
@@ -147,7 +160,7 @@ const ExposureReport: React.FC = () => {
                         </div>
                     </MotionDiv>
                 ) : (
-                    <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] border border-white/5 rounded-2xl p-12 text-center">
+                    <div className={`kairo-analysis-panel h-full min-h-80 flex flex-col items-center justify-center border rounded-2xl p-6 sm:p-12 text-center ${panelBg}`}>
                         <Activity className="w-12 h-12 text-gray-600 mb-4" />
                         <h3 className="text-xl font-bold text-gray-300 mb-2">{t.exposureReport.awaiting}</h3>
                         <p className="text-gray-500 max-w-sm">{t.exposureReport.awaitingDesc}</p>

@@ -10,9 +10,14 @@ interface ChatMessage {
   content: string | Array<Record<string, unknown>>;
 }
 
+interface RequestMessage {
+  role: ChatRole;
+  content: string;
+}
+
 export interface GenerateRequest {
   prompt?: string;
-  messages?: ChatMessage[];
+  messages?: RequestMessage[];
   systemInstruction?: string;
   schema?: Record<string, unknown>;
   requireJson?: boolean;
@@ -81,6 +86,9 @@ export const normalizeJsonSchema = (value: unknown): unknown => {
   for (const [key, child] of Object.entries(
     value as Record<string, unknown>,
   )) {
+    if (key === '__proto__' || key === 'prototype' || key === 'constructor') {
+      continue;
+    }
     normalized[key] =
       key === 'type' && typeof child === 'string'
         ? child.toLowerCase()
@@ -266,7 +274,7 @@ export const requestTokenRouter = async (
             Authorization: `Bearer ${config.apiKey}`,
             Accept: 'application/json',
             'Content-Type': 'application/json',
-            'User-Agent': 'Kairo/6.0 (TokenRouter integration)',
+            'User-Agent': 'Kairo/6.0 (server-side AI gateway)',
           },
           body: JSON.stringify(body),
           signal: controller.signal,
@@ -345,16 +353,64 @@ export const requestTokenRouter = async (
   );
 };
 
-const isValidMessage = (value: unknown): value is ChatMessage => {
+export const MAX_PROMPT_CHARS = 30_000;
+export const MAX_SYSTEM_INSTRUCTION_CHARS = 20_000;
+export const MAX_MESSAGE_COUNT = 40;
+export const MAX_TOTAL_MESSAGE_CHARS = 60_000;
+export const MAX_SCHEMA_CHARS = 50_000;
+export const MAX_ENCODED_IMAGE_CHARS = 7_000_000;
+const MAX_SCHEMA_DEPTH = 16;
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]);
+
+const isValidMessage = (value: unknown): value is RequestMessage => {
   if (!value || typeof value !== 'object') return false;
   const message = value as Record<string, unknown>;
   return (
     (message.role === 'system' ||
       message.role === 'user' ||
       message.role === 'assistant') &&
-    (typeof message.content === 'string' || Array.isArray(message.content))
+    typeof message.content === 'string' &&
+    message.content.trim().length > 0 &&
+    message.content.length <= MAX_PROMPT_CHARS
   );
 };
+
+const hasSafeSchemaShape = (
+  value: unknown,
+  depth = 0,
+  seen = new WeakSet<object>(),
+): boolean => {
+  if (depth > MAX_SCHEMA_DEPTH) return false;
+  if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) {
+    return true;
+  }
+  if (typeof value !== 'object') return false;
+  if (seen.has(value)) return false;
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    return value.every((child) => hasSafeSchemaShape(child, depth + 1, seen));
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return false;
+  return Object.entries(value as Record<string, unknown>).every(
+    ([key, child]) =>
+      key !== '__proto__' &&
+      key !== 'prototype' &&
+      key !== 'constructor' &&
+      hasSafeSchemaShape(child, depth + 1, seen),
+  );
+};
+
+const isValidBase64 = (value: string) =>
+  value.length > 0 &&
+  value.length % 4 === 0 &&
+  /^[A-Za-z0-9+/]+={0,2}$/.test(value);
 
 export const validateGenerateRequest = (body: unknown): string | null => {
   if (!body || typeof body !== 'object') {
@@ -371,8 +427,66 @@ export const validateGenerateRequest = (body: unknown): string | null => {
   if (!hasPrompt && !hasMessages) {
     return 'Provide a non-empty prompt or a valid messages array.';
   }
-  if (request.imageBase64 && request.imageBase64.length > 14_000_000) {
-    return 'The image is too large. Maximum encoded size is 14 MB.';
+  if (hasPrompt && request.prompt!.length > MAX_PROMPT_CHARS) {
+    return `The prompt is too long. Maximum length is ${MAX_PROMPT_CHARS} characters.`;
+  }
+  if (Array.isArray(request.messages)) {
+    if (request.messages.length > MAX_MESSAGE_COUNT) {
+      return `Too many messages. Maximum count is ${MAX_MESSAGE_COUNT}.`;
+    }
+    if (!request.messages.every(isValidMessage)) {
+      return 'Each message must have a valid role and non-empty text content.';
+    }
+    const totalMessageChars = request.messages.reduce(
+      (total, message) => total + message.content.length,
+      0,
+    );
+    if (totalMessageChars > MAX_TOTAL_MESSAGE_CHARS) {
+      return 'The combined message history is too long.';
+    }
+  }
+  if (
+    request.systemInstruction !== undefined &&
+    (typeof request.systemInstruction !== 'string' ||
+      request.systemInstruction.length > MAX_SYSTEM_INSTRUCTION_CHARS)
+  ) {
+    return 'The system instruction is invalid or too long.';
+  }
+  if (request.requireJson !== undefined && typeof request.requireJson !== 'boolean') {
+    return 'requireJson must be a boolean.';
+  }
+  if (request.schema !== undefined) {
+    if (!hasSafeSchemaShape(request.schema)) {
+      return 'The response schema is invalid or too deeply nested.';
+    }
+    let encodedSchema = '';
+    try {
+      encodedSchema = JSON.stringify(request.schema);
+    } catch {
+      return 'The response schema must be JSON serializable.';
+    }
+    if (encodedSchema.length > MAX_SCHEMA_CHARS) {
+      return 'The response schema is too large.';
+    }
+  }
+  if (request.imageBase64 !== undefined) {
+    if (typeof request.imageBase64 !== 'string' || !isValidBase64(request.imageBase64)) {
+      return 'The image must be valid base64 data.';
+    }
+    if (request.imageBase64.length > MAX_ENCODED_IMAGE_CHARS) {
+      return 'The image is too large. Maximum file size is approximately 5 MB.';
+    }
+    if (
+      typeof request.imageMimeType !== 'string' ||
+      !ALLOWED_IMAGE_MIME_TYPES.has(request.imageMimeType.toLowerCase())
+    ) {
+      return 'The image type must be JPEG, PNG, or WebP.';
+    }
+    if (hasMessages) {
+      return 'Image requests must use a prompt instead of a messages array.';
+    }
+  } else if (request.imageMimeType !== undefined) {
+    return 'imageMimeType requires imageBase64.';
   }
   return null;
 };

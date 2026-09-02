@@ -19,6 +19,23 @@ export default defineConfig(() => {
           plugins: [],
         },
       },
+      build: {
+        rollupOptions: {
+          output: {
+            // Keep the first visit lean on mobile while giving returning users
+            // stable, independently cacheable vendor bundles.
+            manualChunks: {
+              framework: ['react', 'react-dom', 'react-router-dom'],
+              motion: ['framer-motion'],
+              ui: ['@heroui/react'],
+              data: ['@supabase/supabase-js'],
+              charts: ['recharts'],
+              maps: ['leaflet', 'react-leaflet'],
+              reports: ['jspdf', 'html2canvas-pro'],
+            },
+          },
+        },
+      },
       resolve: {
         alias: {
           '@': path.resolve(configDirectory, '.'),
