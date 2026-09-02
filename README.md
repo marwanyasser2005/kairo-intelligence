@@ -1,145 +1,227 @@
-# Kairo
+<div align="center">
+  <a href="https://www.kairo-ai.tech/" aria-label="KAIRO Intelligence website">
+    <img src="./public/branding/kairo-logo-transparent.svg" alt="KAIRO Intelligence logo" width="132" />
+  </a>
 
-Kairo is a React/Vite sustainability-intelligence platform with a server-side,
-multi-provider AI gateway. Provider keys and upstream model identities stay on
-the server and never enter the browser bundle or public API responses.
+  # KAIRO Intelligence
 
-## Requirements
+  **Integrated environmental intelligence for decisions that can be understood, acted on, and measured.**
 
-- Node.js 20.19+ or 22.12+
-- A Google AI Studio API key with Gemini Developer API access
+  **ذكاء بيئي متكامل يحوّل البيانات المتفرقة إلى قرار واضح، وإجراء عملي، وأثر قابل للقياس.**
 
-## Local setup
+  [![Live Platform](https://img.shields.io/badge/Live-kairo--ai.tech-2BD4A7?style=for-the-badge&logo=vercel&logoColor=07110F)](https://www.kairo-ai.tech/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=07110F)](https://react.dev/)
+  [![Node.js](https://img.shields.io/badge/Node.js-22-5FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 
-1. Install dependencies:
+  [Explore the platform](https://www.kairo-ai.tech/) · [Unified dashboard](https://www.kairo-ai.tech/dashboard) · [Proof of Impact](https://www.kairo-ai.tech/proof)
+</div>
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Copy `.env.example` to `.env.local` and set:
+## The purpose
 
-   ```dotenv
-   GEMINI_API_KEY=your-google-ai-studio-key
-   ```
+Environmental information is often fragmented across bills, observations, reports, maps, and technical indicators. Even when the data exists, people still face a harder question: **what should we do next, why, and how will we know it worked?**
 
-   The defaults route workloads across free models that were verified for this
-   project:
+KAIRO Intelligence was created to close that gap. It combines transparent calculations, contextual AI interpretation, evidence boundaries, and impact verification in one Arabic-first decision experience. Its highest goal is not to generate more dashboards; it is to help a person, community, school, business, or city make a better environmental decision and prove the result.
 
-   - text/chat: `gemini-3.5-flash`, then `gemini-3.1-flash-lite`, then Gemma 4;
-   - structured JSON: `gemini-3.5-flash`, then `gemini-3.1-flash-lite`, then
-     Gemma 4;
-   - image/OCR: `gemini-3.5-flash`, then `gemini-3.1-flash-lite`.
+> **From fragmented signals to measurable environmental action.**
 
-   `gemini-2.5-flash` and `gemini-2.5-flash-lite` are intentionally not in the
-   defaults. Google currently returns `404` for both on new accounts and asks
-   clients to use newer models.
+## الهدف الأسمى
 
-3. Start the frontend and API gateway together:
+أُنشئت **KAIRO Intelligence** لمعالجة الفجوة بين توافر البيانات البيئية والقدرة على تحويلها إلى قرار فعلي. تجمع المنصة المدخلات المتفرقة، وتفسّرها بلغة مفهومة، وتوضح مستوى الثقة وحدود النتيجة، ثم تقترح إجراءً قابلًا للتنفيذ وطريقة دقيقة لقياس أثره.
 
-   ```bash
-   npm run dev
-   ```
+النجاح في KAIRO لا يعني الحصول على توصية جميلة؛ بل يعني **تغيير قرار حقيقي وتحقيق وفر مالي أو بيئي يمكن التحقق منه وتكراره**.
 
-4. Open `http://localhost:3000`.
+## What KAIRO does
 
-## Verification
+| Intelligence system | Decision supported | Typical measurable outcome |
+| --- | --- | --- |
+| **KAIRO SIGNALS** | Anticipate environmental pressure before impact escalates | Forecast window, confidence, and priority drivers |
+| **Water & scarcity** | Find consumption inefficiency and inspection priorities | Efficiency score, estimated waste, and a verification plan |
+| **Food security** | Reduce waste across purchasing, storage, and consumption | Avoided waste, cost, water, and emissions |
+| **Energy intelligence** | Identify high-impact efficiency opportunities | Cost, energy, and carbon reduction potential |
+| **Low-impact mobility** | Compare travel choices across cost, time, carbon, and exposure | Monthly footprint and realistic alternatives |
+| **Urban exposure** | Translate air and location signals into precautionary actions | Exposure indicator, contributing factors, and timing guidance |
+| **ReKairo circular economy** | Choose repair, reuse, resale, or responsible recycling | Recovered value and traceable circular impact |
+| **Scenario Lab** | Compare interventions before committing resources | Visible assumptions and consistent trade-off analysis |
+| **Proof of Impact** | Review a before/after environmental intervention | Normalised savings, evidence references, and inference limits |
 
-```bash
-npm run typecheck
-npm test
-npm run build
-npm run verify:gemini
-```
+## Built for different decision makers
 
-The final command makes one small structured-output request. It reports only
-the endpoint, configured model names, and result; it never prints the API key.
+- **Individuals and families** — practical steps to reduce bills, waste, and daily exposure.
+- **Communities and field teams** — clearer local signals and fairer intervention priorities.
+- **Schools, universities, and researchers** — explainable experiments and documented scenarios.
+- **Businesses and facilities** — operational efficiency, lower cost, and stronger sustainability evidence.
+- **Cities and public authorities** — earlier, more transparent planning with measurement clearly separated from estimation.
 
-## Production
+## The KAIRO decision loop
 
-```bash
-npm run build
-npm start
-```
+~~~mermaid
+flowchart LR
+    A["Inputs & evidence"] --> B["Validated calculations"]
+    B --> C["Contextual AI interpretation"]
+    C --> D["Priority & next action"]
+    D --> E["Baseline and follow-up"]
+    E --> F["Reviewable impact proof"]
+    F --> A
+~~~
 
-Add `GEMINI_API_KEY` as a server environment variable in Vercel. Do not use a
-`VITE_` prefix for secrets.
+Every useful result aims to answer five questions:
 
-## AI request path
+1. What happened?
+2. What evidence supports it?
+3. What are the limits or assumptions?
+4. What is the best next action for this audience?
+5. How should the outcome be measured?
 
-`React feature -> services/aiClient.ts -> /api/ai/generate -> aiGateway.ts -> provider pool`
+## Real AI, bounded by evidence
 
-The gateway supports:
+KAIRO's AI is an interpretation and decision-support layer—not a replacement for measurement.
 
-- text, multi-turn chat, and Arabic responses;
-- native image input for bill and receipt analysis;
-- JSON Schema structured output;
-- capability-aware text, JSON, and vision model pools;
-- automatic model fallback on quota limits, unavailable models, timeouts, and
-  transient provider errors;
-- a shared 80-second total deadline so fallback remains inside Vercel's
-  function duration;
-- disabled reasoning budget by default for predictable interactive latency;
-- input limits, local rate limiting, and secret-safe health/error responses.
-- product-branded public responses that do not disclose upstream provider or
-  model identifiers.
+- Browser requests go through a same-origin, server-side AI gateway.
+- Secrets and upstream model identities never enter the client bundle or public responses.
+- Structured analyses use strict schemas and validated inputs.
+- Receipt and device-image workflows use real vision analysis rather than demo timers or fixed results.
+- Deterministic calculations remain separate from AI-generated explanation.
+- Capability-aware routing, timeouts, retry rules, and server-side fallback improve resilience.
+- Public health, engineering, and environmental guidance carries evidence limits and appropriate disclaimers.
 
 ## Proof of Impact
 
-`/proof` converts KAIRO recommendations into a reviewable before/after record:
+The **/proof** workspace turns a recommendation into a reviewable before/after record:
 
-- action, owner, date, fixed comparison scope, and confounders;
-- period-normalised energy, water, food-waste, carbon, and cost measurements;
-- baseline and follow-up evidence references plus deterministic savings;
-- an exportable JSON evidence pack;
-- an AI evidence review that is constrained to the calculated data and may not
-  invent measurements, causality, certification, or independent verification.
+- action, owner, date, and fixed comparison scope;
+- baseline and follow-up periods;
+- energy, water, food-waste, carbon, and cost evidence;
+- period-normalised deterministic savings;
+- evidence references and potential confounders;
+- exportable JSON evidence pack;
+- AI review constrained to the supplied measurements and calculations.
 
-### Security controls
+KAIRO does not invent measurements, claim causality without evidence, or represent internal analysis as independent certification.
 
-- AI requests are accepted only as bounded JSON and same-origin browser calls.
-- Prompts, histories, schemas, images, MIME types, and uploaded file signatures
-  are validated before any provider request.
-- CSP, clickjacking protection, restrictive permissions, no-store API responses,
-  bounded in-memory rate limiting, and public error redaction are applied across
-  Express, Vercel, and the Cloudflare worker.
-- Supabase data is owner-isolated with forced RLS and bounded JSON payloads.
-- `AI_ALLOWED_ORIGINS` may list trusted preview origins. Configure
-  `AI_TRUST_PROXY_HOPS` only for a known reverse-proxy topology.
-- UI copy blocking is deterrence, not DRM: browser-delivered content can still be
-  recovered through developer tools, screenshots, or network inspection.
+## Architecture
 
-TokenRouter remains available as an optional legacy fallback. To enable it,
-configure its environment variables and set:
+~~~mermaid
+flowchart TB
+    UI["React 19 · bilingual Apple Glass UI"]
+    API["Same-origin API boundary"]
+    SEC["Validation · rate limits · origin controls"]
+    CALC["Deterministic environmental engines"]
+    AI["Server-side AI orchestration"]
+    DATA["Owner-isolated cloud data + local resilience"]
+    PROOF["Reports · scenarios · proof of impact"]
 
-```dotenv
-AI_ENABLE_TOKENROUTER_FALLBACK=true
-```
+    UI --> API
+    API --> SEC
+    SEC --> CALC
+    SEC --> AI
+    CALC --> PROOF
+    AI --> PROOF
+    DATA <--> API
+~~~
 
-It is disabled by default because the current TokenRouter free model exceeded
-Kairo's production timeout on large structured reports.
+### Technology
 
-AgentRouter is available as the preferred optional OpenAI-compatible fallback.
-Its key is server-only and its models are selected through environment values:
+- React 19, TypeScript, Vite, and React Router
+- Tailwind CSS, Framer Motion, HeroUI, and Recharts
+- Express and Vercel Functions for the server boundary
+- Supabase with Row Level Security for optional cloud persistence
+- Server-side multi-provider AI orchestration for text, structured, and vision workloads
+- Automated SEO asset generation, bilingual metadata, and responsive reports
 
-```dotenv
-AI_ENABLE_AGENTROUTER_FALLBACK=true
-AGENTROUTER_API_KEY=server-side-secret
-AGENTROUTER_BASE_URL=https://agentrouter.org/v1
-AGENTROUTER_MODELS=glm-5.1,kimi-k2.6
-```
+## Security and privacy
 
-TaBiAI is supported as another server-only OpenAI-compatible fallback after
-AgentRouter and before the legacy TokenRouter route:
+Security is part of the product architecture:
 
-```dotenv
-AI_ENABLE_TABIAI_FALLBACK=true
-TABIAI_API_KEY=server-side-secret
-TABIAI_BASE_URL=https://tabitoken.com/v1
-TABIAI_MODELS=claude-opus-5-thinking,claude-opus-5,claude-opus-4-8-thinking,claude-opus-4-8
-TABIAI_TIMEOUT_MS=60000
-```
+- API keys are server-only and never use a browser-exposed prefix.
+- Requests, prompts, schemas, histories, images, MIME types, sizes, and file signatures are bounded and validated.
+- Same-origin enforcement, CSP, clickjacking protection, restrictive permissions, no-store API responses, and rate limiting are applied.
+- Supabase records are owner-isolated with forced Row Level Security.
+- Public errors are redacted and provider/model identities are not disclosed.
+- Cloud persistence is optional; resilient device storage keeps core workflows usable.
 
-The current TaBiAI catalogue is treated as text and structured-output only
-unless `TABIAI_VISION_MODELS` is explicitly configured with a verified
-multimodal model. Run `npm run verify:tabiai` to verify one live text request.
+Please report security concerns privately as described in [SECURITY.md](./SECURITY.md). Do not publish sensitive findings in a public issue.
+
+## Design principles
+
+The interface follows KAIRO's visual language: deep environmental tones, emerald intelligence signals, layered Apple-inspired glass surfaces, strong contrast, Arabic/English direction support, responsive charts, reduced-motion support, keyboard navigation, and touch-safe controls.
+
+## Local development
+
+### Requirements
+
+- Node.js 22
+- npm 10+
+
+### Setup
+
+~~~bash
+git clone https://github.com/marwanyasser2005/kairo-intelligence.git
+cd kairo-intelligence
+npm ci
+~~~
+
+Copy **.env.example** to **.env.local** and provide at least one server-side AI credential. Optional cloud persistence uses only a publishable Supabase browser key; privileged database keys must never be exposed to the client.
+
+~~~bash
+npm run dev
+~~~
+
+Open **http://localhost:3000**.
+
+## Quality gates
+
+~~~bash
+npm run lint
+npm test
+npm run build
+npm run verify:seo
+~~~
+
+| Command | Purpose |
+| --- | --- |
+| **npm run dev** | Run the web app and local API gateway |
+| **npm run lint** | TypeScript quality gate |
+| **npm test** | AI routing, security, data, SEO, UI, scenarios, and impact tests |
+| **npm run build** | Production, SSR/SEO, and hosting builds |
+| **npm run verify:seo** | Validate generated SEO routes and metadata |
+
+## Project structure
+
+~~~text
+api/                 Vercel API functions
+components/          Shared UI, navigation, reports, and AI status
+config/              Brand, audiences, capabilities, and public knowledge
+contexts/            Application state and language/theme context
+pages/               Product pages and environmental systems
+services/            AI clients, calculators, persistence, and decision logic
+supabase/migrations/  RLS-protected data model
+tests/                Automated quality and security coverage
+utils/                Export, file validation, storage, and calculations
+~~~
+
+## Deployment
+
+The production application is deployed on Vercel. Configure secrets only through encrypted project environment variables, run the full quality gates, then deploy the production build. The official experience is available at [www.kairo-ai.tech](https://www.kairo-ai.tech/).
+
+## Founder
+
+**Marwan Yasser Hassan Abdel Ghafar** — Founder, developer, and AI engineer. KAIRO was initiated in Cairo, Egypt, at the intersection of artificial intelligence, environmental science, sustainable buildings, and smart cities.
+
+## Contributing
+
+This repository follows a review-first workflow. Read [CONTRIBUTING.md](./CONTRIBUTING.md) before proposing a change. Contributions must preserve evidence integrity, Arabic/English quality, accessibility, security boundaries, and KAIRO's visual identity.
+
+## Responsible-use note
+
+KAIRO is a decision-support platform. Its estimates and forecasts do not replace field measurements, certified environmental assessment, professional engineering advice, or medical diagnosis.
+
+---
+
+<div align="center">
+  <strong>KAIRO Intelligence</strong><br />
+  Understand the signal. Choose the action. Prove the impact.<br /><br />
+  © 2026 KAIRO Intelligence. All rights reserved.
+</div>
