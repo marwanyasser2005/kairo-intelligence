@@ -1,0 +1,51 @@
+name: Bug report
+description: Report a reproducible KAIRO product defect. Do not include secrets or private data.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve KAIRO. For security vulnerabilities, follow SECURITY.md instead of opening an issue.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Product area
+      options:
+        - Water and scarcity
+        - Food security
+        - Energy
+        - Mobility
+        - Urban exposure
+        - ReKairo / e-waste
+        - Scenarios and dashboard
+        - Proof of Impact
+        - AI assistant
+        - Export, accessibility, or localization
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Describe actual and expected behavior using non-sensitive test data.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and device
+      placeholder: Chrome, Windows 11, 1440x900
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed credentials, personal data, and confidential evidence from this report.
+          required: true
