@@ -1,5 +1,22 @@
+# Dependencies and generated output
+node_modules/
+dist/
+dist-ssr/
+artifacts/
+tmp/
+
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+*.local
+key-diag.txt
+
+# Deployment state
+.vercel/
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,29 +24,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-.env.local
-.env
-.env.*
-!.env.example
-
-# Editor directories and files
+# Editors and operating systems
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-.vercel
-tmp/
-key-diag.txt
-
-.vercel
-.env*
