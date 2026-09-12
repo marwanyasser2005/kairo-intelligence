@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import { Database, Globe, BrainCircuit, ShieldCheck, ArrowRight, Lock, Server, FileJson } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 
 const HowKairoThinks: React.FC = () => {
   const { t, theme, dir } = useApp();
   const isLight = theme === 'light';
-  const [activeStep, setActiveStep] = useState<number | null>(null);
+  const [, setActiveStep] = useState<number | null>(null);
 
   const steps = [
     {
@@ -78,8 +78,8 @@ const HowKairoThinks: React.FC = () => {
                     isLight 
                     ? 'bg-white border-gray-200' 
                     : 'bg-black border-white/10'
-                } group-hover:border-${step.color === 'kairo-green' ? 'kairo-green' : step.color + '-500'}/50`}>
-                  <div className={`text-${step.color === 'kairo-green' ? 'kairo-green' : step.color + '-400'}`}>
+                } group-hover:border-${step.color === 'kairo-green' ? 'kairo-green' : `${step.color  }-500`}/50`}>
+                  <div className={`text-${step.color === 'kairo-green' ? 'kairo-green' : `${step.color  }-400`}`}>
                     {step.icon}
                   </div>
                   
@@ -104,7 +104,7 @@ const HowKairoThinks: React.FC = () => {
                   </div>
 
                   {/* Hover Glow Effect */}
-                  <div className={`absolute -right-10 -bottom-10 w-32 h-32 bg-${step.color === 'kairo-green' ? 'kairo-green' : step.color + '-500'}/10 blur-[50px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
+                  <div className={`absolute -right-10 -bottom-10 w-32 h-32 bg-${step.color === 'kairo-green' ? 'kairo-green' : `${step.color  }-500`}/10 blur-[50px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
                 </div>
 
                 {/* Arrow (Mobile Only) */}

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloud, Zap, Droplet, Check, AlertCircle, X, Loader2, FileText, ArrowDown } from 'lucide-react';
+import { UploadCloud, Zap, Droplet, Check, AlertCircle, X, Loader2, FileText } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { analyzeElectricityBill, analyzeWaterBillOCR, analyzeFoodReceiptOCR } from '../services/tokenRouterService';
 import { MAX_UPLOAD_BYTES, validateImageFile } from '../utils/fileSecurity';
@@ -16,7 +16,7 @@ interface BillUploaderProps {
 }
 
 const BillUploader: React.FC<BillUploaderProps> = ({ onDataExtracted, onUpload, forceType }) => {
-    const { t, theme, language, dir } = useApp();
+    const { t, theme, language } = useApp();
     const isLight = theme === 'light';
     
     const [billType, setBillType] = useState<'electricity' | 'water' | 'food'>(forceType || 'electricity');

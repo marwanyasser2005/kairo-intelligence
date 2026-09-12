@@ -1,13 +1,10 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { 
-    BrainCircuit, ShieldCheck, Database, FileJson, 
-    Code, Server, Zap, ArrowRight, Focus, Fingerprint
+    BrainCircuit, ShieldCheck, Server, ArrowRight, Focus, Fingerprint
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 
-const MotionDiv = motion.div as any;
 
 const TokenRouterArchitecture: React.FC = () => {
   const { theme, dir, language } = useApp();

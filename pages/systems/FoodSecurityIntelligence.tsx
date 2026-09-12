@@ -1,28 +1,26 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Utensils, TrendingUp, Loader2, Save, Users, ShoppingCart, PieChart, BrainCircuit, LineChart, Leaf, Droplet, Flame, ArrowRight, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Utensils, TrendingUp, Loader2, Users, ShoppingCart, PieChart, BrainCircuit, LineChart, AlertTriangle } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { runFoodWasteAnalysis } from '../../services/tokenRouterService';
 import { FoodWasteAnalysisReport } from '../../types';
-import { exportAsPdf } from '../../utils/export';
 import ModuleToolbar from '../../components/ModuleToolbar';
 import BillUploader from '../../components/BillUploader';
 import CapabilityContext from '../../components/CapabilityContext';
 import DecisionIntelligence from '../../components/DecisionIntelligence';
-import { UploadCloud } from 'lucide-react';
 import { usePersistentState } from '../../utils/storage';
 import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, Legend } from 'recharts';
 const MotionDiv = motion.div as any;
 const COLORS = ['#2bd4a7', '#60a5fa', '#f5b942', '#fb7185', '#a78bfa'];
-const FoodWaste: React.FC<any> = ({ report, setGlobalReport, globalFoodData, setGlobalFoodData }) => {
-    const { t, theme, language } = useApp();
+const FoodWaste: React.FC<any> = ({ report, setGlobalReport, setGlobalFoodData }) => {
+    const { theme, language } = useApp();
     const isLight = theme === 'light';
     const bgCard = isLight ? 'bg-white' : 'bg-gray-900 border-white/10';
     const textMain = isLight ? 'text-gray-900' : 'text-white';
     const [loading, setLoading] = useState(false);
     const [step, setStep] = useState(1);
     const [activeTab, setActiveTab] = useState<'audit' | 'ocr'>('audit');
-    const [ocrData, setOcrData] = useState<any>(null);
+    const [, setOcrData] = useState<any>(null);
     const [familySize, setFamilySize] = usePersistentState<any>('kairo_fw_sys_familySize', 4);
     const [adults, setAdults] = usePersistentState<any>('kairo_fw_sys_adults', 2);
     const [children, setChildren] = usePersistentState<any>('kairo_fw_sys_children', 2);

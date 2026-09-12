@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Droplets, Utensils, Wind, Leaf, ArrowRight, BookOpen, GraduationCap, Globe } from 'lucide-react';
+import { Droplets, Utensils, Wind, Leaf, ArrowRight, GraduationCap, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useApp } from '../contexts/AppContext';

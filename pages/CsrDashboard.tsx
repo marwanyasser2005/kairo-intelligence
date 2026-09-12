@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, TrendingDown, Users, FileCheck, Download, AlertOctagon, CheckCircle2, Search, ArrowRight, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
+import { Building2, TrendingDown, Users, FileCheck, AlertOctagon, CheckCircle2, Search, ArrowRight } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { runVerificationEngine } from '../services/tokenRouterService';
 import { ClaimVerificationResult } from '../types';

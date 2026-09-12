@@ -11,7 +11,7 @@ import DecisionIntelligence from '../components/DecisionIntelligence';
 const MotionDiv = motion.div as any;
 
 const AirQuality: React.FC = () => {
-  const { t, theme, dir, language } = useApp();
+  const { t, theme, dir } = useApp();
   const isLight = theme === 'light';
   
   const [data, setData] = useState<EnvironmentalSnapshot | null>(null);

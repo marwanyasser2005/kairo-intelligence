@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Droplet, AlertTriangle, ArrowRight, Waves, Scale, ShieldCheck, Loader2, FileText, ChevronRight, Activity, Users, Save, Building2, UploadCloud, PieChart, Info, Settings, Target } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Droplet, Waves, Scale, ShieldCheck, Loader2, Activity, Building2, UploadCloud, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { runWaterAnalysis } from '../../services/tokenRouterService';
 import { WaterAnalysisReport, WaterData, WaterBillExtraction, WaterAnalysisInputs } from '../../types';
 import { usePersistentState } from '../../utils/storage';
 import { useApp } from '../../contexts/AppContext';
 import ModuleToolbar from '../../components/ModuleToolbar';
-import { exportAsPdf } from '../../utils/export';
 import BillUploader from '../../components/BillUploader';
 import CapabilityContext from '../../components/CapabilityContext';
 import DecisionIntelligence from '../../components/DecisionIntelligence';
-import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
+import { ResponsiveContainer, Tooltip as RechartsTooltip, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 
 const MotionDiv = motion.div as any;
 const COLORS = ['#94a3b8', '#60a5fa', '#2bd4a7'];
@@ -23,7 +21,7 @@ interface WaterScarcityProps {
 }
 
 const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, globalWaterData }) => {
-    const { t, theme, dir, language } = useApp();
+    const { theme, dir, language } = useApp();
     const isLight = theme === 'light';
     const [loading, setLoading] = useState(false);
     
@@ -435,7 +433,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                             <YAxis tick={{fill: isLight ? '#64748b' : '#94a3b8', fontSize: 12}} axisLine={false} tickLine={false} />
                                             <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{backgroundColor: isLight?'#fff':'#1e293b', borderRadius: '12px', borderColor: isLight?'#e2e8f0':'#334155', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
                                             <Bar dataKey="liters" name={language === 'ar' ? 'لتر/شهر' : 'Liters/Mo'} radius={[6, 6, 0, 0]}>
-                                                {COLORS.map((color, index) => <Cell key={color} fill={color} />)}
+                                                {COLORS.map((color) => <Cell key={color} fill={color} />)}
                                                 <LabelList dataKey="liters" position="top" fill={isLight ? '#36574c' : '#d3e7df'} fontSize={10} fontWeight={800} />
                                             </Bar>
                                         </BarChart>

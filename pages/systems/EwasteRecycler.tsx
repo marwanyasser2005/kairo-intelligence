@@ -1,7 +1,7 @@
 
 import React, { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Recycle, Cpu, Smartphone, Laptop, Loader2, ArrowRight, CheckCircle2, Box, RefreshCw, Heart, Trash2, Info, AlertTriangle, Download, Save, AlertOctagon, Network, Scale, TrendingUp, Database, PackageCheck, Battery, Monitor, ShieldCheck, FileText, Camera, UploadCloud, Volume2, Usb, Image as ImageIcon, Search, ExternalLink } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Recycle, Cpu, Smartphone, Loader2, RefreshCw, AlertTriangle, AlertOctagon, Network, Scale, TrendingUp, Database, ShieldCheck, Camera, Search, ExternalLink } from 'lucide-react';
 import { runEwasteAnalysis, analyzeEwasteOCR } from '../../services/tokenRouterService';
 import { EwasteAnalysisReport } from '../../types';
 import { usePersistentState } from '../../utils/storage';
@@ -75,7 +75,7 @@ const DEVICE_TYPE_LABELS: Record<string, string> = {
 };
 
 const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport }) => {
-    const { t, theme, dir, language } = useApp();
+    const { theme, dir, language } = useApp();
     const isLight = theme === 'light';
     const isAr = language === 'ar';
     

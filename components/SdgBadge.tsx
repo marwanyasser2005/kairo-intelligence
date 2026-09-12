@@ -20,8 +20,7 @@ const SDG_COLORS: Record<number, { bg: string; border: string; text: string }> =
 };
 
 const SdgBadge: React.FC<SdgBadgeProps> = ({ sdgs, compact = false, showTitle = true }) => {
-  const { t, language } = useApp();
-  const isRtl = language === 'ar';
+  const { t } = useApp();
   
   return (
     <div className="flex flex-wrap items-center gap-1.5">

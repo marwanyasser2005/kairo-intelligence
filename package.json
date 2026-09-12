@@ -12,8 +12,10 @@
     "start": "tsx server.ts --prod",
     "preview": "tsx server.ts --prod",
     "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit",
-    "test": "tsx --test tests/tokenRouter.test.ts tests/agentRouter.test.ts tests/tabiGateway.test.ts tests/geminiGateway.test.ts tests/earlyWarning.test.ts tests/scenarioLab.test.ts tests/security.test.ts tests/supabase.test.ts tests/uiSystem.test.ts tests/seo.test.ts tests/impactVerification.test.ts",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "tsx --test tests/tokenRouter.test.ts tests/agentRouter.test.ts tests/tabiGateway.test.ts tests/geminiGateway.test.ts tests/earlyWarning.test.ts tests/scenarioLab.test.ts tests/security.test.ts tests/supabase.test.ts tests/uiSystem.test.ts tests/seo.test.ts tests/impactVerification.test.ts tests/calculations.test.ts tests/dashboardLogic.test.ts",
     "verify:gemini": "tsx scripts/verifyGemini.ts",
     "verify:kairo-ai": "tsx scripts/verifyKairoGemini.ts",
     "verify:tokenrouter": "tsx scripts/verifyTokenRouter.ts",
@@ -42,6 +44,7 @@
     "recharts": "^2.15.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@types/express": "^5.0.6",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^22.14.0",
@@ -50,10 +53,15 @@
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.28.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.12.0",
     "postcss": "^8.5.6",
+    "prettier": "^3.9.6",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.22.3",
     "typescript": "~5.8.2",
+    "typescript-eslint": "^8.70.0",
     "vite": "^6.2.0"
   }
 }

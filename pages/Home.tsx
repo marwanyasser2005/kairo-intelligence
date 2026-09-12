@@ -10,7 +10,6 @@ import {
   CircleDollarSign,
   Database,
   Droplets,
-  Factory,
   FlaskConical,
   Gauge,
   GraduationCap,

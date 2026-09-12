@@ -135,7 +135,6 @@ export const runWeeklyReview = async (): Promise<{ status: 'updated' | 'skipped'
     };
 
     const NOW = Date.now();
-    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
     // Guard Clause: Only run if data exists and enough time has passed (or force run for demo)
     if (!context.baseline || !context.currentPlan) {
@@ -157,7 +156,6 @@ export const runWeeklyReview = async (): Promise<{ status: 'updated' | 'skipped'
     // --- STEP 3: RE-EVALUATE METRICS (Logic) ---
     // If adherence is low (< 30%), the risk level increases.
     // If adherence is high (> 80%), we can introduce "Advanced" actions.
-    const riskMultiplier = adherenceScore < 30 ? 1.2 : adherenceScore > 80 ? 0.9 : 1.0;
     const currentRiskLevel = context.currentPlan.risk_assessment.level;
     
     // --- STEP 4: SYNTHESIZE NEW PLAN (LLM) ---

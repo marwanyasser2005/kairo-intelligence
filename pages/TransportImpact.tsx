@@ -1,9 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { 
-    Train, Car, Bus, Loader2, Save, Download, RefreshCw, AlertTriangle, 
+    Train, Car, Loader2, RefreshCw, AlertTriangle, 
     Clock, DollarSign, CloudRain, Briefcase, Map as MapIcon, Target, UploadCloud, 
-    Scale, Activity, ArrowRight, Zap, Target as TargetIcon, Search, FileText, Image as ImageIcon
-} from 'lucide-react';
+    Activity, ArrowRight, Zap, Target as TargetIcon, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     analyzeTransportReceiptOCR,

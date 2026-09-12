@@ -1,18 +1,16 @@
 
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, CheckCircle2, Globe, Leaf, Wind, ArrowRight, Zap, Truck, Save, Target, Download, RefreshCw, LayoutDashboard, Share2, Droplet, Utensils, Star, Info, ChevronDown, ChevronUp, Filter, FileText, Image as ImageIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Loader2, CheckCircle2, Globe, Leaf, ArrowRight, Zap, Truck, Target, RefreshCw, LayoutDashboard, Droplet, Utensils, ChevronDown, ChevronUp, Filter } from 'lucide-react';
 import { CalculatorResults, ClimateActionPlan, UserProgress, TrackedAction, SmartAction } from '../types';
 import { KairoOrchestrator } from '../services/tokenRouterService';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePersistentState } from '../utils/storage';
-import { exportAsPdf, exportAsPng } from '../utils/export';
 import { useApp } from '../contexts/AppContext';
 import ReportActions from '../components/ReportActions';
 
 // Type casting to bypass strict environment checks
 const MotionDiv = motion.div as any;
-const MotionLi = motion.li as any;
 
 interface ClimateActionProps {
   results: CalculatorResults | null;
@@ -20,13 +18,12 @@ interface ClimateActionProps {
   setUserProgress: (p: UserProgress) => void;
 }
 
-const ActionCard: React.FC<{ 
-    action: SmartAction; 
-    isCompleted: boolean; 
-    toggle: () => void; 
-    theme: string; 
-    dir: string 
-}> = ({ action, isCompleted, toggle, theme, dir }) => {
+const ActionCard: React.FC<{
+    action: SmartAction;
+    isCompleted: boolean;
+    toggle: () => void;
+    theme: string
+}> = ({ action, isCompleted, toggle, theme }) => {
     const [expanded, setExpanded] = useState(false);
     const isLight = theme === 'light';
 
@@ -122,8 +119,6 @@ const KairoCore: React.FC<ClimateActionProps> = ({ results, userProgress, setUse
   const [plan, setPlan] = usePersistentState<ClimateActionPlan | null>('kairo_generated_plan', null);
   
   const [loading, setLoading] = useState(false);
-  const [exportingPdf, setExportingPdf] = useState(false);
-  const [exportingPng, setExportingPng] = useState(false);
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [filterType, setFilterType] = useState<'All' | 'High Impact' | 'Water' | 'Energy'>('All');
   
@@ -194,18 +189,6 @@ const KairoCore: React.FC<ClimateActionProps> = ({ results, userProgress, setUse
         }
     }
   }, [results, language]); // Dependency on language ensures regeneration on switch
-
-  const handleExportPdf = async () => {
-      setExportingPdf(true);
-      await exportAsPdf('roadmap-container', 'kairo_climate_roadmap');
-      setExportingPdf(false);
-  };
-
-  const handleExportPng = async () => {
-      setExportingPng(true);
-      await exportAsPng('roadmap-container', 'kairo_climate_roadmap');
-      setExportingPng(false);
-  };
 
   const handleRegenerate = () => {
       if(window.confirm(t.common.alert.genPlan)) {
@@ -386,7 +369,6 @@ const KairoCore: React.FC<ClimateActionProps> = ({ results, userProgress, setUse
                                         isCompleted={!!isCompleted(action.title)} 
                                         toggle={() => toggleAction(action.title, activeTab)} 
                                         theme={theme}
-                                        dir={dir}
                                     />
                                 ));
                             })()}

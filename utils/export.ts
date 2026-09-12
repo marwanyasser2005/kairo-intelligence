@@ -29,6 +29,8 @@ const SDG_LABELS: Record<SdgNumber, { ar: string; en: string }> = {
 const sanitizeFilename = (filename: string) =>
   filename
     .trim()
+    // Stripping ASCII control characters from report filenames is intentional.
+    // eslint-disable-next-line no-control-regex
     .replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-')
     .replace(/\s+/g, '_')
     .slice(0, 90) || 'environmental_report';

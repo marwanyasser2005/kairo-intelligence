@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, AlertTriangle, ArrowRight, Activity, ShieldCheck, Loader2, FileText, ChevronRight, Users, Save, Building2, UploadCloud, PieChart, Info, Settings, Target, ZapOff, Sun, Flame, Wind, MonitorSmartphone, Fan, ThermometerSun, Leaf, Car } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Zap, AlertTriangle, Activity, ShieldCheck, Loader2, Building2, UploadCloud, PieChart, Target, Sun, Flame, MonitorSmartphone, ThermometerSun } from 'lucide-react';
 import { usePersistentState } from '../utils/storage';
 import { useApp } from '../contexts/AppContext';
 import ModuleToolbar from '../components/ModuleToolbar';
@@ -9,7 +9,7 @@ import CapabilityContext from '../components/CapabilityContext';
 import DecisionIntelligence from '../components/DecisionIntelligence';
 import { runEnergyAnalysis } from '../services/tokenRouterService';
 import { EnergyAnalysisReport, EnergyAnalysisInputs, EnergyBillExtraction } from '../types';
-import { ResponsiveContainer, Tooltip as RechartsTooltip, PieChart as RePieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList, AreaChart, Area } from 'recharts';
+import { ResponsiveContainer, Tooltip as RechartsTooltip, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 
 const MotionDiv = motion.div as any;
 const COLORS = ['#94a3b8', '#f5b942', '#2bd4a7'];
@@ -20,7 +20,7 @@ interface EnergyIntelligenceProps {
 }
 
 const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlobalReport }) => {
-    const { t, theme, dir, language } = useApp();
+    const { theme, dir, language } = useApp();
     const isLight = theme === 'light';
     const isAr = language === 'ar';
     const [loading, setLoading] = useState(false);
@@ -34,25 +34,25 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
     const [occupants, setOccupants] = usePersistentState('kairo_en_occ', 4);
     const [area, setArea] = usePersistentState('kairo_en_area', 120);
     const [bill, setBill] = usePersistentState('kairo_en_bill', 500);
-    const [billIncreased, setBillIncreased] = usePersistentState<'yes' | 'no' | 'unknown'>('kairo_en_inc', 'unknown');
+    const [billIncreased] = usePersistentState<'yes' | 'no' | 'unknown'>('kairo_en_inc', 'unknown');
     const [acCount, setAcCount] = usePersistentState('kairo_en_ac_c', 2);
     const [acHours, setAcHours] = usePersistentState('kairo_en_ac_h', 6);
-    const [fridgeCount, setFridgeCount] = usePersistentState('kairo_en_fridge', 1);
-    const [hasHeater, setHasHeater] = usePersistentState<'yes'|'no'>('kairo_en_heater', 'yes');
-    const [hasDishwasher, setHasDishwasher] = usePersistentState<'yes'|'no'>('kairo_en_dish', 'no');
-    const [hasDryer, setHasDryer] = usePersistentState<'yes'|'no'>('kairo_en_dryer', 'no');
-    const [occupancyHours, setOccupancyHours] = usePersistentState('kairo_en_occh', 12);
+    const [fridgeCount] = usePersistentState('kairo_en_fridge', 1);
+    const [hasHeater] = usePersistentState<'yes'|'no'>('kairo_en_heater', 'yes');
+    const [hasDishwasher] = usePersistentState<'yes'|'no'>('kairo_en_dish', 'no');
+    const [hasDryer] = usePersistentState<'yes'|'no'>('kairo_en_dryer', 'no');
+    const [occupancyHours] = usePersistentState('kairo_en_occh', 12);
     const [lighting, setLighting] = usePersistentState<'led' | 'traditional' | 'mixed'>('kairo_en_light', 'mixed');
-    const [hasSolar, setHasSolar] = usePersistentState<'yes'|'no'>('kairo_en_solar', 'no');
-    const [hasHighP, setHasHighP] = usePersistentState<'yes'|'no'>('kairo_en_high', 'no');
+    const [hasSolar] = usePersistentState<'yes'|'no'>('kairo_en_solar', 'no');
+    const [hasHighP] = usePersistentState<'yes'|'no'>('kairo_en_high', 'no');
 
     // Advanced (Corporate)
     const [computers, setComputers] = usePersistentState('kairo_en_comp', 20);
     const [servers, setServers] = usePersistentState('kairo_en_serv', 1);
-    const [shifts, setShifts] = usePersistentState('kairo_en_shifts', 1);
-    const [hasDataCenter, setHasDataCenter] = usePersistentState<'yes'|'no'>('kairo_en_dc', 'no');
+    const [shifts] = usePersistentState('kairo_en_shifts', 1);
+    const [hasDataCenter] = usePersistentState<'yes'|'no'>('kairo_en_dc', 'no');
     const [hasCooling, setHasCooling] = usePersistentState<'yes'|'no'>('kairo_en_cool', 'yes');
-    const [hasInd, setHasInd] = usePersistentState<'yes'|'no'>('kairo_en_ind', 'no');
+    const [hasInd] = usePersistentState<'yes'|'no'>('kairo_en_ind', 'no');
 
     // OCR State
     const [ocrData, setOcrData] = useState<EnergyBillExtraction | null>(null);

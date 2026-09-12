@@ -1,14 +1,10 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { 
-    Scale, Activity, Code2, Eye, ShieldCheck, 
+    Scale, Code2, Eye, ShieldCheck, 
     RefreshCw, Globe, Leaf, Wind, Droplet, Zap, 
-    Flame, Truck, Users, Home, Building2, Map,
-    LineChart, Network, Box, Monitor, AlertTriangle, Target, Search
-} from 'lucide-react';
+    Users, LineChart, Monitor, AlertTriangle, Target } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 
-const MotionDiv = motion.div as any;
 
 const Impact: React.FC = () => {
     const { theme, dir, language } = useApp();

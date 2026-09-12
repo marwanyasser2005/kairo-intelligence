@@ -7,7 +7,7 @@ const read = (path: string) => readFile(new URL(`../${path}`, import.meta.url), 
 
 test('every Recharts frame opts into a responsive Kairo chart size', async () => {
   const chartPages = [
-    'pages/Dashboard.tsx',
+    'pages/dashboard/dashboardSections.tsx',
     'pages/CsrDashboard.tsx',
     'pages/LiveMonitor.tsx',
     'pages/EnergyIntelligence.tsx',
@@ -52,7 +52,7 @@ test('core result surfaces use the shared metric and analysis system', async () 
 });
 
 test('dashboard exposes an accessible semantic results ledger', async () => {
-  const dashboard = await read('pages/Dashboard.tsx');
+  const dashboard = await read('pages/dashboard/dashboardSections.tsx');
   assert.match(dashboard, /role="region"/);
   assert.match(dashboard, /<table className="kairo-data-table">/);
   assert.match(dashboard, /<thead>/);
@@ -119,6 +119,8 @@ test('decision intelligence is available across every core environmental result'
 test('rendered result surfaces do not use raw HTML injection', async () => {
   const files = [
     'pages/Dashboard.tsx',
+    'pages/dashboard/dashboardDisplay.ts',
+    'pages/dashboard/dashboardSections.tsx',
     'pages/CsrDashboard.tsx',
     'pages/ExposureReport.tsx',
     'pages/EnergyIntelligence.tsx',

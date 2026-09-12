@@ -156,9 +156,9 @@ interface AnimatedRoutesProps {
     handleSystemReset: () => void;
 }
 
-const AnimatedRoutes: React.FC<AnimatedRoutesProps> = ({ 
-    results, setResults, waterData, setWaterData, foodData, setFoodData, energyData, setEnergyData,
-    carbonReport, setCarbonReport, waterReport, setWaterReport, 
+const AnimatedRoutes: React.FC<AnimatedRoutesProps> = ({
+    results, waterData, foodData, setFoodData,
+    carbonReport, waterReport, setWaterReport,
     foodReport, setFoodReport, exposureReport, setExposureReport,
     ewasteReport, setEwasteReport, energyReport, setEnergyReport,
     transportReport, setTransportReport,

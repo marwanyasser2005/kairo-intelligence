@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Droplets, Utensils, Wind, Leaf, ArrowRight, Check, Medal, Trophy, Lightbulb, Zap, AlertTriangle } from 'lucide-react';
+import { Droplets, Utensils, Wind, Leaf, ArrowRight, Check, Lightbulb, Zap, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { UserProgress } from '../types';

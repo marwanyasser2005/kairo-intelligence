@@ -1,10 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
-    Cpu, Network, Database, BrainCircuit, Activity, Globe, Layout, 
-    ArrowRight, MessageSquare, Terminal, Eye, AlertTriangle, 
-    CheckCircle2, RefreshCw, Zap, Droplet, Utensils, Wind, Truck, 
-    Recycle, Layers, Target, Code2, LineChart, ShieldCheck
+    Network, Database, BrainCircuit, Layout, 
+    ArrowRight, MessageSquare, Eye, AlertTriangle, 
+    Target, ShieldCheck
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';

@@ -56,7 +56,7 @@ for (const route of SEO_ROUTES) {
     assert.match(html, /<h1>[^<]+<\/h1>/);
     assert.match(html, /<nav aria-label=/);
     assert.match(html, /<a href="\//);
-    assert.doesNotMatch(html, /href="[^\"]*#\//);
+    assert.doesNotMatch(html, /href="[^"]*#\//);
     assert.doesNotThrow(() => JSON.parse(structuredData));
     assert.equal(seenTitles.has(title), false, `Duplicate title: ${title}`);
     assert.equal(seenDescriptions.has(description), false, `Duplicate description: ${description}`);
@@ -69,8 +69,8 @@ const sitemap = await readFile(path.join(distDirectory, 'sitemap.xml'), 'utf8');
 const sitemapUrlCount = (sitemap.match(/<url>/g) ?? []).length;
 assert.equal(sitemapUrlCount, SEO_ROUTES.length * 2);
 for (const route of SEO_ROUTES) {
-  assert.match(sitemap, new RegExp(`<loc>${absoluteSeoUrl(route.path, 'ar').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}<\/loc>`));
-  assert.match(sitemap, new RegExp(`<loc>${absoluteSeoUrl(route.path, 'en').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}<\/loc>`));
+  assert.match(sitemap, new RegExp(`<loc>${absoluteSeoUrl(route.path, 'ar').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>`));
+  assert.match(sitemap, new RegExp(`<loc>${absoluteSeoUrl(route.path, 'en').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</loc>`));
 }
 
 const robots = await readFile(path.join(distDirectory, 'robots.txt'), 'utf8');

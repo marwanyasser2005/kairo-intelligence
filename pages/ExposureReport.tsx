@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ShieldAlert, ArrowRight, Loader2, AlertCircle, Clock, MapPin, Activity } from 'lucide-react';
+import { ShieldAlert, Loader2, AlertCircle, Clock, MapPin, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { runExposureAgent } from '../services/tokenRouterService';
 import { ExposureAnalysis } from '../types';

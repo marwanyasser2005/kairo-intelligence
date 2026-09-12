@@ -42,7 +42,7 @@ const UrbanExposure: React.FC<UrbanExposureProps> = ({ report, setGlobalReport }
             setCoordinates({ lat: pos.coords.latitude, lon: pos.coords.longitude });
             setLocationName(`Lat: ${pos.coords.latitude.toFixed(4)}, Lon: ${pos.coords.longitude.toFixed(4)}`);
         },
-        (err) => {
+        () => {
             setGeoError("Location access denied");
         }
     );
