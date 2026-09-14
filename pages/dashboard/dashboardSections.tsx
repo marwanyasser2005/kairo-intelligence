@@ -362,8 +362,9 @@ export const CoreResourcesSection = ({
           return (
             <article
               key={capability.id}
-              className={`kairo-analysis-panel group flex flex-col rounded-[2rem] border p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,.16)] ${border} ${surface}`}
+              className={`kairo-analysis-panel kairo-glass-panel group relative flex flex-col overflow-hidden rounded-[2rem] border p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,.16)] ${border} ${surface}`}
             >
+              <div className={`absolute inset-x-0 top-0 h-1 ${accent.soft}`} aria-hidden="true" />
               <div className="flex items-start justify-between gap-4">
                 <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${accent.soft} ${accent.icon}`}>
                   <Icon className="h-6 w-6" />
@@ -474,7 +475,7 @@ export const SignalsBand = ({
 
   return (
     <section
-      className={`mt-6 overflow-hidden rounded-[2rem] border p-6 sm:p-7 ${
+      className={`kairo-glass-panel mt-6 overflow-hidden rounded-[2rem] border p-6 sm:p-7 ${
         isLight
           ? 'border-emerald-500/20 bg-[linear-gradient(135deg,rgba(43,212,167,0.10),rgba(255,255,255,0.6))]'
           : 'border-emerald-400/20 bg-[linear-gradient(135deg,rgba(43,212,167,0.10),rgba(7,17,15,0.9))]'

@@ -32,6 +32,8 @@ import {
     normalizeFoodExtraction,
     normalizeWaterExtraction,
 } from "./billExtraction";
+import { computeFoodFacts, foodFactsPromptBlock } from "./foodFacts";
+import { recordAnalysisRunSafe } from "./analysisTelemetry";
 
 const KAIRO_ARABIC_STYLE = `
 Write every user-facing string in clear modern Arabic that any Arab reader can understand,
@@ -638,7 +640,23 @@ export const runExposureAgent = async (inputs: ExposureAgentInputs, language: st
         ? KAIRO_ARABIC_STYLE
         : "Output in English.";
     const prompt = `ROLE: Environmental Analyst. TASK: Estimate exposure. ${langInstruction} ${KAIRO_EVIDENCE_RULES} DATA: ${JSON.stringify(inputs)}`;
-    return generateFromAPI(prompt, EXPOSURE_SCHEMA);
+    const report = await generateFromAPI(prompt, EXPOSURE_SCHEMA);
+
+    recordAnalysisRunSafe({
+        module: 'exposure',
+        language: language === 'ar' ? 'ar' : 'en',
+        inputs: {
+            hours_outdoors: Number(inputs?.hoursOutdoors) || undefined,
+            transport_mode: inputs?.transportMode,
+        },
+        metrics: {
+            estimated_aqi: report?.estimated_aqi,
+            exposure_level: report?.exposure_level,
+            confidence: report?.confidence,
+        },
+    });
+
+    return report;
 };
 
 export const runTelemetryHydration = async (profile: TelemetryProfile, language: string = 'en'): Promise<TelemetryHydrationResponse> => {
@@ -699,8 +717,42 @@ export const runEnergyAnalysis = async (inputs: EnergyAnalysisInputs, language: 
     `;
 
     const report = await generateFromAPI(prompt, ENERGY_SCHEMA);
+    const applied = applyElectricityFacts(report, facts, isAr);
 
-    return applyElectricityFacts(report, facts, isAr);
+    recordAnalysisRunSafe({
+        module: 'energy',
+        language: isAr ? 'ar' : 'en',
+        inputs: {
+            type: inputs?.type,
+            property_type: inputs?.property_type,
+            area_m2: Number(inputs?.area_m2) || undefined,
+            occupants: Number(inputs?.occupants) || undefined,
+            ac_count: Number(inputs?.ac_count) || undefined,
+            ac_hours_daily: Number(inputs?.ac_hours_daily) || undefined,
+            ac_type: inputs?.ac_type,
+            lighting_type: inputs?.lighting_type,
+            has_solar: inputs?.has_solar_panels,
+            monthly_bill_egp: Number(inputs?.monthly_bill) || undefined,
+            has_ocr: Boolean(inputs?.ocrData),
+        },
+        facts: {
+            source: facts.source,
+            consumption_kwh: facts.consumptionKwh,
+            tier: facts.tier,
+            average_price_egp: facts.averagePriceEgpPerKwh,
+            monthly_cost_egp: facts.monthlyCostEgp,
+            carbon_kg: facts.carbonKg,
+        },
+        metrics: {
+            estimated_consumption_kwh: applied?.metrics?.estimated_consumption_kwh,
+            energy_efficiency_score: applied?.metrics?.energy_efficiency_score,
+            financial_loss_estimate_egp: applied?.metrics?.financial_loss_estimate_egp,
+            carbon_footprint_kg: applied?.metrics?.carbon_footprint_kg,
+        },
+        reviewRequired: facts.reviewRequired,
+    });
+
+    return applied;
 };
 
 const applyElectricityFacts = (
@@ -746,7 +798,32 @@ const applyElectricityFacts = (
 export const runMobilityIntelligence = async (inputs: MobilityInputs, language: string = 'en'): Promise<MobilityIntelligenceReport> => {
     const langPrompt = language === 'ar' ? `${KAIRO_ARABIC_STYLE} Use جنيه for savings and familiar Egyptian mobility context such as الزحام والمترو when relevant.` : "Output in English. Use EGP for cost. Assume Egyptian traffic contexts.";
     const prompt = `ROLE: Mobility Intelligence & Urban Transportation Optimization System Analyst. TASK: Generate a highly detailed mobility analysis for user with the following profile: ${JSON.stringify(inputs)}. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Return JSON.`;
-    return generateFromAPI(prompt, MOBILITY_SCHEMA);
+    const report = await generateFromAPI(prompt, MOBILITY_SCHEMA);
+
+    recordAnalysisRunSafe({
+        module: 'mobility',
+        language: language === 'ar' ? 'ar' : 'en',
+        inputs: {
+            weekly_commute_days: Number(inputs?.weeklyCommuteDays) || undefined,
+            primary_transport: inputs?.primaryTransport,
+            return_transport: inputs?.returnTransport,
+            transfers: inputs?.transfers,
+            commute_time: inputs?.commuteTime,
+            monthly_spending_band: inputs?.monthlySpending,
+            traffic_exposure: inputs?.trafficExposure,
+            is_car: inputs?.isCar,
+            fuel_type: inputs?.fuelType,
+            vehicle_year: inputs?.vehicleYear,
+            has_ac: inputs?.acUsage,
+        },
+        metrics: {
+            monthly_carbon_kg: report?.metrics?.monthly_carbon_kg,
+            monthly_cost_egp: report?.metrics?.monthly_cost_egp,
+            mobility_efficiency: report?.scores?.mobility_efficiency,
+        },
+    });
+
+    return report;
 };
 
 export const runVerificationEngine = async (claim: string, language: string = 'en'): Promise<ClaimVerificationResult> => {
@@ -771,8 +848,39 @@ export const runWaterAnalysis = async (inputs: WaterAnalysisInputs, language: st
     const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Water Resource Management. TASK: Perform advanced AI water efficiency and scarcity analysis based on realistic household/corporate data. Avoid engineering assumptions like counting leaky drops; use holistic smart analysis of behavioral signs, bills, and facility types. DATA: ${JSON.stringify(inputs)}. ${factsPromptBlock(facts, isAr ? 'ar' : 'en')} INSTRUCTIONS: The computed facts above are authoritative for volume, price, and carbon; use them verbatim and never recompute from the bill. financial_loss_estimate_egp must be a MONTHLY figure and must never exceed the monthly cost. annual_water_waste_liters must not exceed the annual consumption implied by the computed volume. Keep every score between 0 and 100. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Return highly structured, insightful JSON.`;
 
     const report = await generateFromAPI(prompt, WATER_SCHEMA);
+    const applied = applyWaterFacts(report, facts, isAr);
 
-    return applyWaterFacts(report, facts, isAr);
+    recordAnalysisRunSafe({
+        module: 'water',
+        language: isAr ? 'ar' : 'en',
+        inputs: {
+            type: inputs?.type,
+            family_size: Number(inputs?.family_size) || undefined,
+            housing_type: inputs?.housing_type,
+            facility_type: inputs?.facility_type,
+            monthly_bill_egp: Number(inputs?.monthly_bill) || undefined,
+            bill_increased: inputs?.bill_increased,
+            constant_water_sound: inputs?.constant_water_sound,
+            damp_stains: inputs?.damp_stains,
+            toilet_refills: inputs?.toilet_refills,
+            has_ocr: Boolean(inputs?.ocrData),
+        },
+        facts: {
+            source: facts.source,
+            consumption_m3: facts.consumptionM3,
+            blended_rate_egp: facts.blendedRateEgpPerM3,
+            monthly_cost_egp: facts.monthlyCostEgp,
+            carbon_kg: facts.carbonKg,
+        },
+        metrics: {
+            water_efficiency_score: applied?.metrics?.water_efficiency_score,
+            leak_probability_score: applied?.metrics?.leak_probability_score,
+            financial_loss_estimate_egp: applied?.metrics?.financial_loss_estimate_egp,
+        },
+        reviewRequired: facts.reviewRequired,
+    });
+
+    return applied;
 };
 
 const applyWaterFacts = (
@@ -816,7 +924,128 @@ const applyWaterFacts = (
     };
 };
 
-export const runFoodWasteAnalysis = async (inputs: any, language: string = 'en'): Promise<any> => { const langPrompt = language === 'ar' ? `${KAIRO_ARABIC_STYLE} Focus on familiar purchasing, storage, and consumption behavior.` : 'Output in English.'; const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Supply Chain. TASK: Analyze household food waste impact conceptually and practically. DATA: ${JSON.stringify(inputs)}. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Provide deep, realistic insights. Return JSON.`; return generateFromAPI(prompt, FOOD_SCHEMA); };
+export const runFoodWasteAnalysis = async (inputs: any, language: string = 'en'): Promise<any> => {
+    const isAr = language === 'ar';
+    const facts = computeFoodFacts(
+        {
+            familySize: inputs?.familySize,
+            adults: inputs?.adults,
+            children: inputs?.children,
+            monthlyBudgetEgp: inputs?.monthlyBudget,
+            restaurantPercent: inputs?.restaurantPercent,
+            homeMealsPerDay: inputs?.homeMealsPerDay,
+            deliveryPerWeek: inputs?.deliveryPerWeek,
+            shoppingTripsPerWeek: inputs?.shoppingFreq,
+            throwAwayFreq: inputs?.throwAwayFreq,
+            expiredFound: inputs?.expiredFound,
+            hasMealPlan: inputs?.hasMealPlan,
+            shelfLifeDays: inputs?.shelfLifeDays,
+            reductionTargetPercent: inputs?.reductionTarget,
+            receiptTotalEgp: inputs?.receiptTotalEgp,
+        },
+        isAr ? 'ar' : 'en',
+    );
+    const langPrompt = isAr
+        ? `${KAIRO_ARABIC_STYLE} Focus on familiar purchasing, storage, and consumption behavior.`
+        : 'Output in English.';
+
+    const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Supply Chain. TASK: Analyze household food waste impact conceptually and practically. DATA: ${JSON.stringify(inputs)}. ${foodFactsPromptBlock(facts, isAr ? 'ar' : 'en')} ${langPrompt} ${KAIRO_EVIDENCE_RULES} Provide deep, realistic insights. Return JSON.`;
+
+    const report = await generateFromAPI(prompt, FOOD_SCHEMA);
+    const applied = applyFoodFacts(report, facts, isAr);
+
+    recordAnalysisRunSafe({
+        module: 'food',
+        language: isAr ? 'ar' : 'en',
+        inputs: {
+            family_size: inputs?.familySize,
+            adults: inputs?.adults,
+            children: inputs?.children,
+            monthly_budget_egp: inputs?.monthlyBudget,
+            restaurant_percent: inputs?.restaurantPercent,
+            meals_per_day: inputs?.homeMealsPerDay,
+            delivery_per_week: inputs?.deliveryPerWeek,
+            throw_away_freq: inputs?.throwAwayFreq,
+            expired_found: inputs?.expiredFound,
+            has_meal_plan: inputs?.hasMealPlan,
+            shelf_life_days: inputs?.shelfLifeDays,
+            reduction_target: inputs?.reductionTarget,
+            has_receipt: Boolean(inputs?.receiptTotalEgp),
+        },
+        facts: {
+            source: facts.source,
+            waste_rate_percent: facts.wasteRatePercent,
+            cost_per_meal_egp: facts.costPerMealEgp,
+            monthly_spend_egp: facts.monthlyFoodSpendEgp,
+            wasted_kg_per_month: facts.wastedKgPerMonth,
+            monthly_loss_egp: facts.monthlyLossEgp,
+            annual_loss_egp: facts.annualLossEgp,
+            carbon_kg_per_month: facts.carbonKgPerMonth,
+            methane_kg_per_month: facts.methaneKgPerMonth,
+            water_liters_per_month: facts.waterLitersPerMonth,
+        },
+        metrics: {
+            food_waste_index: applied?.metrics?.food_waste_index,
+            food_efficiency_score: applied?.metrics?.food_efficiency_score,
+            monthly_waste_cost: applied?.metrics?.monthly_waste_cost,
+            annual_waste_cost: applied?.metrics?.annual_waste_cost,
+            carbon_footprint_kg: applied?.metrics?.carbon_footprint_kg,
+            methane_emissions_kg: applied?.metrics?.methane_emissions_kg,
+            water_footprint_loss_liters: applied?.metrics?.water_footprint_loss_liters,
+        },
+        reviewRequired: facts.reviewRequired,
+    });
+
+    return applied;
+};
+
+const applyFoodFacts = (report: any, facts: ReturnType<typeof computeFoodFacts>, isAr: boolean): any => {
+    const metrics = report?.metrics ?? {};
+    const clampScore = (value: unknown) => {
+        const numeric = Number(value);
+        if (!Number.isFinite(numeric)) return 0;
+        return Math.round(Math.min(100, Math.max(0, numeric)));
+    };
+    const efficiencyFromWaste = Math.round(Math.min(100, Math.max(0, 100 - facts.wasteRatePercent * 2.2)));
+
+    return {
+        ...report,
+        meta: {
+            timestamp: new Date().toISOString(),
+            methodology: facts.methodology[isAr ? 'ar' : 'en'],
+            authoritative: {
+                consumption: facts.wastedKgPerMonth,
+                unit: 'kWh' as const,
+                amount_egp: facts.monthlyLossEgp,
+                source: facts.sourceLabel[isAr ? 'ar' : 'en'],
+                review_required: facts.reviewRequired,
+                warnings: facts.warnings.map((warning) => warning[isAr ? 'ar' : 'en']),
+            },
+        },
+        facts: {
+            waste_rate_percent: facts.wasteRatePercent,
+            cost_per_meal_egp: facts.costPerMealEgp,
+            household_meals_per_month: facts.householdMealsPerMonth,
+            wasted_meals_per_month: facts.wastedMealsPerMonth,
+            wasted_kg_per_month: facts.wastedKgPerMonth,
+            reduction_target_egp_monthly: facts.reductionTargetEgpMonthly,
+        },
+        metrics: {
+            ...metrics,
+            food_waste_index: clampScore(metrics.food_waste_index ?? facts.wasteRatePercent),
+            food_efficiency_score: clampScore(metrics.food_efficiency_score ?? efficiencyFromWaste),
+            monthly_waste_cost: facts.monthlyLossEgp,
+            annual_waste_cost: facts.annualLossEgp,
+            carbon_footprint_kg: facts.carbonKgPerMonth,
+            methane_emissions_kg: facts.methaneKgPerMonth,
+            water_footprint_loss_liters: facts.waterLitersPerMonth,
+            food_recovery_potential_egp: Math.min(
+                Number(metrics.food_recovery_potential_egp) || facts.monthlyLossEgp,
+                facts.monthlyLossEgp,
+            ),
+        },
+    };
+};
 
 export const runEwasteAnalysis = async (inputString: string, language: string = 'en'): Promise<EwasteAnalysisReport> => {
     const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
@@ -829,7 +1058,21 @@ DATA: ${inputString}.
 ${langPrompt}
 ${KAIRO_EVIDENCE_RULES}
 Return JSON.`;
-    return generateFromAPI(prompt, EWASTE_SCHEMA);
+    const report = await generateFromAPI(prompt, EWASTE_SCHEMA);
+
+    recordAnalysisRunSafe({
+        module: 'ewaste',
+        language: language === 'ar' ? 'ar' : 'en',
+        inputs: { payload_size: String(inputString ?? '').length },
+        metrics: {
+            remaining_life_months: report?.lifecycle?.remaining_life_months,
+            circular_economy_impact_score: report?.environmental_impact?.circular_economy_impact_score,
+            estimated_value_egp: report?.economic_value?.estimated_value_egp,
+            recommended_pathway: report?.circular_pathway?.recommended_pathway,
+        },
+    });
+
+    return report;
 };
 
 export const analyzeWaterBillOCR = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<WaterBillExtraction> => {

@@ -405,7 +405,22 @@ export interface WaterAnalysisReport {
     };
 }
 
-export interface FoodWasteAnalysisReport { metrics: { food_waste_index: number; food_efficiency_score: number; monthly_waste_cost: number; annual_waste_cost: number; carbon_footprint_kg: number; methane_emissions_kg: number; water_footprint_loss_liters: number; food_recovery_potential_egp: number; sustainability_rating: string; }; ai_waste_analysis: { primary_causes: string[]; behavioral_insights: string; }; ai_financial_insights: { monthly_savings_potential: number; annual_savings_potential: number; redirect_suggestions: string[]; }; ai_supply_chain_diagnosis: { most_inefficient_stage: string; stage_breakdown_percentages: { purchase: number; storage: number; preparation: number; consumption: number; disposal: number; }; bottleneck_explanation: string; }; ai_optimization_plan: { immediate_actions: string[]; long_term_habits: string[]; }; }
+export interface FoodWasteAnalysisReport {
+    meta?: {
+        timestamp: string;
+        methodology: string;
+        authoritative?: AnalysisAuthoritativeMeta;
+    };
+    /** Deterministic values computed by the KAIRO food engine. */
+    facts?: {
+        waste_rate_percent: number;
+        cost_per_meal_egp: number;
+        household_meals_per_month: number;
+        wasted_meals_per_month: number;
+        wasted_kg_per_month: number;
+        reduction_target_egp_monthly: number;
+    };
+    metrics: { food_waste_index: number; food_efficiency_score: number; monthly_waste_cost: number; annual_waste_cost: number; carbon_footprint_kg: number; methane_emissions_kg: number; water_footprint_loss_liters: number; food_recovery_potential_egp: number; sustainability_rating: string; }; ai_waste_analysis: { primary_causes: string[]; behavioral_insights: string; }; ai_financial_insights: { monthly_savings_potential: number; annual_savings_potential: number; redirect_suggestions: string[]; }; ai_supply_chain_diagnosis: { most_inefficient_stage: string; stage_breakdown_percentages: { purchase: number; storage: number; preparation: number; consumption: number; disposal: number; }; bottleneck_explanation: string; }; ai_optimization_plan: { immediate_actions: string[]; long_term_habits: string[]; }; }
 
 export interface EwasteAnalysisReport {
     device_identity: {
