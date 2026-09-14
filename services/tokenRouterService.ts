@@ -1088,17 +1088,19 @@ export const analyzeWaterBillOCR = async (base64Image: string, language: string 
 
     const prompt = `
         ROLE: A meticulous Egyptian utility-bill data extractor. Read this water bill image.
-        STEPS:
-        1. Locate the consumption block. If a printed total consumption in m³ exists, use it.
-        2. If it is missing, subtract the previous meter reading from the current reading and report that difference as total_consumption_m3.
-        3. Read the total amount due in EGP (the final "الإجمالي" / "المبلغ المستحق"), not an intermediate subtotal.
-        4. Copy the printed pricing tiers only when they are actually visible.
-        5. Write evidence_note in the requested language naming the exact labels or numbers you based the figures on.
+        WORK IN THIS ORDER:
+        1. Identify the bill layout first: header (company, dates), the meter-readings block, the consumption block, and the payment block before reading any number.
+        2. Consumption: prefer the printed total consumption in m³. If it is missing, subtract the previous meter reading from the current reading and report that difference as total_consumption_m3.
+        3. Total: read the final amount due in EGP ("الإجمالي" / "المبلغ المستحق"), not an intermediate subtotal, and report additional fees separately.
+        4. Context: copy the printed pricing tiers only when they are actually visible, plus meter number, dates, and the billing period in days (estimate it from the two reading dates when not printed).
+        5. Evidence: write evidence_note in the requested language naming the exact printed labels and figures you based the numbers on.
         RULES: Arabic-Indic digits are common; convert them to Latin digits in numeric fields.
         Never invent a reading, a meter number, or a tier that is not visible. If a key figure is unreadable,
         return 0 for it and lower the confidence instead of guessing. Return raw JSON only.
         All monetary values are EGP unless the bill states another currency.
-        SELF-CHECK before answering: divide the total amount by the volume in m³. That rate must fall between
+        SELF-CHECK before answering, in this order:
+        (a) If both readings and the printed volume exist, their difference must match the printed volume within 10%. If it does not, re-examine the readings block.
+        (b) Divide the total amount by the volume in m³. That rate must fall between
         1 and 40 EGP/m³ for an Egyptian bill, and a household normally uses under 60 m³ per month. If your
         numbers fail this check you misread the bill: re-examine which figure is the volume (m³) and which
         is the amount due, and never treat a meter serial, subscription number, or barcode digits as volume.
@@ -1115,21 +1117,22 @@ export const analyzeElectricityBill = async (base64Image: string, language: stri
 
     const prompt = `
         ROLE: A meticulous Egyptian utility-bill data extractor. Read this electricity bill image.
-        STEPS:
-        1. Locate the consumption block. If a printed consumption in kWh exists, use it.
-        2. If it is missing, subtract the previous meter reading from the current reading and report that difference as consumption_kwh.
-        3. Read the total amount due in EGP (the final "الإجمالي" / "المبلغ المستحق"), not an intermediate subtotal, and list separately any additional fees or service charges.
-        4. Copy the printed consumption tier ("الشريحة") only when it is actually visible.
-        5. Write evidence_note in the requested language naming the exact labels or numbers you based the figures on.
+        WORK IN THIS ORDER:
+        1. Identify the bill layout first: find the header (company, subscription, dates), the meter-readings block, the consumption block, and the payment block before reading any number.
+        2. Consumption: prefer the printed consumption in kWh ("الاستهلاك" / "فرق القراءة"). If it is missing, subtract the previous meter reading from the current reading and report that difference as consumption_kwh.
+        3. Total: read the final amount due in EGP ("الإجمالي" / "المبلغ المستحق"), not an intermediate subtotal, and report additional fees or service charges separately in additional_fees.
+        4. Context: copy the printed consumption tier ("الشريحة"), meter number, distribution company, subscription type, property type (residential/commercial), bill date, reading date, and billing period in days only when actually visible. Estimate billing_period_days from the two reading dates when it is not printed.
+        5. Evidence: write evidence_note in the requested language naming the exact printed labels and figures you based each number on.
         RULES: Arabic-Indic digits are common; convert them to Latin digits in numeric fields.
         Never invent a reading, a meter number, or a tier that is not visible. If a key figure is unreadable,
         return 0 for it and lower the confidence instead of guessing. Return raw JSON only.
         All monetary values are EGP.
-        SELF-CHECK before answering: divide the total amount by the consumption. For an Egyptian bill that
-        effective price must fall between 0.5 and 15 EGP/kWh, and a household (منازل) reading is normally
-        under 2,000 kWh per month. If your numbers fail this check you misread the bill: re-examine which
-        figure is the consumption (ك.و.س / فرق القراءة) and which is the amount due, and never treat a meter
-        serial, subscription number, barcode digits, or a previous/current reading as the consumption.
+        SELF-CHECK before answering, in this order:
+        (a) If both readings and the printed consumption exist, their difference must match the printed consumption within 10%. If it does not, you misread one of them: re-examine the readings block.
+        (b) Divide the total amount by the consumption. For an Egyptian bill that effective price must fall
+        between 0.5 and 15 EGP/kWh, and a household (منازل) reading is normally under 2,000 kWh per month. If your
+        numbers fail this check you misread the bill: re-examine which figure is the consumption (ك.و.س / فرق القراءة) and which
+        is the amount due, and never treat a meter serial, subscription number, barcode digits, or a previous/current reading as the consumption.
         ${langPrompt}
     `;
 

@@ -40,14 +40,14 @@ export const translations = {
     },
     bill: {
       title: "Bill Analysis (Optional)",
-      subtitle: "Upload your utility bills for higher precision.",
+      subtitle: "Upload the bill image. Kairo reads it, extracts every value, and analyzes it — no forms needed.",
       uploadTitle: "Upload Bill",
       dropzone: "Drop bill image here or click to browse",
       types: {
         elec: "Electricity",
         water: "Water"
       },
-      analyzing: "Extracting data via the configured Gemini vision model...",
+      analyzing: "Reading the bill and extracting its data...",
       detected: "Detected Values",
       consumption: "Consumption",
       cost: "Total Cost",
@@ -774,7 +774,7 @@ export const translations = {
     // ... (Keep existing common, bill, nav)
     common: {
       loading: "جارٍ التحميل...",
-      error: "حصلت مشكلة. جرّب مرة تانية.",
+      error: "حدثت مشكلة. جرّب مرة أخرى.",
       export: "حمّل التقرير",
       back: "رجوع",
       next: "الخطوة التالية",
@@ -793,7 +793,7 @@ export const translations = {
       runAnalysis: "شغّل التحليل",
       reset: "ابدأ من جديد",
       saveSnapshot: "احفظ النتيجة",
-      apply: "استخدم القيم دي",
+      apply: "استخدم هذه القيم",
       cancel: "إلغاء",
       remove: "حذف",
       systemStatus: "حالة النظام",
@@ -808,7 +808,7 @@ export const translations = {
     },
     bill: {
       title: "تحليل الفاتورة",
-      subtitle: "ارفع صورة واضحة للفاتورة، وراجع البيانات المستخرجة قبل استخدامها.",
+      subtitle: "ارفع صورة الفاتورة فقط، وسيقرأها كايرو ويستخرج بياناتها ويحللها دون أي إدخال يدوي.",
       uploadTitle: "ارفع فاتورتك",
       dropzone: "اسحب صورة الفاتورة هنا، أو اضغط لاختيارها",
       types: {
@@ -820,7 +820,7 @@ export const translations = {
       consumption: "الاستهلاك",
       cost: "التكلفة الكلية",
       confidence: "درجة الثقة في الاستخراج",
-      useThis: "استخدم القيم دي",
+      useThis: "استخدم هذه القيم",
       waterStub: "القراءة التلقائية لفواتير المياه قيد التطوير. أدخل القيم يدويًا حاليًا.",
       errorSize: "حجم الملف أكبر من ٥ ميجابايت",
       errorType: "ارفع صورة بصيغة JPG أو PNG",
@@ -894,7 +894,7 @@ export const translations = {
         steps: {
             1: { title: "تجميع", desc: "كايرو ينظّم مدخلات المستخدم وسياق الجهاز الاختياري ويحولها لإشارات بيئية قابلة للمعالجة.", link: "بوابة البيانات" },
             2: { title: "تحليل منطقي", desc: "كايرو بيربط استهلاكك بأسعار الكهربا في مصر ومستويات الانبعاثات الحالية عشان يديك حلول متفصلة.", link: "المخ الأساسي" },
-            3: { title: "تأقلم", desc: "الخطط الثابتة مبتنفعش، عشان كده كايرو على طول بيعمل تحديث لنسايحه بناءً على جودة الهوا والمعطيات الحالية.", link: "المراقبة" },
+            3: { title: "تأقلم", desc: "الخطط الثابتة لا تكفي، لذلك يحدّث كايرو توصياته باستمرار وفق جودة الهواء والمعطيات الحالية.", link: "المراقبة" },
             4: { title: "تأكيد", desc: "خطواتك البسيطة في بيتك بتتجمع عشان تكون تأثير وطني حقيقي.", link: "تأثيرك الكبير" }
         }
       },
@@ -968,7 +968,7 @@ export const translations = {
       values: [
         { title: "دقة علمية", desc: "بنعتمد على أسعار وفواتير بجد، ومعايير حسابات الانبعاثات الحالية، وذكاء اصطناعي منظم، من غير تقديرات تقريبية." },
         { title: "الكوكب قبل المكسب", desc: "بنفكر دايماً إزاي نبني سيستم يستمر وينقذ البيئة، مش مجرد أرقام بنكبر بيها مؤقتاً." },
-        { title: "التركيز على الإنسان", desc: "علشان السيستم ينجح لازم الناس تستخدمه، عشان كده خلينا الموضوع بسيط ومن غير تعقيدات." },
+        { title: "التركيز على الإنسان", desc: "كي ينجح النظام لا بد أن يستخدمه الناس، لذلك جعلناه بسيطًا وسهل الاستخدام." },
         { title: "تأثير متقاس", desc: "دايماً بنوضح إحنا حسبناها إزاي ومفيش ادعاءات بيئية وهمية." }
       ],
 
@@ -1172,7 +1172,7 @@ export const translations = {
     mini: {
       step: "الخطوة ٠١: الاستيعاب",
       title: "محطة بيانات القياس",
-      desc: "قم بتغذية محرك كايرو الأساسي بأنماط استهلاك أسرتك. استخدم تقدير الذكاء الاصطناعي للتنميط الفوري أو التجاوز اليدوي للدقة.",
+      desc: "قم بتغذية محرك كايرو الأساسي بأنماط استهلاك أسرتك. اعتمد على التقدير الذكي السريع، أو أدخل القيم يدويًا لأعلى دقة.",
       quickEst: "تقدير سريع",
       manual: "المعايرة اليدوية",
       ingest: "إرسال للمحرك الأساسي",
@@ -1196,7 +1196,7 @@ export const translations = {
       commitment: "٠٢ • الالتزام",
       strategic: "٠٣ • التحليل الاستراتيجي",
       analyzing: "جارٍ تحليل أنماط البيانات...",
-      consulting: "استشارة محرك التخطيط مقابل المعايير الإقليمية.",
+      consulting: "استشارات تخطيط مقارنةً بالمعايير الإقليمية.",
       tabs: { daily: "عادات يومية", weekly: "عادات أسبوعية", monthly: "عادات شهرية" },
       target: {
         title: "تحديد هدف الخفض",
@@ -1279,7 +1279,7 @@ export const translations = {
     },
     exposure: {
       title: "التعرض الحضري",
-      desc: "تقدير مدخول التلوث عبر وكيل الأقمار الصناعية.",
+      desc: "تقدير التعرض للملوثات عبر بيانات الأقمار الصناعية.",
       console: "معاملات التعرض",
       location: "الموقع",
       hours: "ساعات بالخارج",
@@ -1304,7 +1304,7 @@ export const translations = {
       avoided: "تجنب CO₂",
       social: "الدرجة الاجتماعية",
       diverted: "نفايات محولة",
-      mining: "إمكانية التعدين",
+      mining: "إمكانية استخلاص المعادن",
       options: {
         laptop: "لابتوب", smartphone: "هاتف ذكي", tablet: "تابلت", desktop: "كمبيوتر مكتبي",
         cond_a: "كالجديد", cond_b: "جيد", cond_c: "تالف", cond_d: "لا يعمل", cond_e: "قديم"
@@ -1334,7 +1334,7 @@ export const translations = {
     features: {
       title: "قدرات النظام",
       titleSub: "صمم لمصر.",
-      desc: "يجمع كايرو وحدات عصبية متخصصة لمعالجة نواقل الموارد المحددة.",
+      desc: "يجمع كايرو وحدات تحليل متخصصة تتعامل مع كل مورد على حدة: المياه والطاقة والغذاء والتنقل.",
       deploy: "نشر النظام",
       deployDesc: "ابدأ تدقيقك المناخي الشخصي اليوم.",
       capabilities: {
@@ -1367,7 +1367,7 @@ export const translations = {
       water: { title: "مياه", desc: "لترات موفرة لكل أسرة." },
       money: { title: "مالي", desc: "جنيه موفر لكل أسرة." },
       carbon: { title: "كربون", desc: "انبعاثات متجنبة." },
-      national: { title: "النطاق الوطني", desc: "لو فعل الجميع ذلك.", pool: "مسابح", poolSub: "مياه موفرة", car: "سيارات", carSub: "خارج الطريق" },
+      national: { title: "النطاق الوطني", desc: "إذا طبّق الجميع الإجراء نفسه.", pool: "حمامات سباحة", poolSub: "مياه موفرة", car: "سيارات", carSub: "خارج الطريق" },
       method: { title: "المنهجية", desc: "كيف نحسب التأثير." },
       sources: "مصادر البيانات"
     },
@@ -1500,7 +1500,7 @@ export const translations = {
     miniSystem: {
         badge: "هندسة",
         title: "نظام البيانات الأساسية",
-        desc: "محرك استيعاب منخفض الكمون.",
+        desc: "محرك بيانات فوري الاستجابة.",
         friction: { title: "تقليل الاحتكاك", desc: "جعل الإدخال سهلاً." },
         flow: { title: "تدفق البيانات", step1: "إدخال", step2: "معالجة", step3: "إخراج" },
         cta: "جربه الآن"

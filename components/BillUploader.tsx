@@ -8,6 +8,7 @@ import { MAX_UPLOAD_BYTES, validateImageFile } from '../utils/fileSecurity';
 import {
   applyExtractionEdits,
   describeExtractionFields,
+  EXTRACTION_SECTIONS,
   extractionQuality,
   normalizeDigits,
   reviewBillExtraction,
@@ -126,6 +127,9 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
     const reader = new FileReader();
     reader.onloadend = () => setPreview(String(reader.result ?? ''));
     reader.readAsDataURL(selected);
+    // One-step flow: the reading starts as soon as the image is selected, so a
+    // user who just wants to upload a bill never has to press a second button.
+    void runExtraction(selected);
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -224,7 +228,6 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
           </div>
         )}
       </div>
-
       {!preview ? (
         <div
           onClick={() => fileInputRef.current?.click()}
@@ -244,7 +247,7 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
             {t.bill.dropzone}
           </p>
           <p className={`mt-2 text-[11px] ${textSub}`}>
-            {isAr ? 'ارفع الصورة فقط والباقي علينا.' : 'Just upload the image. The rest is handled for you.'}
+            {isAr ? 'ارفع صورة الفاتورة فقط، وسيقرأها كايرو ويستخرج بياناتها فورًا.' : 'Just upload the bill image. Kairo reads it and extracts the data for you automatically.'}
           </p>
           {error && (
             <div className="mt-3 text-xs text-red-500 flex items-center justify-center gap-1">
@@ -276,7 +279,6 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
                 </button>
               </div>
             )}
-
             {analyzing && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm text-white flex-col gap-2">
                 <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
@@ -345,37 +347,48 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
                       </div>
                     )}
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-                      {fields.map((field) => (
-                        <div
-                          key={field.key}
-                          className={`rounded-xl px-3 py-2 border ${
-                            field.emphasis
-                              ? isLight ? 'border-indigo-200 bg-indigo-50/60' : 'border-indigo-400/20 bg-indigo-500/10'
-                              : isLight ? 'border-slate-200 bg-white/60' : 'border-white/5 bg-white/[0.03]'
-                          }`}
-                        >
-                          <div className={`text-[10px] font-bold ${textSub}`}>{field.label[isAr ? 'ar' : 'en']}</div>
-                          {isEditing && field.editable ? (
-                            <input
-                              type="number"
-                              value={edits[field.key] ?? field.raw}
-                              onChange={(event) =>
-                                setEdits((previous) => ({
-                                  ...previous,
-                                  [field.key]: Number(normalizeDigits(event.target.value)),
-                                }))
-                              }
-                              className={`mt-1 ${inputStyle}`}
-                            />
-                          ) : (
-                            <div className={`mt-0.5 text-sm font-black ${textMain}`} dir="ltr">
-                              {field.value}
-                              {field.suffix ? <span className={`ms-1 text-[10px] font-bold ${textSub}`}>{field.suffix}</span> : null}
+                    <div className="space-y-4 mb-4">
+                      {EXTRACTION_SECTIONS.map((section) => {
+                        const sectionFields = fields.filter((field) => field.group === section.id);
+                        if (sectionFields.length === 0) return null;
+                        return (
+                          <div key={section.id}>
+                            <div className={`text-[10px] font-black mb-2 ${textSub}`}>{section.label[isAr ? 'ar' : 'en']}</div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                              {sectionFields.map((field) => (
+                                <div
+                                  key={field.key}
+                                  className={`rounded-xl px-3 py-2 border ${
+                                    field.emphasis
+                                      ? isLight ? 'border-indigo-200 bg-indigo-50/60' : 'border-indigo-400/20 bg-indigo-500/10'
+                                      : isLight ? 'border-slate-200 bg-white/60' : 'border-white/5 bg-white/[0.03]'
+                                  }`}
+                                >
+                                  <div className={`text-[10px] font-bold ${textSub}`}>{field.label[isAr ? 'ar' : 'en']}</div>
+                                  {isEditing && field.editable ? (
+                                    <input
+                                      type="number"
+                                      value={edits[field.key] ?? field.raw}
+                                      onChange={(event) =>
+                                        setEdits((previous) => ({
+                                          ...previous,
+                                          [field.key]: Number(normalizeDigits(event.target.value)),
+                                        }))
+                                      }
+                                      className={`mt-1 ${inputStyle}`}
+                                    />
+                                  ) : (
+                                    <div className={`mt-0.5 text-sm font-black ${textMain}`} dir="ltr">
+                                      {field.value}
+                                      {field.suffix ? <span className={`ms-1 text-[10px] font-bold ${textSub}`}>{field.suffix}</span> : null}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
                             </div>
-                          )}
-                        </div>
-                      ))}
+                          </div>
+                        );
+                      })}
                     </div>
 
                     {activeResult.evidence_note && (

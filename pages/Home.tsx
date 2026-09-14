@@ -3,31 +3,18 @@ import { Link } from 'react-router-dom';
 import { Chip } from '@heroui/react';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
-  Activity,
   ArrowUpRight,
-  Building2,
   Check,
   CircleDollarSign,
   Database,
-  Droplets,
-  FlaskConical,
   Gauge,
-  GraduationCap,
-  HeartHandshake,
   Leaf,
   LockKeyhole,
-  MapPinned,
-  Recycle,
   Route,
   ShieldCheck,
   Sparkles,
   Target,
-  Truck,
   Users,
-  Utensils,
-  Wind,
-  Zap,
-  type LucideIcon,
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { KairoBrandSymbol } from '../components/KairoBrand';
@@ -38,57 +25,15 @@ import {
   TIER_LABELS,
   localize,
   type AudienceId,
-  type CapabilityId,
 } from '../config/kairoCapabilities';
+import {
+  kairoCapabilityIcons as capabilityIcons,
+  kairoAudienceIcons as audienceIcons,
+  kairoAccents as capabilityAccentClasses,
+  kairoTierBadgeClasses,
+} from '../config/kairoVisuals';
 
 const MotionDiv = motion.div as any;
-
-const capabilityIcons: Record<CapabilityId, LucideIcon> = {
-  foresight: Activity,
-  water: Droplets,
-  food: Utensils,
-  energy: Zap,
-  mobility: Truck,
-  exposure: Wind,
-  ewaste: Recycle,
-  scenarios: FlaskConical,
-};
-
-const audienceIcons: Record<AudienceId, LucideIcon> = {
-  individual: Users,
-  community: HeartHandshake,
-  education: GraduationCap,
-  business: Building2,
-  government: MapPinned,
-};
-
-const capabilityAccentClasses = {
-  emerald: {
-    icon: 'bg-emerald-500/10 text-emerald-500',
-    glow: 'from-emerald-400/70 via-emerald-300/35',
-    chip: 'border-emerald-500/20 bg-emerald-500/[0.07] text-emerald-500',
-  },
-  blue: {
-    icon: 'bg-sky-500/10 text-sky-500',
-    glow: 'from-sky-400/70 via-sky-300/35',
-    chip: 'border-sky-500/20 bg-sky-500/[0.07] text-sky-500',
-  },
-  amber: {
-    icon: 'bg-amber-500/10 text-amber-500',
-    glow: 'from-amber-400/70 via-amber-300/35',
-    chip: 'border-amber-500/20 bg-amber-500/[0.07] text-amber-500',
-  },
-  violet: {
-    icon: 'bg-violet-500/10 text-violet-500',
-    glow: 'from-violet-400/70 via-violet-300/35',
-    chip: 'border-violet-500/20 bg-violet-500/[0.07] text-violet-500',
-  },
-  cyan: {
-    icon: 'bg-cyan-500/10 text-cyan-500',
-    glow: 'from-cyan-400/70 via-cyan-300/35',
-    chip: 'border-cyan-500/20 bg-cyan-500/[0.07] text-cyan-500',
-  },
-} as const;
 
 const Home: React.FC = () => {
   const { theme, dir, language } = useApp();
@@ -402,21 +347,15 @@ const Home: React.FC = () => {
                   transition={{ ...reveal.transition, delay: (index % 4) * 0.055 }}
                   className={`kairo-feature-card group flex min-h-[390px] flex-col rounded-[1.8rem] border p-6 ${border} ${surface}`}
                 >
-                  <span className={`kairo-feature-accent bg-gradient-to-r ${accent.glow} to-transparent`} aria-hidden="true" />
+                  <span className={`kairo-feature-accent bg-gradient-to-r ${accent.accentBar} to-transparent`} aria-hidden="true" />
                   <div className="flex items-center justify-between">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${accent.icon}`}>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${accent.tile}`}>
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="flex items-center gap-2">
                       <span
                         title={localize(capability.tierReason, currentLanguage)}
-                        className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${
-                          capability.tier === 'core'
-                            ? 'bg-kairo-green/15 text-kairo-green'
-                            : capability.tier === 'support'
-                              ? isLight ? 'bg-slate-100 text-slate-500' : 'bg-white/5 text-slate-400'
-                              : 'bg-violet-500/10 text-violet-400'
-                        }`}
+                        className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${kairoTierBadgeClasses[capability.tier]}`}
                       >
                         {localize(TIER_LABELS[capability.tier], currentLanguage)}
                       </span>
@@ -545,7 +484,7 @@ const Home: React.FC = () => {
                     to={capability.path}
                     className={`group flex min-h-[5.5rem] items-center gap-4 rounded-2xl border p-4 transition duration-200 hover:border-kairo-green/35 ${border} ${isLight ? 'bg-white/75' : 'bg-black/20'}`}
                   >
-                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${accent.icon}`}>
+                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${accent.tile}`}>
                       <Icon className="h-5 w-5" />
                     </span>
                     <span className="min-w-0 flex-1">
@@ -563,32 +502,32 @@ const Home: React.FC = () => {
             <summary className={`cursor-pointer px-5 py-4 text-sm font-extrabold ${textMain}`}>
               {isAr ? 'عرض مقارنة كل الفئات' : 'Compare every audience'}
             </summary>
-          <div className={`grid gap-4 border-t p-4 md:grid-cols-2 xl:grid-cols-5 ${border}`}>
-            {audienceProfiles.map((audience, index) => {
-              const Icon = audienceIcons[audience.id];
-              return (
-                <MotionDiv
-                  key={audience.id}
-                  {...reveal}
-                  transition={{ ...reveal.transition, delay: index * 0.055 }}
-                  className={`rounded-[1.5rem] border p-5 ${border} ${isLight ? 'bg-white/65' : 'bg-black/15'}`}
-                >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className={`mt-6 text-base font-extrabold ${textMain}`}>
-                    {localize(audience.label, currentLanguage)}
-                  </h3>
-                  <p className={`mt-3 text-sm leading-6 ${textSub}`}>
-                    {localize(audience.description, currentLanguage)}
-                  </p>
-                  <p className={`mt-5 border-s-2 border-kairo-green ps-3 text-xs font-semibold leading-5 ${textMain}`}>
-                    {localize(audience.value, currentLanguage)}
-                  </p>
-                </MotionDiv>
-              );
-            })}
-          </div>
+            <div className={`grid gap-4 border-t p-4 md:grid-cols-2 xl:grid-cols-5 ${border}`}>
+              {audienceProfiles.map((audience, index) => {
+                const Icon = audienceIcons[audience.id];
+                return (
+                  <MotionDiv
+                    key={audience.id}
+                    {...reveal}
+                    transition={{ ...reveal.transition, delay: index * 0.055 }}
+                    className={`rounded-[1.5rem] border p-5 ${border} ${isLight ? 'bg-white/65' : 'bg-black/15'}`}
+                  >
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-kairo-green/10 text-kairo-green">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className={`mt-6 text-base font-extrabold ${textMain}`}>
+                      {localize(audience.label, currentLanguage)}
+                    </h3>
+                    <p className={`mt-3 text-sm leading-6 ${textSub}`}>
+                      {localize(audience.description, currentLanguage)}
+                    </p>
+                    <p className={`mt-5 border-s-2 border-kairo-green ps-3 text-xs font-semibold leading-5 ${textMain}`}>
+                      {localize(audience.value, currentLanguage)}
+                    </p>
+                  </MotionDiv>
+                );
+              })}
+            </div>
           </details>
         </div>
       </section>

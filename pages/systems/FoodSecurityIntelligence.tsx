@@ -85,7 +85,7 @@ const FoodSecurityIntelligence: React.FC<FoodSecurityProps> = ({
     () =>
       isAr
         ? [
-            { id: 1, label: 'عائلتك', hint: '4 أسئلة سريعة', Icon: Users },
+            { id: 1, label: 'عائلتك', hint: '٤ أسئلة سريعة', Icon: Users },
             { id: 2, label: 'عاداتك', hint: 'أين يضيع الطعام؟', Icon: Trash2 },
             { id: 3, label: 'دقة أعلى', hint: 'اختياري', Icon: Sparkles },
           ]

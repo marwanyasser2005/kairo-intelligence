@@ -198,7 +198,7 @@ export const kairoCapabilities: KairoCapability[] = [  {
       en: 'KAIRO SIGNALS · Environmental foresight',
     },
     shortDescription: {
-      ar: 'يتابع اتجاهات الهواء ومؤشرات المياه حسب الموقع، علشان تقدر تتحرك قبل ما يزيد الأثر.',
+      ar: 'يتابع اتجاهات الهواء ومؤشرات المياه حسب الموقع، لتتمكن من التحرك قبل أن يتفاقم الأثر.',
       en: 'Tracks air trends and location-aware water-risk indicators before impacts escalate.',
     },
     purpose: {

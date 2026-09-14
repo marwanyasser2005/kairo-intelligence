@@ -893,7 +893,7 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
           <div className="grid gap-6 lg:grid-cols-[1fr_1fr_1fr]">
             <MethodNote
               icon={<Gauge />}
-              title={isArabic ? 'ما الذي يعنيه “المؤشر”؟' : 'What does “index” mean?'}
+              title={isArabic ? 'ما الذي يعنيه «المؤشر»؟' : 'What does “index” mean?'}
               text={
                 isArabic
                   ? 'درجة ترتيب للأولوية من 0–100، وليست نسبة احتمال إحصائية معايرة. تحويلها لاحتمال حقيقي يحتاج سجل أعطال محلي وبيانات حساسات ضغط/تدفق.'

@@ -41,19 +41,28 @@ const ModuleToolbar: React.FC<ModuleToolbarProps> = ({
         }
     };
 
-    const btnBase = `flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold transition-all sm:px-4`;
-    const textMain = isLight ? 'text-gray-900' : 'text-white';
-    const textSub = isLight ? 'text-gray-600' : 'text-gray-400';
+    const btnBase = `flex min-h-10 items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-bold transition-all sm:px-4`;
+    const textMain = isLight ? 'text-slate-950' : 'text-white';
+    const textSub = isLight ? 'text-slate-600' : 'text-slate-400';
+    const border = isLight ? 'border-slate-900/[0.09]' : 'border-white/[0.09]';
 
     return (
         <div className="mb-8 flex w-full min-w-0 flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div className="flex w-full min-w-0 items-start gap-3 sm:gap-4">
-                <Link to="/dashboard" className={`mt-1 p-2 rounded-xl transition-colors ${isLight ? 'bg-white border text-gray-600 hover:bg-gray-50' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 border'}`}>
+                <Link
+                    to="/dashboard"
+                    aria-label={isAr ? 'العودة إلى لوحة المتابعة' : 'Back to the dashboard'}
+                    className={`mt-1 rounded-xl border p-2 transition-colors ${border} ${
+                        isLight
+                            ? 'bg-white text-slate-600 hover:bg-slate-50'
+                            : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                    }`}
+                >
                     <ArrowLeft className={`w-5 h-5 ${isAr ? 'rotate-180' : ''}`} />
                 </Link>
                 <div className="min-w-0">
                     <h1 className={`mb-2 flex min-w-0 items-center gap-2 break-words text-xl font-black sm:gap-3 sm:text-2xl lg:text-3xl ${textMain}`}>
-                        {icon && <span className="p-2 bg-blue-500/10 rounded-xl">{icon}</span>}
+                        {icon && <span className="rounded-xl bg-kairo-green/10 p-2">{icon}</span>}
                         {title}
                     </h1>
                     {description && <p className={`text-sm max-w-2xl ${textSub}`}>{description}</p>}
@@ -76,13 +85,13 @@ const ModuleToolbar: React.FC<ModuleToolbarProps> = ({
                     />
 
                     {onReset && (
-                        <button 
-                            onClick={handleReset} 
-                            className={`${btnBase} bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500/20`}
+                        <button
+                            onClick={handleReset}
+                            className={`${btnBase} border-rose-500/25 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20`}
                             title={isAr ? 'إعادة ضبط التقييم' : 'Reset assessment'}
                         >
                             <RefreshCw className="w-4 h-4" />
-                            <span className="hidden sm:inline">{isAr ? 'تحديث' : 'Reset'}</span>
+                            <span className="hidden sm:inline">{isAr ? 'إعادة الضبط' : 'Reset'}</span>
                         </button>
                     )}
                 </div>

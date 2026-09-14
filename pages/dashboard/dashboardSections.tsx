@@ -170,7 +170,7 @@ export const ScoreChartPanel = ({
       ) : (
         <EmptyChartState
           isAr={isAr}
-          text={isAr ? 'شغّل أي تحليل علشان تظهر درجات الكفاءة هنا.' : 'Run an analysis to show efficiency scores here.'}
+          text={isAr ? 'شغّل أي تحليل كي تظهر درجات الكفاءة هنا.' : 'Run an analysis to show efficiency scores here.'}
           onOpen={onStartWater}
         />
       )}
@@ -264,7 +264,7 @@ export const CostChartPanel = ({
       ) : (
         <EmptyChartState
           isAr={isAr}
-          text={isAr ? 'أكمل تحليلًا فيه تكلفة علشان تظهر المقارنة.' : 'Complete a cost-based analysis to see the comparison.'}
+          text={isAr ? 'أكمل تحليلًا فيه تكلفة كي تظهر المقارنة.' : 'Complete a cost-based analysis to see the comparison.'}
           onOpen={onStartEnergy}
         />
       )}
@@ -366,7 +366,7 @@ export const CoreResourcesSection = ({
             >
               <div className={`absolute inset-x-0 top-0 h-1 ${accent.soft}`} aria-hidden="true" />
               <div className="flex items-start justify-between gap-4">
-                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${accent.soft} ${accent.icon}`}>
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${accent.soft} ${accent.text}`}>
                   <Icon className="h-6 w-6" />
                 </div>
                 <span
@@ -451,7 +451,7 @@ export const SignalsBand = ({
       Icon: Wind,
       label: isAr ? 'ذروة الهواء المتوقعة' : 'Expected air peak',
       value: earlyWarningData?.air?.peakAqi ? `${Math.round(earlyWarningData.air.peakAqi)} AQI` : '—',
-      detail: isAr ? 'نافذة 24 ساعة' : '24-hour window',
+      detail: isAr ? 'نافذة ٢٤ ساعة' : '24-hour window',
     },
     {
       Icon: Droplet,
@@ -813,14 +813,14 @@ export const CapabilityCardsSection = ({
             key={capability.id}
             {...reveal}
             transition={{ ...reveal.transition, delay: (index % 3) * 0.055 }}
-            className={`kairo-analysis-panel group relative flex min-h-[410px] flex-col overflow-hidden rounded-[1.9rem] border p-5 sm:p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,.16)] ${border} ${surface} ${accent.border}`}
+            className={`kairo-analysis-panel group relative flex min-h-[410px] flex-col overflow-hidden rounded-[1.9rem] border p-5 sm:p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,.16)] ${border} ${surface} ${accent.hoverBorder}`}
           >
             <div className={`absolute inset-x-0 top-0 h-1 ${accent.soft}`} />
             <span className={`pointer-events-none absolute end-5 top-14 text-6xl font-black opacity-[0.035] ${textMain}`}>
               {String(index + 1).padStart(2, '0')}
             </span>
             <div className="flex items-start justify-between gap-4">
-              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${accent.soft} ${accent.icon}`}>
+              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${accent.soft} ${accent.text}`}>
                 <Icon className="h-5 w-5" />
               </div>
               <span
@@ -862,7 +862,7 @@ export const CapabilityCardsSection = ({
             </p>
 
             <div className={`mt-5 rounded-2xl border p-4 ${border} ${isLight ? 'bg-slate-50/80' : 'bg-black/20'}`}>
-              <p className={`text-[10px] font-black uppercase tracking-[.14em] ${accent.icon}`}>
+              <p className={`text-[10px] font-black uppercase tracking-[.14em] ${accent.text}`}>
                 {isAr ? 'الفائدة العملية' : 'Practical value'}
               </p>
               <p className={`mt-2 text-xs leading-5 ${textSub}`}>
@@ -940,7 +940,7 @@ export const CapabilityCardsSection = ({
                   : isAr
                     ? 'ابدأ الآن'
                     : 'Start now'}
-                <ArrowUpRight className={`h-3.5 w-3.5 ${accent.icon} ${theme.dir === 'rtl' ? '-scale-x-100' : ''}`} />
+                <ArrowUpRight className={`h-3.5 w-3.5 ${accent.text} ${theme.dir === 'rtl' ? '-scale-x-100' : ''}`} />
               </button>
             </div>
           </MotionDiv>
@@ -989,11 +989,11 @@ export const PathSection = ({
           {
             Icon: CircleGauge,
             title: isAr ? '2. أدخل الأساسيات' : '2. Add the essentials',
-            text: isAr ? 'دخل أقل قدر من البيانات، وKairo هيشرح لك الافتراضات ونوع كل رقم.' : 'Provide the minimum data; Kairo explains assumptions and every value type.',
+            text: isAr ? 'دخل أقل قدر من البيانات، وKairo سيشرح لك الافتراضات ونوع كل رقم.' : 'Provide the minimum data; Kairo explains assumptions and every value type.',
           },
           {
             Icon: Route,
-            title: isAr ? '3. خُد خطوة وتابعها' : '3. Act and track',
+            title: isAr ? '3. اتخذ خطوة وتابعها' : '3. Act and track',
             text: isAr ? 'اختار إجراءً واقعيًا، احفظ التقرير، وارجع قارن أثر القرار بعد التنفيذ.' : 'Choose a realistic action, save the report, and compare impact after implementation.',
           },
         ].map(({ Icon, title, text }) => (

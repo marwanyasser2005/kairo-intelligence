@@ -209,7 +209,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                                     <input type="number" min="0" value={monthlyBill} onChange={e => setMonthlyBill(Number(e.target.value))} className={inputStyle} />
                                                 </div>
                                                 <div>
-                                                    <label className={labelStyle}>{language === 'ar' ? 'هل ارتفعت الفاتورة آخر 3 أشهر؟' : 'Bill Increased Recently?'}</label>
+                                                    <label className={labelStyle}>{language === 'ar' ? 'هل ارتفعت الفاتورة آخر ٣ أشهر؟' : 'Bill Increased Recently?'}</label>
                                                     <select value={billIncreased} onChange={e => setBillIncreased(e.target.value as any)} className={inputStyle}>
                                                         <option value="unknown">{language === 'ar' ? 'لا أعلم' : 'Unknown'}</option>
                                                         <option value="yes">{language === 'ar' ? 'نعم' : 'Yes'}</option>
@@ -562,8 +562,8 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                 <div className="space-y-4">
                                     {[
                                         { label: language==='ar'? 'إصلاح التسربات' : 'Fix Leaks', data: report.scenario_simulation?.fix_leaks, color: 'text-orange-500' },
-                                        { label: language==='ar'? 'توفير 10%' : 'Reduce 10%', data: report.scenario_simulation?.reduce_10_percent, color: 'text-blue-500' },
-                                        { label: language==='ar'? 'توفير 25%' : 'Reduce 25%', data: report.scenario_simulation?.reduce_25_percent, color: 'text-cyan-500' },
+                                        { label: language==='ar'? 'توفير ١٠٪' : 'Reduce 10%', data: report.scenario_simulation?.reduce_10_percent, color: 'text-blue-500' },
+                                        { label: language==='ar'? 'توفير ٢٥٪' : 'Reduce 25%', data: report.scenario_simulation?.reduce_25_percent, color: 'text-cyan-500' },
                                         { label: language==='ar'? 'تركيب أجهزة توفير' : 'Install Aerators', data: report.scenario_simulation?.install_aerators, color: 'text-green-500' },
                                     ].map((scenario, i) => (
                                         scenario.data && (

@@ -579,7 +579,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                     </h2>
                                     <div className="space-y-4">
                                         {[
-                                            { label: isAr?'تثبيت التكييف على 24':'Set AC to 24C', data: report.scenario_simulation?.ac_to_24, icon: <ThermometerSun className="w-4 h-4"/>, color: 'text-blue-400' },
+                                            { label: isAr?'تثبيت التكييف على ٢٤ درجة':'Set AC to 24C', data: report.scenario_simulation?.ac_to_24, icon: <ThermometerSun className="w-4 h-4"/>, color: 'text-blue-400' },
                                             { label: isAr?'تركيب إضاءة LED':'Upgrade to LED', data: report.scenario_simulation?.replace_with_led, icon: <Zap className="w-4 h-4"/>, color: 'text-amber-400' },
                                             { label: isAr?'العزل الحراري':'Thermal Insulation', data: report.scenario_simulation?.thermal_insulation, icon: <Building2 className="w-4 h-4"/>, color: 'text-indigo-400' },
                                             { label: isAr?'ألواح طاقة شمسية':'Solar Panels', data: report.scenario_simulation?.solar_panels, icon: <Sun className="w-4 h-4"/>, color: 'text-yellow-400' },

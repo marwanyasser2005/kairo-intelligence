@@ -231,3 +231,90 @@ test('water review catches impossible rates and per-person outliers', () => {
   const normal = normalizeWaterExtraction({ total_consumption_m3: 18, total_amount: 150, confidence: 0.9 });
   assert.equal(reviewBillExtraction('water', normal, { peopleCount: 4 }).needsReview, false);
 });
+
+test('printed consumption disagreeing with the readings delta is flagged', () => {
+  const misread = normalizeElectricityExtraction({
+    consumption_kwh: 450,
+    previous_reading: 1000,
+    current_reading: 1300,
+    total_amount: 400,
+    confidence: 0.9,
+  });
+  const review = reviewBillExtraction('electricity', misread);
+  assert.equal(review.needsReview, true);
+  assert.ok(review.warnings.some((warning) => warning.en.includes('readings delta')));
+
+  const waterMisread = normalizeWaterExtraction({
+    total_consumption_m3: 30,
+    previous_reading: 500,
+    current_reading: 515,
+    total_amount: 300,
+    confidence: 0.9,
+  });
+  assert.ok(
+    reviewBillExtraction('water', waterMisread).warnings.some((warning) =>
+      warning.en.includes('readings delta'),
+    ),
+  );
+
+  // A small rounding gap (< 10%) stays silent.
+  const rounding = normalizeElectricityExtraction({
+    consumption_kwh: 252,
+    previous_reading: 1000,
+    current_reading: 1250,
+    total_amount: 230,
+    confidence: 0.9,
+  });
+  assert.equal(reviewBillExtraction('electricity', rounding).needsReview, false);
+});
+
+test('field descriptors group into sections and expose derived averages', () => {
+  const fields = describeExtractionFields('electricity', {
+    consumption_kwh: 300,
+    total_amount: 270,
+    previous_reading: 1000,
+    current_reading: 1300,
+    additional_fees: 0,
+    billing_period_days: 30,
+  } as never);
+
+  const daily = fields.find((field) => field.key === '_daily_average');
+  assert.ok(daily);
+  assert.equal(daily.value, '10');
+  assert.equal(daily.group, 'usage');
+  assert.equal(daily.editable, false);
+  assert.ok(fields.every((field) => ['usage', 'financial', 'context'].includes(field.group)));
+
+  const waterFields = describeExtractionFields('water', {
+    total_consumption_m3: 15,
+    total_amount: 180,
+    currency: 'EGP',
+  } as never);
+  const waterDaily = waterFields.find((field) => field.key === '_daily_average');
+  assert.ok(waterDaily);
+  assert.equal(waterDaily.value, '500');
+
+  const foodFields = describeExtractionFields('food', { total_cost_egp: 600, items_count: 12 } as never);
+  const avgItem = foodFields.find((field) => field.key === '_avg_item_price');
+  assert.ok(avgItem);
+  assert.equal(avgItem.value, '50');
+});
+
+test('implausible grocery receipts are flagged for review', () => {
+  const absurdTotal = normalizeFoodExtraction({ total_cost_egp: 900000, items_count: 40 });
+  assert.ok(
+    reviewBillExtraction('food', absurdTotal).warnings.some((warning) =>
+      warning.en.includes('very high'),
+    ),
+  );
+
+  const absurdAverage = normalizeFoodExtraction({ total_cost_egp: 90000, items_count: 3 });
+  assert.ok(
+    reviewBillExtraction('food', absurdAverage).warnings.some((warning) =>
+      warning.en.includes('implausible'),
+    ),
+  );
+
+  const normal = normalizeFoodExtraction({ total_cost_egp: 850, items_count: 25 });
+  assert.equal(reviewBillExtraction('food', normal).needsReview, false);
+});

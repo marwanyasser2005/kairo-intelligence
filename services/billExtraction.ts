@@ -155,7 +155,22 @@ export interface ExtractionField {
   editable: boolean;
   emphasis?: boolean;
   suffix?: string;
+  /** Presentation group so the UI can render labelled sections instead of a flat grid. */
+  group: ExtractionFieldGroup;
 }
+
+export type ExtractionFieldGroup = 'usage' | 'financial' | 'context';
+
+export interface ExtractionSectionMeta {
+  id: ExtractionFieldGroup;
+  label: { ar: string; en: string };
+}
+
+export const EXTRACTION_SECTIONS: ExtractionSectionMeta[] = [
+  { id: 'usage', label: { ar: 'الاستهلاك والقراءات', en: 'Consumption & readings' } },
+  { id: 'financial', label: { ar: 'المبالغ والأسعار', en: 'Amounts & pricing' } },
+  { id: 'context', label: { ar: 'بيانات الفاتورة', en: 'Bill details' } },
+];
 
 const formatNumber = (value: number, digits = 2): string => {
   if (!Number.isFinite(value) || value === 0) return '—';
@@ -172,13 +187,14 @@ const textField = (
   value: value || '—',
   raw: value,
   editable: false,
+  group: 'context',
 });
 
 const numberField = (
   key: string,
   label: { ar: string; en: string },
   value: number,
-  options: { editable?: boolean; emphasis?: boolean; suffix?: string; digits?: number } = {},
+  options: { editable?: boolean; emphasis?: boolean; suffix?: string; digits?: number; group?: ExtractionFieldGroup } = {},
 ): ExtractionField => ({
   key,
   label,
@@ -187,6 +203,7 @@ const numberField = (
   editable: options.editable ?? true,
   emphasis: options.emphasis,
   suffix: options.suffix,
+  group: options.group ?? (options.emphasis ? 'usage' : 'context'),
 });
 
 export const describeExtractionFields = (
@@ -199,13 +216,19 @@ export const describeExtractionFields = (
       item.consumption_kwh > 0 && item.total_amount > 0
         ? Math.round((item.total_amount / item.consumption_kwh) * 100) / 100
         : 0;
+    const periodDays = toPositive(item.billing_period_days) || 30;
+    const dailyAverage =
+      item.consumption_kwh > 0
+        ? Math.round((item.consumption_kwh / periodDays) * 100) / 100
+        : 0;
     return [
       numberField('consumption_kwh', { ar: 'الاستهلاك', en: 'Consumption' }, item.consumption_kwh, { emphasis: true, suffix: 'kWh', digits: 1 }),
-      numberField('total_amount', { ar: 'إجمالي الفاتورة', en: 'Total amount' }, item.total_amount, { emphasis: true, suffix: 'EGP' }),
-      numberField('previous_reading', { ar: 'القراءة السابقة', en: 'Previous reading' }, item.previous_reading, { digits: 0 }),
-      numberField('current_reading', { ar: 'القراءة الحالية', en: 'Current reading' }, item.current_reading, { digits: 0 }),
-      numberField('additional_fees', { ar: 'رسوم إضافية', en: 'Additional fees' }, item.additional_fees),
-      numberField('_unit_price', { ar: 'سعر الكيلوواط الفعلي', en: 'Effective price' }, unitPrice, { editable: false, suffix: 'EGP/kWh' }),
+      numberField('total_amount', { ar: 'إجمالي الفاتورة', en: 'Total amount' }, item.total_amount, { emphasis: true, suffix: 'EGP', group: 'financial' }),
+      numberField('_unit_price', { ar: 'سعر الكيلوواط الفعلي', en: 'Effective price' }, unitPrice, { editable: false, suffix: 'EGP/kWh', group: 'financial' }),
+      numberField('_daily_average', { ar: 'المعدل اليومي', en: 'Daily average' }, dailyAverage, { editable: false, suffix: 'kWh/day', digits: 1, group: 'usage' }),
+      numberField('previous_reading', { ar: 'القراءة السابقة', en: 'Previous reading' }, item.previous_reading, { digits: 0, group: 'usage' }),
+      numberField('current_reading', { ar: 'القراءة الحالية', en: 'Current reading' }, item.current_reading, { digits: 0, group: 'usage' }),
+      numberField('additional_fees', { ar: 'رسوم إضافية', en: 'Additional fees' }, item.additional_fees, { group: 'financial' }),
       textField('consumption_tier', { ar: 'الشريحة المطبوعة', en: 'Printed tier' }, item.consumption_tier ?? ''),
       textField('meter_number', { ar: 'رقم العدّاد', en: 'Meter number' }, item.meter_number ?? ''),
       textField('bill_date', { ar: 'تاريخ الفاتورة', en: 'Bill date' }, item.bill_date ?? ''),
@@ -221,13 +244,19 @@ export const describeExtractionFields = (
       item.total_consumption_m3 > 0 && item.total_amount > 0
         ? Math.round((item.total_amount / item.total_consumption_m3) * 100) / 100
         : 0;
+    const periodDays = toPositive(item.billing_period_days) || 30;
+    const dailyAverage =
+      item.total_consumption_m3 > 0
+        ? Math.round(((item.total_consumption_m3 * 1000) / periodDays) * 100) / 100
+        : 0;
     return [
       numberField('total_consumption_m3', { ar: 'الاستهلاك', en: 'Consumption' }, item.total_consumption_m3, { emphasis: true, suffix: 'm³', digits: 1 }),
-      numberField('total_amount', { ar: 'إجمالي الفاتورة', en: 'Total amount' }, item.total_amount, { emphasis: true, suffix: item.currency || 'EGP' }),
-      numberField('previous_reading', { ar: 'القراءة السابقة', en: 'Previous reading' }, item.previous_reading, { digits: 0 }),
-      numberField('current_reading', { ar: 'القراءة الحالية', en: 'Current reading' }, item.current_reading, { digits: 0 }),
-      numberField('additional_fees', { ar: 'رسوم إضافية', en: 'Additional fees' }, item.additional_fees),
-      numberField('_unit_price', { ar: 'سعر المتر الفعلي', en: 'Effective price' }, unitPrice, { editable: false, suffix: `${item.currency || 'EGP'}/m³` }),
+      numberField('total_amount', { ar: 'إجمالي الفاتورة', en: 'Total amount' }, item.total_amount, { emphasis: true, suffix: item.currency || 'EGP', group: 'financial' }),
+      numberField('_unit_price', { ar: 'سعر المتر الفعلي', en: 'Effective price' }, unitPrice, { editable: false, suffix: `${item.currency || 'EGP'}/m³`, group: 'financial' }),
+      numberField('_daily_average', { ar: 'المعدل اليومي', en: 'Daily average' }, dailyAverage, { editable: false, suffix: 'L/day', digits: 0, group: 'usage' }),
+      numberField('previous_reading', { ar: 'القراءة السابقة', en: 'Previous reading' }, item.previous_reading, { digits: 0, group: 'usage' }),
+      numberField('current_reading', { ar: 'القراءة الحالية', en: 'Current reading' }, item.current_reading, { digits: 0, group: 'usage' }),
+      numberField('additional_fees', { ar: 'رسوم إضافية', en: 'Additional fees' }, item.additional_fees, { group: 'financial' }),
       textField('meter_number', { ar: 'رقم العدّاد', en: 'Meter number' }, item.meter_number ?? ''),
       textField('bill_date', { ar: 'تاريخ الفاتورة', en: 'Bill date' }, item.bill_date ?? ''),
       textField('reading_date', { ar: 'تاريخ القراءة', en: 'Reading date' }, item.reading_date ?? ''),
@@ -235,9 +264,14 @@ export const describeExtractionFields = (
   }
 
   const item = data as FoodReceiptExtraction;
+  const averageItemPrice =
+    item.items_count > 0 && item.total_cost_egp > 0
+      ? Math.round((item.total_cost_egp / item.items_count) * 100) / 100
+      : 0;
   return [
-    numberField('total_cost_egp', { ar: 'إجمالي الإيصال', en: 'Receipt total' }, item.total_cost_egp, { emphasis: true, suffix: 'EGP' }),
-    numberField('items_count', { ar: 'عدد العناصر', en: 'Items' }, item.items_count, { digits: 0 }),
+    numberField('total_cost_egp', { ar: 'إجمالي الإيصال', en: 'Receipt total' }, item.total_cost_egp, { emphasis: true, suffix: 'EGP', group: 'financial' }),
+    numberField('items_count', { ar: 'عدد العناصر', en: 'Items' }, item.items_count, { digits: 0, group: 'usage' }),
+    numberField('_avg_item_price', { ar: 'متوسط سعر العنصر', en: 'Avg item price' }, averageItemPrice, { editable: false, suffix: 'EGP', group: 'financial' }),
     textField('receipt_date', { ar: 'تاريخ الإيصال', en: 'Receipt date' }, item.receipt_date ?? ''),
   ];
 };
@@ -255,6 +289,21 @@ export interface BillReview {
 /** Lowest and highest plausible effective price per kWh (EGP). */
 export const ELECTRICITY_PRICE_BOUNDS = { min: 0.5, max: 15 } as const;
 export const WATER_PRICE_BOUNDS = { min: 1, max: 40 } as const;
+/** A printed figure and the meter-readings delta may differ slightly (rounding,
+ * estimated readings); beyond this relative gap one of them was misread. */
+export const READINGS_MISMATCH_TOLERANCE = 0.1;
+
+const readingsMismatchWarning = (
+  printed: number,
+  derived: number,
+  unit: { ar: string; en: string },
+): { ar: string; en: string } => {
+  const gap = Math.abs(printed - derived) / Math.max(printed, derived);
+  return {
+    ar: `الاستهلاك المطبوع (${printed}) لا يتطابق مع فرق القراءات (${derived} ${unit.ar}) بنسبة ${Math.round(gap * 100)}%. أحد الرقمين مقروء خطأ؛ راجع صورة الفاتورة.`,
+    en: `The printed consumption (${printed}) disagrees with the readings delta (${derived} ${unit.en}) by ${Math.round(gap * 100)}%. One of the two was misread; check the bill image.`,
+  };
+};
 
 export const reviewBillExtraction = (
   type: BillType,
@@ -293,6 +342,14 @@ export const reviewBillExtraction = (
         en: `The billing period is only ${days} days (a partial reading), so consumption may cover less than a full month.`,
       });
     }
+
+    const derived = consumptionFromReadings(item.previous_reading, item.current_reading);
+    if (consumption > 0 && derived > 0) {
+      const gap = Math.abs(consumption - derived) / Math.max(consumption, derived);
+      if (gap > READINGS_MISMATCH_TOLERANCE) {
+        warnings.push(readingsMismatchWarning(consumption, derived, { ar: 'ك.و.س', en: 'kWh' }));
+      }
+    }
   }
 
   if (type === 'water') {
@@ -327,12 +384,44 @@ export const reviewBillExtraction = (
         en: 'The volume is large for a household; verify the unit and the meter number.',
       });
     }
+
+    const derived = consumptionFromReadings(item.previous_reading, item.current_reading);
+    if (volume > 0 && derived > 0) {
+      const gap = Math.abs(volume - derived) / Math.max(volume, derived);
+      if (gap > READINGS_MISMATCH_TOLERANCE) {
+        warnings.push(readingsMismatchWarning(volume, derived, { ar: 'م³', en: 'm³' }));
+      }
+    }
+  }
+
+  if (type === 'food') {
+    const item = data as FoodReceiptExtraction;
+    const total = toPositive(item.total_cost_egp);
+    const count = toPositive(item.items_count);
+
+    if (total > 25000) {
+      warnings.push({
+        ar: `إجمالي الإيصال (${total.toLocaleString('en-GB')} جنيه) مرتفع جدًا لمشتريات بقالة منزلية. تأكد من عدم قراءة رقم الفاتورة أو الباركود كإجمالي.`,
+        en: `The receipt total (${total.toLocaleString('en-GB')} EGP) is very high for a household grocery run. Make sure an invoice or barcode number was not read as the total.`,
+      });
+    }
+
+    if (count > 0 && total > 0) {
+      const perItem = total / count;
+      if (perItem > 2000) {
+        warnings.push({
+          ar: `متوسط سعر العنصر (${Math.round(perItem)} جنيه) غير معقول؛ قد يكون عدد العناصر مقروءًا خطأ.`,
+          en: `The average item price (${Math.round(perItem)} EGP) is implausible; the item count may be misread.`,
+        });
+      }
+    }
   }
 
   return { needsReview: warnings.length > 0, warnings };
 };
 
-/** Apply user corrections on top of an extracted bill (pure, testable). */export const applyExtractionEdits = <T extends object>(
+/** Apply user corrections on top of an extracted bill (pure, testable). */
+export const applyExtractionEdits = <T extends object>(
   data: T,
   edits: Record<string, number>,
 ): T => {

@@ -75,7 +75,7 @@ const Navbar: React.FC = () => {
   ];
 
   const isLight = theme === 'light';
-  const textColor = isLight ? 'text-gray-900' : 'text-white';
+  const textColor = isLight ? 'text-slate-950' : 'text-white';
   const bgGlass = scrolled
     ? isLight
       ? 'bg-white/78 border-slate-900/[0.08] shadow-[0_10px_40px_rgba(10,50,40,.07)]'
@@ -101,7 +101,7 @@ const Navbar: React.FC = () => {
                 to={item.path} 
                 onClick={() => playSound('click')}
                 aria-current={isActive(item.path) ? 'page' : undefined}
-                className={`relative isolate inline-flex min-h-11 items-center overflow-hidden rounded-full px-4 py-2 text-[13px] font-bold transition-colors ${isActive(item.path) ? textColor : (isLight ? 'text-gray-500 hover:text-black' : 'text-gray-400 hover:text-white')}`}
+                className={`relative isolate inline-flex min-h-11 items-center overflow-hidden rounded-full px-4 py-2 text-[13px] font-bold transition-colors ${isActive(item.path) ? textColor : (isLight ? 'text-slate-500 hover:text-black' : 'text-slate-400 hover:text-white')}`}
              >
                  {isActive(item.path) && (
                    <motion.span
@@ -116,7 +116,7 @@ const Navbar: React.FC = () => {
 
           {/* Systems Dropdown */}
           <div className="relative ms-1 block" onMouseEnter={() => setSystemsOpen(true)} onMouseLeave={() => setSystemsOpen(false)}>
-              <button onClick={() => setSystemsOpen((open) => !open)} aria-expanded={systemsOpen} aria-haspopup="menu" className={`min-h-11 px-4 py-2 text-sm font-bold rounded-full transition-all flex items-center gap-1.5 ${location.pathname.includes('/systems') || ['/energy', '/transport', '/monitor', '/scenarios'].includes(location.pathname) ? (isLight ? 'bg-gray-100 text-black' : 'bg-white/10 text-white') : (isLight ? 'text-gray-500 hover:text-black hover:bg-gray-50' : 'text-gray-400 hover:text-white hover:bg-white/5')}`}>
+              <button onClick={() => setSystemsOpen((open) => !open)} aria-expanded={systemsOpen} aria-haspopup="menu" className={`min-h-11 px-4 py-2 text-sm font-bold rounded-full transition-all flex items-center gap-1.5 ${location.pathname.includes('/systems') || ['/energy', '/transport', '/monitor', '/scenarios'].includes(location.pathname) ? (isLight ? 'bg-slate-900/[0.06] text-black' : 'bg-white/10 text-white') : (isLight ? 'text-slate-500 hover:text-black hover:bg-slate-50' : 'text-slate-400 hover:text-white hover:bg-white/5')}`}>
                   {t.nav.systems} <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${systemsOpen ? 'rotate-180' : ''}`} />
               </button>
               <AnimatePresence>
@@ -136,7 +136,7 @@ const Navbar: React.FC = () => {
                                 to={sys.path}
                                 onClick={() => { setSystemsOpen(false); playSound('click'); }}
                                 role="menuitem"
-                                className={`flex min-h-14 items-center gap-3 rounded-2xl px-3 py-3 text-[13px] font-semibold leading-5 transition-colors ${isLight ? 'text-[#425c53] hover:bg-emerald-950/[0.05] hover:text-[#102a22]' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}
+                                className={`flex min-h-14 items-center gap-3 rounded-2xl px-3 py-3 text-[13px] font-semibold leading-5 transition-colors ${isLight ? 'text-[#425c53] hover:bg-emerald-950/[0.05] hover:text-[#102a22]' : 'text-slate-300 hover:text-white hover:bg-white/5'}`}
                               >
                                   <span className={`grid size-9 shrink-0 place-items-center rounded-xl text-emerald-500 ${isLight ? 'bg-emerald-950/[0.05]' : 'bg-emerald-400/[0.08]'}`}>{sys.icon}</span>
                                   <span>{sys.label}</span>
@@ -158,7 +158,7 @@ const Navbar: React.FC = () => {
              size="sm"
              variant="ghost"
              onPress={toggleLanguage}
-             className={`rounded-full ${isLight ? 'text-gray-700' : 'text-gray-300'}`}
+             className={`rounded-full ${isLight ? 'text-slate-700' : 'text-slate-300'}`}
              aria-label={language === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
            >
              <span className="font-cairo font-bold text-sm md:text-md">{language === 'en' ? 'ع' : 'En'}</span>
@@ -196,7 +196,7 @@ const Navbar: React.FC = () => {
            <Link 
             to="/action" 
             onClick={() => playSound('click')}
-            className={`hidden xl:flex px-4 py-2.5 rounded-full text-xs font-bold transition-all uppercase tracking-wider items-center gap-2 border hover:-translate-y-0.5 ${isLight ? 'bg-white border-gray-300 text-gray-800 hover:bg-gray-50' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}
+            className={`hidden xl:flex px-4 py-2.5 rounded-full text-xs font-bold transition-all uppercase tracking-wider items-center gap-2 border hover:-translate-y-0.5 ${isLight ? 'bg-white border-slate-300 text-slate-800 hover:bg-slate-50' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}
            >
             <MapIcon className="w-3 h-3" />
             {t.nav.roadmap}
@@ -205,7 +205,7 @@ const Navbar: React.FC = () => {
           {/* MOBILE MENU BTN (Tablet / Mobile Only) */}
           <button 
               onClick={() => setMobileMenuOpen(true)} 
-              className={`xl:hidden flex h-9 min-[380px]:h-10 items-center justify-center gap-2 rounded-lg border px-2 min-[380px]:px-3 ${isLight ? 'bg-white border-gray-200 active:bg-gray-100 text-gray-800' : 'bg-white/5 border-white/10 active:bg-white/10 text-white'}`}
+              className={`xl:hidden flex h-9 min-[380px]:h-10 items-center justify-center gap-2 rounded-lg border px-2 min-[380px]:px-3 ${isLight ? 'bg-white border-slate-200 active:bg-slate-100 text-slate-800' : 'bg-white/5 border-white/10 active:bg-white/10 text-white'}`}
               aria-label={language === 'ar' ? 'فتح القائمة' : 'Open menu'}
               aria-expanded={mobileMenuOpen}
           >
@@ -233,7 +233,7 @@ const Navbar: React.FC = () => {
                     animate={{ x: 0 }}
                     exit={{ x: dir === 'rtl' ? '100%' : '-100%' }}
                     transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                    className={`fixed inset-y-0 ${dir === 'rtl' ? 'right-0 border-l' : 'left-0 border-r'} z-[110] h-[100dvh] w-[min(92vw,24rem)] overflow-y-auto overscroll-contain shadow-2xl ${isLight ? 'border-gray-200 bg-white' : 'bg-[#07100e] border-white/10'}`}
+                    className={`fixed inset-y-0 ${dir === 'rtl' ? 'right-0 border-l' : 'left-0 border-r'} z-[110] h-[100dvh] w-[min(92vw,24rem)] overflow-y-auto overscroll-contain shadow-2xl ${isLight ? 'border-slate-200 bg-white' : 'bg-[#07100e] border-white/10'}`}
                     role="dialog"
                     aria-modal="true"
                     aria-label={language === 'ar' ? 'قائمة التنقل' : 'Navigation menu'}
@@ -241,7 +241,7 @@ const Navbar: React.FC = () => {
                     <div className="flex min-h-full flex-col p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:p-6">
                         <div className="mb-7 flex items-center justify-between">
                             <KairoBrandMark className="h-28 aspect-[822/938]" />
-                            <button onClick={() => setMobileMenuOpen(false)} aria-label={language === 'ar' ? 'إغلاق القائمة' : 'Close menu'} className={`p-2 rounded-full border ${isLight ? 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'}`}>
+                            <button onClick={() => setMobileMenuOpen(false)} aria-label={language === 'ar' ? 'إغلاق القائمة' : 'Close menu'} className={`p-2 rounded-full border ${isLight ? 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100' : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'}`}>
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -253,17 +253,17 @@ const Navbar: React.FC = () => {
                                     key={item.path} 
                                     to={item.path}
                                     onClick={() => { setMobileMenuOpen(false); playSound('click'); }}
-                                    className={`block rounded-xl p-3.5 text-base font-bold transition-colors sm:p-4 sm:text-lg ${isActive(item.path) ? (isLight ? 'bg-black text-white' : 'bg-white text-black') : (isLight ? 'text-gray-600 hover:bg-gray-100' : 'text-gray-300 hover:bg-white/5')}`}
+                                    className={`block rounded-xl p-3.5 text-base font-bold transition-colors sm:p-4 sm:text-lg ${isActive(item.path) ? (isLight ? 'bg-black text-white' : 'bg-white text-black') : (isLight ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/5')}`}
                                 >
                                     {item.label}
                                 </Link>
                             ))}
-                            <div className="my-6 border-t border-dashed border-gray-300 dark:border-white/10"></div>
+                            <div className="my-6 border-t border-dashed border-slate-300 dark:border-white/10"></div>
                             
                             <Link 
                                 to="/action"
                                 onClick={() => { setMobileMenuOpen(false); playSound('click'); }}
-                                className={`flex items-center gap-3 p-4 rounded-xl font-bold text-lg transition-colors ${isActive('/action') ? (isLight ? 'bg-black text-white' : 'bg-white text-black') : (isLight ? 'text-gray-600 hover:bg-gray-100' : 'text-gray-300 hover:bg-white/5')}`}
+                                className={`flex items-center gap-3 p-4 rounded-xl font-bold text-lg transition-colors ${isActive('/action') ? (isLight ? 'bg-black text-white' : 'bg-white text-black') : (isLight ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/5')}`}
                             >
                                 <MapIcon className="w-5 h-5 text-emerald-500" />
                                 {t.nav.roadmap}
@@ -271,15 +271,15 @@ const Navbar: React.FC = () => {
                         </div>
 
                         {/* Systems Module Footer */}
-                        <div className="mt-6 border-t border-gray-200 pt-6 dark:border-white/10">
-                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">{t.nav.systems}</div>
+                        <div className="mt-6 border-t border-slate-200 pt-6 dark:border-white/10">
+                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">{t.nav.systems}</div>
                             <div className="grid grid-cols-1 gap-2">
                                 {systems.map((sys) => (
                                     <Link 
                                         key={sys.path}
                                         to={sys.path}
                                         onClick={() => { setMobileMenuOpen(false); playSound('click'); }}
-                                        className={`flex items-center gap-3 p-4 rounded-xl text-sm font-medium transition-colors ${isLight ? 'bg-gray-50 text-gray-700 border border-gray-100 hover:bg-gray-100' : 'bg-white/5 text-gray-300 border border-white/5 hover:bg-white/10'}`}
+                                        className={`flex items-center gap-3 p-4 rounded-xl text-sm font-medium transition-colors ${isLight ? 'bg-slate-50 text-slate-700 border border-slate-100 hover:bg-slate-100' : 'bg-white/5 text-slate-300 border border-white/5 hover:bg-white/10'}`}
                                     >
                                         <div className={`p-2 rounded-lg ${isLight ? 'bg-white shadow-sm' : 'bg-black/50'} text-indigo-500`}>{sys.icon}</div>
                                         <span className="text-start text-sm font-bold leading-5">{sys.label}</span>

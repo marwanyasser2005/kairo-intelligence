@@ -98,7 +98,7 @@ const SaasRoadmap: React.FC = () => {
       gate: isAr ? 'اختبار قابلية الاستخدام وإثبات أن التوفير مفهوم للمستخدم.' : 'Usability validation and proof that users understand the savings value.',
     },
     {
-      window: isAr ? 'شهر 1–3' : 'Months 1–3',
+      window: isAr ? 'الأشهر ١–٣' : 'Months 1–3',
       stage: 'Cloud',
       Icon: Cloud,
       title: isAr ? 'الأساس السحابي' : 'Cloud foundation',
@@ -112,7 +112,7 @@ const SaasRoadmap: React.FC = () => {
       gate: isAr ? 'لا إطلاق عام قبل اختبار العزل، الاسترجاع، وحذف الحساب.' : 'No public launch before isolation, recovery and account-deletion tests pass.',
     },
     {
-      window: isAr ? 'شهر 3–6' : 'Months 3–6',
+      window: isAr ? 'الأشهر ٣–٦' : 'Months 3–6',
       stage: 'Revenue',
       Icon: WalletCards,
       title: isAr ? 'هيكلة SaaS والدفع' : 'SaaS and monetization',
@@ -126,7 +126,7 @@ const SaasRoadmap: React.FC = () => {
       gate: isAr ? 'إثبات استعداد الدفع وهامش إجمالي مستهدف قابل للحفاظ.' : 'Validate willingness to pay and a defensible target gross margin.',
     },
     {
-      window: isAr ? 'شهر 6–9' : 'Months 6–9',
+      window: isAr ? 'الأشهر ٦–٩' : 'Months 6–9',
       stage: 'Integrate',
       Icon: PlugZap,
       title: isAr ? 'التكامل والاحتفاظ' : 'Integrate and retain',
@@ -140,7 +140,7 @@ const SaasRoadmap: React.FC = () => {
       gate: isAr ? 'قياس انخفاض الإدخال اليدوي وتحسن الاحتفاظ قبل إضافة تكاملات أخرى.' : 'Measure lower manual entry and improved retention before adding more integrations.',
     },
     {
-      window: isAr ? 'شهر 9–12' : 'Months 9–12',
+      window: isAr ? 'الأشهر ٩–١٢' : 'Months 9–12',
       stage: 'Scale',
       Icon: Rocket,
       title: isAr ? 'التوسع والامتثال' : 'Scale and compliance',
@@ -194,7 +194,7 @@ const SaasRoadmap: React.FC = () => {
   const scorecard = [
     { Icon: BadgeCheck, value: '≥ 35%', label: isAr ? 'هدف تفعيل أولي بعد التسجيل' : 'Early activation target after sign-up' },
     { Icon: Gauge, value: '≥ 70%', label: isAr ? 'هامش إجمالي مستهدف بعد ضبط تكلفة AI' : 'Target gross margin after AI-cost control' },
-    { Icon: BarChart3, value: '30 / 90', label: isAr ? 'قياس احتفاظ 30 و90 يومًا' : '30- and 90-day retention cohorts' },
+    { Icon: BarChart3, value: '30 / 90', label: isAr ? 'قياس الاحتفاظ بعد ٣٠ و٩٠ يومًا' : '30- and 90-day retention cohorts' },
     { Icon: ShieldCheck, value: '0', label: isAr ? 'أسرار أو مفاتيح في المتصفح' : 'Secrets or provider keys in the browser' },
   ];
 

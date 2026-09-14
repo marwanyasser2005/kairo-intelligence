@@ -363,7 +363,7 @@ const CompareScenarios: React.FC = () => {
                   value={name}
                   maxLength={80}
                   onChange={(event) => setName(event.target.value)}
-                  placeholder={isAr ? 'مثال: خطة توفير 12 شهرًا' : 'Example: 12-month efficiency plan'}
+                  placeholder={isAr ? 'مثال: خطة توفير ١٢ شهرًا' : 'Example: 12-month efficiency plan'}
                   className={`min-h-12 w-full rounded-xl border px-4 text-sm outline-none transition focus:border-kairo-green ${border} ${
                     isLight ? 'bg-slate-50 text-slate-950' : 'bg-black/20 text-white'
                   }`}

@@ -212,7 +212,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="mt-2 flex items-end gap-2">
               <span className={`text-3xl font-black ${textMain}`}>{completedAnalyses}</span>
               <span className={`pb-1 text-xs font-bold ${textSub}`}>
-                {isAr ? 'نتائج محفوظة من 7' : 'saved results of 7'}
+                {isAr ? 'نتائج محفوظة من ٧' : 'saved results of 7'}
               </span>
             </div>
             <p className={`mt-3 border-t pt-3 text-[10px] font-bold leading-5 ${border} ${textSoft}`}>

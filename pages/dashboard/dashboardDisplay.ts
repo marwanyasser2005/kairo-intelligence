@@ -13,21 +13,18 @@ import {
   type CapabilityId,
 } from '../../config/kairoCapabilities';
 import {
-  Activity,
-  Building2,
-  Droplet,
-  FlaskConical,
-  GraduationCap,
-  HeartHandshake,
-  MapPinned,
-  Recycle,
-  Truck,
-  Users,
-  Utensils,
-  Wind,
-  Zap,
-  type LucideIcon,
-} from 'lucide-react';
+  kairoCapabilityIcons,
+  kairoAudienceIcons,
+  kairoAccents,
+  KAIRO_CHART_COLORS,
+} from '../../config/kairoVisuals';
+
+// Re-exported so existing imports keep working; the canonical maps now live
+// in config/kairoVisuals.ts and are shared with the home page.
+export const capabilityIcons = kairoCapabilityIcons;
+export const audienceIcons = kairoAudienceIcons;
+export const accentClasses = kairoAccents;
+export const CHART_COLORS = KAIRO_CHART_COLORS;
 
 export interface EarlyWarningSnapshot {
   updatedAt?: string;
@@ -51,56 +48,6 @@ export interface CapabilityState {
   score?: number;
   evidence: string;
 }
-
-export const capabilityIcons: Record<CapabilityId, LucideIcon> = {
-  foresight: Activity,
-  water: Droplet,
-  food: Utensils,
-  energy: Zap,
-  mobility: Truck,
-  exposure: Wind,
-  ewaste: Recycle,
-  scenarios: FlaskConical,
-};
-
-export const audienceIcons: Record<string, LucideIcon> = {
-  individual: Users,
-  community: HeartHandshake,
-  education: GraduationCap,
-  business: Building2,
-  government: MapPinned,
-};
-
-export const accentClasses: Record<
-  'emerald' | 'blue' | 'amber' | 'violet' | 'cyan',
-  { icon: string; soft: string; border: string }
-> = {
-  emerald: {
-    icon: 'text-emerald-500',
-    soft: 'bg-emerald-500/10',
-    border: 'group-hover:border-emerald-500/30',
-  },
-  blue: {
-    icon: 'text-blue-500',
-    soft: 'bg-blue-500/10',
-    border: 'group-hover:border-blue-500/30',
-  },
-  amber: {
-    icon: 'text-amber-500',
-    soft: 'bg-amber-500/10',
-    border: 'group-hover:border-amber-500/30',
-  },
-  violet: {
-    icon: 'text-violet-500',
-    soft: 'bg-violet-500/10',
-    border: 'group-hover:border-violet-500/30',
-  },
-  cyan: {
-    icon: 'text-cyan-500',
-    soft: 'bg-cyan-500/10',
-    border: 'group-hover:border-cyan-500/30',
-  },
-};
 
 export interface DashboardReveal {
   initial: Record<string, unknown>;
