@@ -62,12 +62,13 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
     // OCR State
     const [ocrData, setOcrData] = useState<EnergyBillExtraction | null>(null);
 
-    const handleRunAnalysis = async () => {
+    const runAnalysis = async (ocrOverride?: EnergyBillExtraction | null) => {
         setLoading(true);
         try {
+            const activeOcr = ocrOverride ?? ocrData;
             const inputs: EnergyAnalysisInputs = {
                 type,
-                ocrData,
+                ocrData: activeOcr,
                 property_type: propType,
                 occupants,
                 area_m2: area,
@@ -102,10 +103,13 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
             
             const result = await runEnergyAnalysis(inputs, language);
             if (setGlobalReport) setGlobalReport(result);
+            window.setTimeout(() => {
+                document.getElementById('energy-report-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 120);
             
         } catch (err) {
             console.error(err);
-            alert('Analysis failed. Check your API key or network.');
+            alert(isAr ? 'فشل التحليل. تحقق من الاتصال أو إعدادات الخدمة.' : 'Analysis failed. Check your connection or service configuration.');
         } finally {
             setLoading(false);
         }
@@ -163,7 +167,11 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                     <h3 className={`font-bold text-lg mb-4 ${textMain}`}>
                                         {isAr ? 'رفع فاتورة الكهرباء للتحليل' : 'Upload Electricity Bill for Analysis'}
                                     </h3>
-                                    <BillUploader onDataExtracted={(t, data) => setOcrData(data)} />
+                                    <BillUploader
+                                        forceType="electricity"
+                                        onDataExtracted={(_type, data) => setOcrData(data as EnergyBillExtraction)}
+                                        onAnalyze={(data) => runAnalysis(data as EnergyBillExtraction)}
+                                    />
                                     {ocrData && (
                                         <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl mt-4 flex items-center gap-3">
                                             <ShieldCheck className="w-5 h-5 text-green-500" />
@@ -333,7 +341,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                         )}
 
                                         <button 
-                                            onClick={handleRunAnalysis} 
+                                            onClick={() => runAnalysis()} 
                                             disabled={loading}
                                             className="w-full py-5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm md:text-base flex items-center justify-center gap-3 transition-colors shadow-lg shadow-amber-500/25"
                                         >

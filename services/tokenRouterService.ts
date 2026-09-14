@@ -15,7 +15,8 @@ import {
     ElectricityBillExtraction,
     EnergyAnalysisInputs,
     WaterAnalysisInputs,
-    WaterBillExtraction
+    WaterBillExtraction,
+    FoodReceiptExtraction
 } from "../types";
 
 import { generateFromAPI } from "./aiClient";
@@ -26,6 +27,11 @@ import {
     computeWaterFacts,
     factsPromptBlock,
 } from "./tariffEngine";
+import {
+    normalizeElectricityExtraction,
+    normalizeFoodExtraction,
+    normalizeWaterExtraction,
+} from "./billExtraction";
 
 const KAIRO_ARABIC_STYLE = `
 Write every user-facing string in clear modern Arabic that any Arab reader can understand,
@@ -436,6 +442,7 @@ const WATER_OCR_SCHEMA = {
     properties: {
         meter_number: { type: "STRING" },
         bill_date: { type: "STRING" },
+        reading_date: { type: "STRING" },
         current_reading: { type: "NUMBER" },
         previous_reading: { type: "NUMBER" },
         total_consumption_m3: { type: "NUMBER" },
@@ -453,10 +460,14 @@ const WATER_OCR_SCHEMA = {
             } 
         },
         additional_fees: { type: "NUMBER" },
+        billing_period_days: { type: "NUMBER" },
+        evidence_note: { type: "STRING" },
         currency: { type: "STRING" },
-        confidence: { type: "NUMBER" }
+        confidence: { type: "NUMBER" },
+        isStub: { type: "BOOLEAN" },
+        message: { type: "STRING" }
     },
-    required: ['meter_number', 'bill_date', 'current_reading', 'previous_reading', 'total_consumption_m3', 'total_amount', 'pricing_tiers', 'additional_fees', 'currency', 'confidence']
+    required: ['total_consumption_m3', 'total_amount', 'currency', 'confidence', 'evidence_note']
 };
 
 const FOOD_SCHEMA = { type: 'OBJECT', properties: { metrics: { type: 'OBJECT', properties: { food_waste_index: { type: 'NUMBER' }, food_efficiency_score: { type: 'NUMBER' }, monthly_waste_cost: { type: 'NUMBER' }, annual_waste_cost: { type: 'NUMBER' }, carbon_footprint_kg: { type: 'NUMBER' }, methane_emissions_kg: { type: 'NUMBER' }, water_footprint_loss_liters: { type: 'NUMBER' }, food_recovery_potential_egp: { type: 'NUMBER' }, sustainability_rating: { type: 'STRING' } }, required: ['food_waste_index', 'food_efficiency_score', 'monthly_waste_cost', 'annual_waste_cost', 'carbon_footprint_kg', 'methane_emissions_kg', 'water_footprint_loss_liters', 'food_recovery_potential_egp', 'sustainability_rating'] }, ai_waste_analysis: { type: 'OBJECT', properties: { primary_causes: { type: 'ARRAY', items: { type: 'STRING' } }, behavioral_insights: { type: 'STRING' } }, required: ['primary_causes', 'behavioral_insights'] }, ai_financial_insights: { type: 'OBJECT', properties: { monthly_savings_potential: { type: 'NUMBER' }, annual_savings_potential: { type: 'NUMBER' }, redirect_suggestions: { type: 'ARRAY', items: { type: 'STRING' } } }, required: ['monthly_savings_potential', 'annual_savings_potential', 'redirect_suggestions'] }, ai_supply_chain_diagnosis: { type: 'OBJECT', properties: { most_inefficient_stage: { type: 'STRING' }, stage_breakdown_percentages: { type: 'OBJECT', properties: { purchase: { type: 'NUMBER' }, storage: { type: 'NUMBER' }, preparation: { type: 'NUMBER' }, consumption: { type: 'NUMBER' }, disposal: { type: 'NUMBER' } }, required: ['purchase', 'storage', 'preparation', 'consumption', 'disposal'] }, bottleneck_explanation: { type: 'STRING' } }, required: ['most_inefficient_stage', 'stage_breakdown_percentages', 'bottleneck_explanation'] }, ai_optimization_plan: { type: 'OBJECT', properties: { immediate_actions: { type: 'ARRAY', items: { type: 'STRING' } }, long_term_habits: { type: 'ARRAY', items: { type: 'STRING' } } }, required: ['immediate_actions', 'long_term_habits'] } }, required: ['metrics', 'ai_waste_analysis', 'ai_financial_insights', 'ai_supply_chain_diagnosis', 'ai_optimization_plan'] };
@@ -566,11 +577,15 @@ const ELECTRICITY_OCR_SCHEMA = {
         additional_fees: { type: "NUMBER" },
         consumption_tier: { type: "STRING" },
         distribution_company: { type: "STRING" },
+        bill_date: { type: "STRING" },
+        reading_date: { type: "STRING" },
+        billing_period_days: { type: "NUMBER" },
+        evidence_note: { type: "STRING" },
         confidence: { type: "NUMBER" },
         isStub: { type: "BOOLEAN" },
         message: { type: "STRING" }
     },
-    required: ['consumption_kwh', 'total_amount', 'confidence']
+    required: ['consumption_kwh', 'total_amount', 'confidence', 'evidence_note']
 };
 
 const EWASTE_OCR_SCHEMA = {
@@ -803,37 +818,49 @@ Return JSON.`;
 
 export const analyzeWaterBillOCR = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<WaterBillExtraction> => {
     const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
-    
+
     const prompt = `
-        Analyze this Water Bill (Egyptian or International). Extract complete OCR structured data including meter number, dates, current/previous reading, total consumption in cubic meters, total cost, pricing tiers (if visible), and additional fees.
+        ROLE: A meticulous Egyptian utility-bill data extractor. Read this water bill image.
+        STEPS:
+        1. Locate the consumption block. If a printed total consumption in m³ exists, use it.
+        2. If it is missing, subtract the previous meter reading from the current reading and report that difference as total_consumption_m3.
+        3. Read the total amount due in EGP (the final "الإجمالي" / "المبلغ المستحق"), not an intermediate subtotal.
+        4. Copy the printed pricing tiers only when they are actually visible.
+        5. Write evidence_note in the requested language naming the exact labels or numbers you based the figures on.
+        RULES: Arabic-Indic digits are common; convert them to Latin digits in numeric fields.
+        Never invent a reading, a meter number, or a tier that is not visible. If a key figure is unreadable,
+        return 0 for it and lower the confidence instead of guessing. Return raw JSON only.
+        All monetary values are EGP unless the bill states another currency.
         ${langPrompt}
     `;
 
-    return generateFromAPI(prompt, WATER_OCR_SCHEMA, undefined, base64Image, imageMimeType);
+    return normalizeWaterExtraction(
+        await generateFromAPI(prompt, WATER_OCR_SCHEMA, undefined, base64Image, imageMimeType),
+    );
 };
 
 export const analyzeElectricityBill = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<ElectricityBillExtraction> => {
     const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
-    
+
     const prompt = `
-        Analyze this Egyptian Electricity Bill. Extract the full structured reading:
-        meter number, subscription type, property type, previous and current readings,
-        monthly consumption in kWh, total amount in EGP, additional fees, the printed
-        consumption tier, and the distribution company.
-        Never invent a reading that is not visible; reduce confidence instead.
+        ROLE: A meticulous Egyptian utility-bill data extractor. Read this electricity bill image.
+        STEPS:
+        1. Locate the consumption block. If a printed consumption in kWh exists, use it.
+        2. If it is missing, subtract the previous meter reading from the current reading and report that difference as consumption_kwh.
+        3. Read the total amount due in EGP (the final "الإجمالي" / "المبلغ المستحق"), not an intermediate subtotal, and list separately any additional fees or service charges.
+        4. Copy the printed consumption tier ("الشريحة") only when it is actually visible.
+        5. Write evidence_note in the requested language naming the exact labels or numbers you based the figures on.
+        RULES: Arabic-Indic digits are common; convert them to Latin digits in numeric fields.
+        Never invent a reading, a meter number, or a tier that is not visible. If a key figure is unreadable,
+        return 0 for it and lower the confidence instead of guessing. Return raw JSON only.
         All monetary values are EGP.
         ${langPrompt}
     `;
 
-    return generateFromAPI(prompt, ELECTRICITY_OCR_SCHEMA, undefined, base64Image, imageMimeType);
+    return normalizeElectricityExtraction(
+        await generateFromAPI(prompt, ELECTRICITY_OCR_SCHEMA, undefined, base64Image, imageMimeType),
+    );
 };
-
-export interface FoodReceiptExtraction {
-    total_cost_egp: number;
-    items_count: number;
-    receipt_date: string;
-    isStub?: boolean;
-}
 
 export interface TransportReceiptExtraction {
     document_type: 'Fuel Receipt' | 'Ride Hailing' | 'Public Transit' | 'EV Charging' | 'Other';
@@ -854,9 +881,11 @@ export const analyzeEwasteOCR = async (base64Image: string, language: string = '
 
 export const analyzeFoodReceiptOCR = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<FoodReceiptExtraction> => {
     const prompt = language === 'ar'
-        ? 'قم بتحليل إيصال المشتريات أو البقالة. استخرج فقط القيمة الإجمالية الظاهرة (total_cost_egp)، وعدد العناصر المقروءة (items_count)، وتاريخ الإيصال (receipt_date). لا تخمّن قيمة غير ظاهرة. أرجع JSON فقط بدون Markdown.'
-        : 'Analyze this grocery receipt. Extract only the visible total in EGP (total_cost_egp), the count of readable items (items_count), and the receipt date (receipt_date). Do not invent missing values. Return raw JSON only.';
-    return generateFromAPI(prompt, FOOD_RECEIPT_SCHEMA, undefined, base64Image, imageMimeType);
+        ? 'حلّل صورة إيصال المشتريات أو البقالة بدقة. استخرج الإجمالي النهائي المطبوع (total_cost_egp) وهو آخر رقم إجمالي في الإيصال وليس مجموعًا جزئيًا، وعدد العناصر المقروءة (items_count)، وتاريخ الإيصال (receipt_date). الأرقام العربية الهندية شائعة فحوّلها إلى أرقام لاتينية. لا تخمّن قيمة غير ظاهرة. أرجع JSON فقط بدون Markdown.'
+        : 'Read this grocery receipt carefully. Extract the final printed total (total_cost_egp) — the last total on the receipt, not an intermediate subtotal — the count of readable items (items_count), and the receipt date (receipt_date). Arabic-Indic digits are common; convert them to Latin digits. Do not invent missing values. Return raw JSON only.';
+    return normalizeFoodExtraction(
+        await generateFromAPI(prompt, FOOD_RECEIPT_SCHEMA, undefined, base64Image, imageMimeType),
+    );
 };
 
 export const analyzeTransportReceiptOCR = async (

@@ -141,17 +141,23 @@ export interface TelemetryHydrationResponse {
 
 // Energy Analysis Types
 export interface EnergyBillExtraction {
-    meter_number: string;
-    subscription_type: string;
-    property_type: 'residential' | 'commercial';
-    previous_reading: number;
-    current_reading: number;
-    consumption_kwh: number;
-    total_amount: number;
-    additional_fees: number;
-    consumption_tier: string;
-    distribution_company: string;
-    confidence: number;
+    meter_number?: string;
+    subscription_type?: string;
+    property_type?: 'residential' | 'commercial';
+    previous_reading?: number;
+    current_reading?: number;
+    consumption_kwh?: number;
+    total_amount?: number;
+    additional_fees?: number;
+    consumption_tier?: string;
+    distribution_company?: string;
+    confidence?: number;
+    bill_date?: string;
+    reading_date?: string;
+    billing_period_days?: number;
+    evidence_note?: string;
+    isStub?: boolean;
+    message?: string;
 }
 
 export interface EnergyAnalysisInputs {
@@ -297,16 +303,29 @@ export interface EnvironmentalSnapshot {
 }
 
 export interface WaterBillExtraction {
-    meter_number: string;
-    bill_date: string;
-    current_reading: number;
-    previous_reading: number;
-    total_consumption_m3: number;
-    total_amount: number;
-    pricing_tiers: Array<{ tier_name: string; volume: number; rate: number }>;
-    additional_fees: number;
-    currency: string;
-    confidence: number;
+    meter_number?: string;
+    bill_date?: string;
+    current_reading?: number;
+    previous_reading?: number;
+    total_consumption_m3?: number;
+    total_amount?: number;
+    pricing_tiers?: Array<{ tier_name: string; volume: number; rate: number }>;
+    additional_fees?: number;
+    currency?: string;
+    confidence?: number;
+    reading_date?: string;
+    billing_period_days?: number;
+    evidence_note?: string;
+    isStub?: boolean;
+    message?: string;
+}
+
+export interface FoodReceiptExtraction {
+    total_cost_egp?: number;
+    items_count?: number;
+    receipt_date?: string;
+    isStub?: boolean;
+    message?: string;
 }
 
 export interface WaterAnalysisInputs {
@@ -531,11 +550,5 @@ export interface SessionStory {
     final_summary: string;
 }
 
-export interface ElectricityBillExtraction {
-    kwh: number;
-    totalAmount: number;
-    currency: string;
-    confidence: number;
-    isStub?: boolean;
-    message?: string;
-}
+/** Alias kept so bill extraction and analysis share one canonical shape. */
+export type ElectricityBillExtraction = EnergyBillExtraction;

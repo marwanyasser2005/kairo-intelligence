@@ -62,9 +62,10 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
         }
     }, [globalWaterData, report]);
 
-    const handleRunAnalysis = async () => {
+    const runAnalysis = async (ocrOverride?: WaterBillExtraction | null) => {
         setLoading(true);
         try {
+            const activeOcr = ocrOverride ?? ocrData;
             const inputs: WaterAnalysisInputs = {
                 type,
                 monthly_bill: monthlyBill,
@@ -74,7 +75,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                 toilet_refills: toiletRefills,
                 washing_machine_weekly: washingMachineWeekly,
                 assumed_rate_egp_per_m3: blendedRate > 0 ? blendedRate : undefined,
-                ocrData
+                ocrData: activeOcr
             };
             
             if (type === 'residential') {
@@ -95,6 +96,9 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
             
             const result = await runWaterAnalysis(inputs, language);
             if (setGlobalReport) setGlobalReport(result);
+            window.setTimeout(() => {
+                document.getElementById('water-report-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 120);
             
         } catch (err) {
             console.error(err);
@@ -151,7 +155,11 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                 <h3 className={`font-bold text-lg mb-4 ${textMain}`}>
                                     {language === 'ar' ? 'رفع فاتورة المياه' : 'Upload Water Bill'}
                                 </h3>
-                                <BillUploader forceType="water" onDataExtracted={(t, data) => setOcrData(data)} />
+                                <BillUploader
+                                    forceType="water"
+                                    onDataExtracted={(_type, data) => setOcrData(data as WaterBillExtraction)}
+                                    onAnalyze={(data) => runAnalysis(data as WaterBillExtraction)}
+                                />
                                 {ocrData && (
                                     <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl mt-4 flex items-center justify-between">
                                         <div className="flex items-center gap-3">
@@ -303,7 +311,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                 )}
 
                                 <button 
-                                    onClick={handleRunAnalysis} 
+                                    onClick={() => runAnalysis()} 
                                     disabled={loading}
                                     className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white font-bold text-sm md:text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-blue-500/25"
                                 >

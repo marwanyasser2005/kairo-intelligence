@@ -56,7 +56,22 @@ export const translations = {
       waterStub: "Auto-analysis for water bills coming soon. Please enter values manually.",
       errorSize: "File too large (Max 5MB)",
       errorType: "Images only (JPG, PNG)",
-      success: "Data extracted successfully"
+      success: "Data extracted successfully",
+      autoAnalyze: "Analyze automatically after extraction",
+      analyzeNow: "Analyze now",
+      editValues: "Correct values",
+      applyEdits: "Apply corrections",
+      cancelEdit: "Cancel",
+      details: "Extracted details",
+      evidence: "Extraction evidence",
+      rescan: "Upload another bill",
+      quality: {
+        high: "High confidence",
+        medium: "Medium confidence",
+        low: "Low confidence"
+      },
+      imageOptimized: "Image was resized for faster, more accurate reading",
+      unitPrice: "Effective unit price"
     },
     nav: {
       home: "Home",
@@ -809,7 +824,22 @@ export const translations = {
       waterStub: "القراءة التلقائية لفواتير المياه قيد التطوير. أدخل القيم يدويًا حاليًا.",
       errorSize: "حجم الملف أكبر من ٥ ميجابايت",
       errorType: "ارفع صورة بصيغة JPG أو PNG",
-      success: "تم استخراج البيانات. راجعها قبل المتابعة."
+      success: "تم استخراج البيانات. راجعها قبل المتابعة.",
+      autoAnalyze: "حلّل تلقائيًا بعد الاستخراج",
+      analyzeNow: "حلّل الآن",
+      editValues: "صحّح القيم",
+      applyEdits: "طبّق التصحيحات",
+      cancelEdit: "إلغاء",
+      details: "تفاصيل الاستخراج",
+      evidence: "أساس الاستخراج",
+      rescan: "ارفع فاتورة أخرى",
+      quality: {
+        high: "ثقة عالية",
+        medium: "ثقة متوسطة",
+        low: "ثقة منخفضة"
+      },
+      imageOptimized: "تم تصغير الصورة لقراءة أسرع وأدق",
+      unitPrice: "سعر الوحدة الفعلي"
     },
     nav: {
       home: "الرئيسية",
