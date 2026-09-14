@@ -74,14 +74,21 @@ export const buildAnalysisRunRow = (payload: AnalysisRunPayload) => ({
  * Fire-and-forget insert. Returns true when the row was stored, false when the
  * cloud is unavailable; it never throws and never blocks the caller.
  */
+const DISABLE_COOLDOWN_MS = 10 * 60 * 1000;
+let telemetryDisabledUntil = 0;
+
 export const recordAnalysisRun = async (payload: AnalysisRunPayload): Promise<boolean> => {
   if (!supabase || !isSupabaseConfigured) return false;
+  // Stop retrying for a while once the table is missing, so an un-migrated
+  // project never adds a failing request to every analysis.
+  if (telemetryDisabledUntil > Date.now()) return false;
   try {
     const { error } = await supabase.from('kairo_analysis_runs').insert(buildAnalysisRunRow(payload));
     if (error) throw error;
     return true;
   } catch {
     // Telemetry is best-effort: a missing migration or offline device is fine.
+    telemetryDisabledUntil = Date.now() + DISABLE_COOLDOWN_MS;
     return false;
   }
 };

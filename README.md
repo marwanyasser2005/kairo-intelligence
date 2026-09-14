@@ -212,6 +212,15 @@ The seven result capabilities are split into **three core** and **four support**
 | **Support** | KAIRO SIGNALS (live early warning), Mobility, Urban exposure, ReKairo circularity | The live prevention layer plus the capabilities that extend the picture to a daily pattern |
 | **Tool** | Scenario lab, Proof of impact | Comparison and verification layered on top of results |
 
+## Model-improvement telemetry
+
+Every analysis run records one anonymous row so the estimation models can be reviewed and improved from real usage: module, numeric inputs, computed facts, outcome metrics, and whether the run needed review.
+
+- **Privacy by design**: there is no user identifier, no name, no meter number, no image, and no free text. `services/analysisTelemetry.ts` scrubs sensitive keys, prunes empty branches, and caps payload sizes before writing.
+- **Write-only**: `kairo_analysis_runs` has insert-only RLS for `anon` and `authenticated`; clients can never read the table back.
+- **Best effort**: if the cloud is unavailable or the migration has not been applied, the app keeps working and telemetry pauses for a cooldown window instead of retrying every request.
+- **Applying the migration**: run `npx supabase db push` with a linked project, or paste `supabase/migrations/20260915000000_kairo_analysis_runs.sql` into the Supabase SQL editor.
+
 ## Mobile app readiness
 
 The web app is built so it can be wrapped as an Android or iOS application without rewriting screens:
