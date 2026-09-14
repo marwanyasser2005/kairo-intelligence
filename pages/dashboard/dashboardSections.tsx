@@ -25,7 +25,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { localize, audienceProfiles, getAudienceProfile, type AudienceProfile, type KairoCapability, type AudienceId } from '../../config/kairoCapabilities';
+import { localize, audienceProfiles, getAudienceProfile, TIER_LABELS, type AudienceProfile, type KairoCapability, type AudienceId } from '../../config/kairoCapabilities';
 import {
   accentClasses,
   audienceIcons,
@@ -507,7 +507,21 @@ export const AudienceLedgerSection = ({
                         <Icon className="h-4 w-4" />
                       </span>
                       <div>
-                        <p className="font-extrabold">{localize(capability.title, currentLanguage)}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-extrabold">{localize(capability.title, currentLanguage)}</p>
+                          <span
+                            title={localize(capability.tierReason, currentLanguage)}
+                            className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${
+                              capability.tier === 'core'
+                                ? 'bg-kairo-green/15 text-kairo-green'
+                                : capability.tier === 'support'
+                                  ? isLight ? 'bg-slate-100 text-slate-500' : 'bg-white/5 text-slate-400'
+                                  : 'bg-violet-500/10 text-violet-400'
+                            }`}
+                          >
+                            {localize(TIER_LABELS[capability.tier], currentLanguage)}
+                          </span>
+                        </div>
                         <p className={`mt-1 max-w-56 text-[10px] ${textSoft}`}>{localize(capability.purpose, currentLanguage)}</p>
                       </div>
                     </div>
@@ -571,9 +585,43 @@ export const CapabilityCardsSection = ({
   onNavigate: (path: string) => void;
 }) => {
   const { isAr, isLight, border, surface, textMain, textSub, textSoft } = theme;
+  const coreGroup = filteredCapabilities.filter((capability) => capability.tier === 'core');
+  const supportGroup = filteredCapabilities.filter((capability) => capability.tier === 'support');
+  const toolGroup = filteredCapabilities.filter((capability) => capability.tier === 'tool');
+  const groups: Array<{ id: string; title: string; note: string; items: KairoCapability[] }> = [
+    {
+      id: 'core',
+      title: isAr ? 'الخواص الأساسية' : 'Core capabilities',
+      note: isAr ? 'ابدأ من هنا: وقاية حية، ثم المياه والطاقة.' : 'Start here: live prevention, then water and energy.',
+      items: coreGroup,
+    },
+    {
+      id: 'support',
+      title: isAr ? 'خواص مساندة' : 'Support capabilities',
+      note: isAr ? 'توسّع الصورة حسب احتياجك ونمط حياتك.' : 'Extend the picture to match your needs and daily pattern.',
+      items: supportGroup,
+    },
+    {
+      id: 'tool',
+      title: isAr ? 'أدوات القرار' : 'Decision tools',
+      note: isAr ? 'تقارن الخيارات فوق نتائجك الحالية.' : 'Compare options on top of your current results.',
+      items: toolGroup,
+    },
+  ].filter((group) => group.items.length > 0);
+
   return (
-    <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {filteredCapabilities.map((capability, index) => {
+    <div className="mt-6 space-y-8">
+      {groups.map((group) => (
+        <div key={group.id}>
+          <div className={`mb-3 flex flex-wrap items-center gap-3 border-b pb-3 ${border}`}>
+            <h3 className={`text-lg font-black ${textMain}`}>{group.title}</h3>
+            <span className={`text-[11px] font-bold ${textSub}`}>{group.note}</span>
+            <span className={`ms-auto rounded-full border px-2.5 py-1 text-[10px] font-black ${border} ${textSub}`}>
+              {group.items.length}
+            </span>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {group.items.map((capability, index) => {
         const Icon = capabilityIcons[capability.id];
         const state = capabilityStates[capability.id];
         const accent = accentClasses[capability.accent];
@@ -592,6 +640,18 @@ export const CapabilityCardsSection = ({
               <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${accent.soft} ${accent.icon}`}>
                 <Icon className="h-5 w-5" />
               </div>
+              <span
+                title={localize(capability.tierReason, currentLanguage)}
+                className={`me-auto rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${
+                  capability.tier === 'core'
+                    ? 'bg-kairo-green/15 text-kairo-green'
+                    : capability.tier === 'support'
+                      ? isLight ? 'bg-slate-100 text-slate-500' : 'bg-white/5 text-slate-400'
+                      : 'bg-violet-500/10 text-violet-400'
+                }`}
+              >
+                {localize(TIER_LABELS[capability.tier], currentLanguage)}
+              </span>
               <span
                 className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${
                   state.ready
@@ -703,6 +763,9 @@ export const CapabilityCardsSection = ({
           </MotionDiv>
         );
       })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

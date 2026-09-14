@@ -35,6 +35,7 @@ import {
   audienceProfiles,
   getAudienceProfile,
   kairoCapabilities,
+  TIER_LABELS,
   localize,
   type AudienceId,
   type CapabilityId,
@@ -375,7 +376,9 @@ const Home: React.FC = () => {
                 {isAr ? 'منظومة بيئية واحدة' : 'One environmental ecosystem'}
               </span>
               <h2 className={`mt-6 text-4xl font-semibold tracking-[-0.045em] sm:text-6xl ${textMain}`}>
-                {isAr ? 'كل خاصية لها جمهور، غرض، ونتيجة مفهومة.' : 'Every capability has an audience, purpose, and clear outcome.'}
+                {isAr
+                ? 'كل خاصية لها جمهور، غرض، ونتيجة مفهومة. ابدأ بثلاث خواص أساسية تغطي الوقاية والفاتورتين الأثقل، ثم وسّع الصورة بخواص مساندة.'
+                : 'Every capability has an audience, purpose, and clear outcome. Start with three core capabilities covering prevention and the two heaviest bills, then extend with support capabilities.'}
               </h2>
             </div>
             <p className={`text-base leading-8 lg:pb-2 ${textSub}`}>
@@ -401,7 +404,21 @@ const Home: React.FC = () => {
                     <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${accent.icon}`}>
                       <Icon className="h-5 w-5" />
                     </div>
-                    <span className={`font-mono text-[10px] ${textSoft}`}>0{index + 1}</span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        title={localize(capability.tierReason, currentLanguage)}
+                        className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${
+                          capability.tier === 'core'
+                            ? 'bg-kairo-green/15 text-kairo-green'
+                            : capability.tier === 'support'
+                              ? isLight ? 'bg-slate-100 text-slate-500' : 'bg-white/5 text-slate-400'
+                              : 'bg-violet-500/10 text-violet-400'
+                        }`}
+                      >
+                        {localize(TIER_LABELS[capability.tier], currentLanguage)}
+                      </span>
+                      <span className={`font-mono text-[10px] ${textSoft}`}>0{index + 1}</span>
+                    </div>
                   </div>
 
                   <h3 className={`mt-7 text-xl font-extrabold ${textMain}`}>

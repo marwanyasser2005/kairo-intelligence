@@ -56,13 +56,13 @@ const Navbar: React.FC = () => {
       path: "/monitor",
       icon: <RadioTower className="w-4 h-4"/>,
     },
-    { label: t.nav.systemsList.scenarios, path: "/scenarios", icon: <FlaskConical className="w-4 h-4"/> },
     { label: t.nav.systemsList.water, path: "/systems/water-scarcity", icon: <Droplet className="w-4 h-4"/> },
-    { label: t.nav.systemsList.food, path: "/systems/food-security", icon: <Utensils className="w-4 h-4"/> },
     { label: t.nav.systemsList.energy, path: "/energy", icon: <Zap className="w-4 h-4"/> },
+    { label: t.nav.systemsList.food, path: "/systems/food-security", icon: <Utensils className="w-4 h-4"/> },
     { label: t.nav.systemsList.transport, path: "/transport", icon: <Truck className="w-4 h-4"/> },
     { label: t.nav.systemsList.exposure, path: "/systems/urban-exposure", icon: <Wind className="w-4 h-4"/> },
     { label: t.nav.systemsList.ewaste, path: "/systems/ewaste", icon: <Recycle className="w-4 h-4"/> },
+    { label: t.nav.systemsList.scenarios, path: "/scenarios", icon: <FlaskConical className="w-4 h-4"/> },
   ];
 
   const navItems = [

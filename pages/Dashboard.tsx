@@ -210,6 +210,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {isAr ? 'نتائج محفوظة من 7' : 'saved results of 7'}
               </span>
             </div>
+            <p className={`mt-3 border-t pt-3 text-[10px] font-bold leading-5 ${border} ${textSoft}`}>
+              {isAr
+                ? '3 خواص أساسية (وقاية حية، مياه، طاقة) + 4 خواص مساندة'
+                : '3 core capabilities (live foresight, water, energy) + 4 support'}
+            </p>
           </div>
         </header>
 

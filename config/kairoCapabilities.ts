@@ -30,8 +30,17 @@ export interface AudienceProfile {
   value: LocalizedText;
 }
 
+/**
+ * Product tier. Three core capabilities cover the decisions every audience
+ * starts from (live early warning, water, energy); four support capabilities
+ * extend the picture; scenarios is a comparison tool layered over results.
+ */
+export type CapabilityTier = 'core' | 'support' | 'tool';
+
 export interface KairoCapability {
   id: CapabilityId;
+  tier: CapabilityTier;
+  tierReason: LocalizedText;
   title: LocalizedText;
   shortDescription: LocalizedText;
   purpose: LocalizedText;
@@ -40,6 +49,12 @@ export interface KairoCapability {
   path: string;
   accent: 'emerald' | 'blue' | 'amber' | 'violet' | 'cyan';
 }
+
+export const TIER_LABELS: Record<CapabilityTier, LocalizedText> = {
+  core: { ar: 'أساسية', en: 'Core' },
+  support: { ar: 'مساندة', en: 'Support' },
+  tool: { ar: 'أداة قرار', en: 'Decision tool' },
+};
 
 export const localize = (text: LocalizedText, language: KairoLanguage) => text[language];
 
@@ -111,9 +126,10 @@ export const audienceProfiles: AudienceProfile[] = [
   },
 ];
 
-export const kairoCapabilities: KairoCapability[] = [
-  {
+export const kairoCapabilities: KairoCapability[] = [  {
     id: 'foresight',
+    tier: 'core',
+    tierReason: { ar: 'حي وبدون إدخال: يخدم الفئات الخمس ويقود القرار الوقائي.', en: 'Live and input-free: serves all five audiences and drives preventive action.' },
     title: {
       ar: 'KAIRO SIGNALS · الاستباق البيئي',
       en: 'KAIRO SIGNALS · Environmental foresight',
@@ -136,6 +152,8 @@ export const kairoCapabilities: KairoCapability[] = [
   },
   {
     id: 'water',
+    tier: 'core',
+    tierReason: { ar: 'أعلى أثر أمني ومالي، بمحرك حساب حتمي وتوثيق واضح.', en: 'Highest security and financial impact with a deterministic engine.' },
     title: { ar: 'ذكاء المياه والندرة', en: 'Water & scarcity intelligence' },
     shortDescription: {
       ar: 'يفهم استهلاكك والهدر وحالة الشبكة، ويقول لك تبدأ الفحص أو التحسين منين.',
@@ -154,26 +172,9 @@ export const kairoCapabilities: KairoCapability[] = [
     accent: 'blue',
   },
   {
-    id: 'food',
-    title: { ar: 'الأمن الغذائي وتقليل الفاقد', en: 'Food security & waste reduction' },
-    shortDescription: {
-      ar: 'يربط عادات الشراء والاستهلاك بالهدر والتكلفة والمياه والانبعاثات.',
-      en: 'Connects purchasing and consumption behavior to supply chains, water, and emissions.',
-    },
-    purpose: {
-      ar: 'يساعدك تقلل الطعام المهدَر وتكلفته، وتحسن استخدام الموارد في البيت أو المؤسسة.',
-      en: 'Reduce wasted food and cost while improving resource efficiency from homes to institutions.',
-    },
-    outcome: {
-      ar: 'يعرفك نقطة الفاقد، أثرها المالي والبيئي، وخطوات عملية للشراء والتخزين والاستهلاك.',
-      en: 'Loss-point diagnosis, financial and environmental impact, and purchasing and storage actions.',
-    },
-    audiences: ['individual', 'education', 'business', 'government'],
-    path: '/systems/food-security',
-    accent: 'emerald',
-  },
-  {
     id: 'energy',
+    tier: 'core',
+    tierReason: { ar: 'فاتورة شهرية لكل مستخدم مع وفر مباشر قابل للمتابعة.', en: 'A monthly bill for every user with directly verifiable savings.' },
     title: { ar: 'ذكاء الطاقة', en: 'Energy intelligence' },
     shortDescription: {
       ar: 'يفسر استهلاكك وتكلفته وكفاءة الأجهزة، بدل ما تفضل الفاتورة مجرد رقم.',
@@ -192,7 +193,30 @@ export const kairoCapabilities: KairoCapability[] = [
     accent: 'amber',
   },
   {
+    id: 'food',
+    tier: 'support',
+    tierReason: { ar: 'أثر مالي كبير لكنه يحتاج بيانات سلوكية أدق.', en: 'Large financial impact but requires more behavioral input.' },
+    title: { ar: 'الأمن الغذائي وتقليل الفاقد', en: 'Food security & waste reduction' },
+    shortDescription: {
+      ar: 'يربط عادات الشراء والاستهلاك بالهدر والتكلفة والمياه والانبعاثات.',
+      en: 'Connects purchasing and consumption behavior to supply chains, water, and emissions.',
+    },
+    purpose: {
+      ar: 'يساعدك تقلل الطعام المهدَر وتكلفته، وتحسن استخدام الموارد في البيت أو المؤسسة.',
+      en: 'Reduce wasted food and cost while improving resource efficiency from homes to institutions.',
+    },
+    outcome: {
+      ar: 'يعرفك نقطة الفاقد، أثرها المالي والبيئي، وخطوات عملية للشراء والتخزين والاستهلاك.',
+      en: 'Loss-point diagnosis, financial and environmental impact, and purchasing and storage actions.',
+    },
+    audiences: ['individual', 'education', 'business', 'government'],
+    path: '/systems/food-security',
+    accent: 'emerald',
+  },
+  {
     id: 'mobility',
+    tier: 'support',
+    tierReason: { ar: 'قرار يومي متكرر، وأثره متوسط ويحتاج نمط رحلات.', en: 'A frequent daily decision with medium impact that needs trip patterns.' },
     title: { ar: 'التنقل منخفض الأثر', en: 'Low-impact mobility' },
     shortDescription: {
       ar: 'يقارن رحلاتك من ناحية التكلفة والوقت والانبعاثات.',
@@ -212,6 +236,8 @@ export const kairoCapabilities: KairoCapability[] = [
   },
   {
     id: 'exposure',
+    tier: 'support',
+    tierReason: { ar: 'صحي ووقائي بطبيعته، ونتيجته تقديرية لا قياس حسّاس.', en: 'Health-oriented by nature; its result is contextual, not a sensor reading.' },
     title: { ar: 'التعرض الحضري وجودة الهواء', en: 'Urban exposure & air quality' },
     shortDescription: {
       ar: 'يحوّل بيانات الموقع والهواء إلى صورة بسيطة تشرح تعرضك اليومي.',
@@ -231,6 +257,8 @@ export const kairoCapabilities: KairoCapability[] = [
   },
   {
     id: 'ewaste',
+    tier: 'support',
+    tierReason: { ar: 'قرار متقطع لكنه عالي القيمة لحظة اتخاذه.', en: 'An occasional decision, but high value at the moment it is taken.' },
     title: { ar: 'ReKairo للاقتصاد الدائري', en: 'ReKairo circular economy' },
     shortDescription: {
       ar: 'يقيّم حالة جهازك وعمره المتبقي، ويقترح أفضل مسار: استخدام، إصلاح، بيع أو تدوير.',
@@ -250,6 +278,8 @@ export const kairoCapabilities: KairoCapability[] = [
   },
   {
     id: 'scenarios',
+    tier: 'tool',
+    tierReason: { ar: 'أداة مقارنة تعمل فوق نتائج الخواص الأخرى.', en: 'A comparison tool layered on top of the other results.' },
     title: { ar: 'مختبر السيناريوهات', en: 'Scenario lab' },
     shortDescription: {
       ar: 'يقارن اختياراتك قبل التنفيذ، ويوضح كيف كل افتراض يغيّر النتيجة.',
@@ -271,3 +301,12 @@ export const kairoCapabilities: KairoCapability[] = [
 
 export const getAudienceProfile = (id: AudienceId) =>
   audienceProfiles.find((audience) => audience.id === id);
+
+export const coreCapabilities = kairoCapabilities.filter((capability) => capability.tier === 'core');
+export const supportCapabilities = kairoCapabilities.filter((capability) => capability.tier === 'support');
+
+export const groupCapabilitiesByTier = (capabilities: KairoCapability[]) => ({
+  core: capabilities.filter((capability) => capability.tier === 'core'),
+  support: capabilities.filter((capability) => capability.tier === 'support'),
+  tool: capabilities.filter((capability) => capability.tier === 'tool'),
+});
