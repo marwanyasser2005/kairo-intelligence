@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { KAIRO_SUPABASE_PUBLISHABLE_KEY, KAIRO_SUPABASE_URL } from '../config/supabaseProject';
 
 type SupabaseRuntimeEnv = Record<string, string | boolean | undefined>;
 
@@ -50,7 +51,15 @@ export const resolveSupabaseConfig = (env: SupabaseRuntimeEnv) => {
   return { config: { url: url.replace(/\/$/, ''), key }, error: null };
 };
 
-const resolvedConfiguration = resolveSupabaseConfig(runtimeEnv);
+const resolvedConfiguration = resolveSupabaseConfig({
+  ...runtimeEnv,
+  // The project binding is baked in (public values) so every deployment —
+  // local, preview, and production — talks to the same database even when
+  // hosting-level env vars are missing or stale. Only the cloud kill-switch
+  // above still comes from the environment.
+  VITE_SUPABASE_URL: KAIRO_SUPABASE_URL,
+  VITE_SUPABASE_PUBLISHABLE_KEY: KAIRO_SUPABASE_PUBLISHABLE_KEY,
+});
 const supabaseUrl = resolvedConfiguration.config?.url;
 const supabasePublishableKey = resolvedConfiguration.config?.key;
 

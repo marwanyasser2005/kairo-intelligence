@@ -1,12 +1,7 @@
-import { config as loadEnv } from 'dotenv';
+import { KAIRO_SUPABASE_PUBLISHABLE_KEY, KAIRO_SUPABASE_URL } from '../config/supabaseProject';
 
-loadEnv({ path: '.env.local', quiet: true });
-loadEnv({ path: '.env.development.local', quiet: true, override: true });
-
-const projectUrl = process.env.VITE_SUPABASE_URL?.trim().replace(/\/$/, '');
-const browserKey =
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() ||
-  process.env.VITE_SUPABASE_ANON_KEY?.trim();
+const projectUrl = KAIRO_SUPABASE_URL.trim().replace(/\/$/, '');
+const browserKey = KAIRO_SUPABASE_PUBLISHABLE_KEY.trim();
 
 if (!projectUrl || !browserKey) {
   throw new Error('Supabase browser configuration is missing.');
@@ -53,7 +48,7 @@ if (schemaNotMigrated) {
       rest: restResponse.status,
       keyExposed: false,
       reason: 'schema_not_migrated',
-      next: 'Run the files in supabase/migrations/ in order (SQL Editor or `supabase db push`).',
+      next: 'Run supabase/bootstrap.sql in the Supabase SQL Editor (one paste), then re-run this script.',
     }),
   );
   process.exitCode = 2;

@@ -4,6 +4,24 @@ import {
   createKairoIdentityManager,
   resolveSupabaseConfig,
 } from '../utils/supabase';
+import {
+  KAIRO_SUPABASE_PUBLISHABLE_KEY,
+  KAIRO_SUPABASE_URL,
+} from '../config/supabaseProject';
+
+test('the baked-in public Supabase binding passes the browser safety checks', () => {
+  // The binding ships in the client bundle, so it must always resolve to a
+  // valid https project URL with a browser-safe publishable key.
+  const resolved = resolveSupabaseConfig({
+    VITE_SUPABASE_URL: KAIRO_SUPABASE_URL,
+    VITE_SUPABASE_PUBLISHABLE_KEY: KAIRO_SUPABASE_PUBLISHABLE_KEY,
+  });
+  assert.equal(resolved.error, null);
+  assert.equal(resolved.config?.url, KAIRO_SUPABASE_URL.replace(/\/$/, ''));
+  assert.ok(!KAIRO_SUPABASE_PUBLISHABLE_KEY.startsWith('sb_secret_'));
+  assert.ok(KAIRO_SUPABASE_URL.startsWith('https://'));
+  assert.ok(KAIRO_SUPABASE_URL.endsWith('.supabase.co'));
+});
 
 test('Supabase browser configuration accepts publishable and legacy anon keys', () => {
   const publishable = resolveSupabaseConfig({
