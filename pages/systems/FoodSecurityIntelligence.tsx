@@ -261,7 +261,7 @@ const FoodSecurityIntelligence: React.FC<FoodSecurityProps> = ({
                 <h2 className={`text-lg font-black ${textMain}`}>{isAr ? 'أين يضيع الطعام؟' : 'Where does food get lost?'}</h2>
                 <p className={`mt-1 text-xs leading-6 ${textSub}`}>
                   {isAr
-                    ? 'هذه الإشارات هي التي تحدد معدل الهدر التقديري — بدل تخمين النموذج.'
+                    ? 'هذه الإشارات هي التي تحدد معدل الهدر التقديري بدل تخمين النموذج.'
                     : 'These signals set the estimated waste rate instead of letting the model guess.'}
                 </p>
                 <div className="mt-6 grid gap-5 sm:grid-cols-2">

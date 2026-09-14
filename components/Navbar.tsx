@@ -84,7 +84,7 @@ const Navbar: React.FC = () => {
 
   return (
     <nav className={`kairo-navbar fixed top-0 z-50 w-full border-b backdrop-blur-2xl transition-all duration-300 ${bgGlass}`} dir={dir} aria-label={language === 'ar' ? 'التنقل الرئيسي' : 'Primary navigation'}>
-      <div className={`mx-auto flex max-w-[1440px] items-center justify-between px-4 transition-all duration-300 sm:px-7 lg:px-10 xl:px-12 ${scrolled ? 'h-16' : 'h-20'}`}>
+      <div className={`mx-auto flex max-w-[1680px] items-center justify-between px-4 transition-all duration-300 sm:px-7 lg:px-10 xl:px-12 2xl:px-16 ${scrolled ? 'h-16' : 'h-20'}`}>
         
         {/* LOGO */}
         <Link to="/" className="group flex min-h-11 shrink-0 items-center outline-none" onClick={() => playSound('click')} aria-label={language === 'ar' ? 'العودة إلى الرئيسية' : 'Back to home'}>
@@ -101,7 +101,7 @@ const Navbar: React.FC = () => {
                 to={item.path} 
                 onClick={() => playSound('click')}
                 aria-current={isActive(item.path) ? 'page' : undefined}
-                className={`relative isolate inline-flex min-h-11 items-center overflow-hidden rounded-full px-4 py-2 text-xs font-bold transition-colors ${isActive(item.path) ? textColor : (isLight ? 'text-gray-500 hover:text-black' : 'text-gray-400 hover:text-white')}`}
+                className={`relative isolate inline-flex min-h-11 items-center overflow-hidden rounded-full px-4 py-2 text-[13px] font-bold transition-colors ${isActive(item.path) ? textColor : (isLight ? 'text-gray-500 hover:text-black' : 'text-gray-400 hover:text-white')}`}
              >
                  {isActive(item.path) && (
                    <motion.span
@@ -127,19 +127,22 @@ const Navbar: React.FC = () => {
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
                         role="menu"
-                        className={`absolute top-full ${dir === 'rtl' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} mt-2 w-80 rounded-2xl shadow-2xl overflow-hidden p-2 border ${isLight ? 'bg-white border-gray-200' : 'bg-[#0a1713] border-white/10'}`}
+                        className={`absolute top-full ${dir === 'rtl' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} mt-2 w-[29rem] rounded-3xl shadow-2xl overflow-hidden p-3 border ${isLight ? 'bg-[#f8fbf9] border-emerald-950/10' : 'bg-[#0a1713] border-white/10'}`}
                       >
+                          <div className="grid grid-cols-2 gap-1.5">
                           {systems.map((sys) => (
                               <Link 
                                 key={sys.path} 
                                 to={sys.path}
                                 onClick={() => { setSystemsOpen(false); playSound('click'); }}
                                 role="menuitem"
-                                className={`flex min-h-12 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${isLight ? 'text-gray-600 hover:bg-gray-50 hover:text-black' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}
+                                className={`flex min-h-14 items-center gap-3 rounded-2xl px-3 py-3 text-[13px] font-semibold leading-5 transition-colors ${isLight ? 'text-[#425c53] hover:bg-emerald-950/[0.05] hover:text-[#102a22]' : 'text-gray-300 hover:text-white hover:bg-white/5'}`}
                               >
-                                  <span className={`p-1.5 rounded-lg ${isLight ? 'bg-gray-100' : 'bg-white/5'}`}>{sys.icon}</span> {sys.label}
+                                  <span className={`grid size-9 shrink-0 place-items-center rounded-xl text-emerald-500 ${isLight ? 'bg-emerald-950/[0.05]' : 'bg-emerald-400/[0.08]'}`}>{sys.icon}</span>
+                                  <span>{sys.label}</span>
                               </Link>
                           ))}
+                          </div>
                       </MotionDiv>
                   )}
               </AnimatePresence>

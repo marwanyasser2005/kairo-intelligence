@@ -244,7 +244,7 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
             {t.bill.dropzone}
           </p>
           <p className={`mt-2 text-[11px] ${textSub}`}>
-            {isAr ? 'ارفع الصورة فقط — والباقي علينا.' : 'Just upload the image — the rest is handled for you.'}
+            {isAr ? 'ارفع الصورة فقط والباقي علينا.' : 'Just upload the image. The rest is handled for you.'}
           </p>
           {error && (
             <div className="mt-3 text-xs text-red-500 flex items-center justify-center gap-1">
@@ -333,7 +333,7 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
                           <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                           <div className="space-y-1">
                             <p className="text-xs font-black">
-                              {isAr ? 'القيم المستخرجة غير متسقة — راجعها قبل التحليل' : 'Extracted values are inconsistent — review before analyzing'}
+                              {isAr ? 'القيم المستخرجة غير متسقة، راجعها قبل التحليل' : 'Extracted values are inconsistent. Review them before analyzing.'}
                             </p>
                             {review.warnings.map((warning, index) => (
                               <p key={index} className="text-[11px] leading-5 opacity-90">

@@ -234,7 +234,7 @@ const Home: React.FC = () => {
               <p className={`mt-8 max-w-3xl text-lg leading-8 sm:text-xl ${textSub}`}>
                 {isAr
                   ? 'Kairo يجمع المياه والغذاء والطاقة والتنقل وجودة الهواء والتعرض الحضري والمخلفات الإلكترونية في تجربة واحدة، ثم يحول البيانات إلى تفسير واضح وإجراء يناسب كل فئة من المجتمع.'
-                  : 'Kairo brings water, food, energy, mobility, air quality, urban exposure, and e-waste into one experience—turning data into clear explanations and actions for every part of society.'}
+                  : 'Kairo brings water, food, energy, mobility, air quality, urban exposure, and e-waste into one experience. It turns data into clear explanations and actions for every part of society.'}
               </p>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
@@ -376,10 +376,13 @@ const Home: React.FC = () => {
                 {isAr ? 'منظومة بيئية واحدة' : 'One environmental ecosystem'}
               </span>
               <h2 className={`mt-6 text-4xl font-semibold tracking-[-0.045em] sm:text-6xl ${textMain}`}>
-                {isAr
-                ? 'كل خاصية لها جمهور، غرض، ونتيجة مفهومة. ابدأ بثلاث خواص أساسية — المياه والطاقة والغذاء — كنظام موارد متكامل للتنمية المستدامة، ثم توسّع بطبقة الإشارات الحية والخواص المساندة.'
-                : 'Every capability has an audience, purpose, and clear outcome. Start with three core capabilities — water, energy, and food — as one sustainable-development resource system, then extend with the live signal layer and support capabilities.'}
+                {isAr ? 'منظومة موارد، لا قوائم مزايا.' : 'A resource system, not a feature list.'}
               </h2>
+              <p className={`mt-5 max-w-2xl text-base leading-8 sm:text-lg ${textSub}`}>
+                {isAr
+                ? 'ثلاث خواص أساسية (المياه والطاقة والغذاء) تشكّل نظام الموارد الذي تستهلكه وتدفع ثمنه، وطبقة إشارات حية تحميها، ثم خواص مساندة توسّع الصورة.'
+                : 'Three core capabilities (water, energy, and food) form the resource system you consume and pay for, a live signal layer protects them, and support capabilities extend the picture.'}
+              </p>
             </div>
             <p className={`text-base leading-8 lg:pb-2 ${textSub}`}>
               {isAr

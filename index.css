@@ -283,6 +283,23 @@
 }
 
 @layer components {
+  /* Typography discipline: Arabic text must always resolve to the Arabic face,
+     Latin text to Manrope, and numeric KPIs stay tabular so digits do not
+     jitter when values update. */
+  [dir='rtl'] {
+    font-family: 'IBM Plex Sans Arabic', 'Manrope', system-ui, sans-serif;
+  }
+
+  [dir='ltr'] {
+    font-family: 'Manrope', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  }
+
+  .kairo-metric-value,
+  .kairo-score-ring-core strong,
+  .kairo-data-table td {
+    font-variant-numeric: tabular-nums;
+  }
+
   .kairo-skip-link {
     position: fixed;
     inset-block-start: 0.75rem;
@@ -1715,5 +1732,62 @@ html[dir='rtl'] .kairo-page h1 {
 @media (max-width: 1023px) {
   .kairo-site {
     padding-bottom: 5.25rem;
+  }
+}
+
+/* Readability and responsive polish shared by every KAIRO capability. */
+.kairo-page :where(p, li, label, figcaption) {
+  text-wrap: pretty;
+}
+
+.kairo-page [class*="text-[9px]"],
+.kairo-page [class*="text-[10px]"] {
+  font-size: 0.75rem !important;
+  line-height: 1.55 !important;
+}
+
+.kairo-page [class*="text-[11px]"] {
+  font-size: 0.8125rem !important;
+  line-height: 1.55 !important;
+}
+
+.kairo-page :where(button, a[href]) > svg {
+  flex: 0 0 auto;
+  stroke-width: 1.8;
+}
+
+.kairo-page :where(button, a[href], input, select, textarea):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--focus) 82%, white 8%);
+  outline-offset: 3px;
+}
+
+.kairo-page :where(input, select, textarea) {
+  min-height: 2.75rem;
+  font-size: 0.875rem !important;
+}
+
+.kairo-page .recharts-text {
+  font-size: 0.75rem;
+}
+
+@media (min-width: 1440px) {
+  .kairo-shell {
+    width: min(100% - 5rem, 1680px);
+    max-width: 1680px;
+  }
+
+  .kairo-page > :first-child {
+    padding-inline: clamp(2.5rem, 4vw, 5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kairo-page *,
+  .kairo-page *::before,
+  .kairo-page *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

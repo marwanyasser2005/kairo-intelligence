@@ -47,7 +47,7 @@ const TechnicalArchitecture: React.FC = () => {
         {/* SECTION 1: Intelligence Architecture (Diagram) */}
         <section>
             <div className="flex items-center gap-4 mb-10">
-                <span className={`text-xs font-black uppercase tracking-widest ${textDim}`}>{isAr ? '01 — خط تدفق المعرفة' : '01 — Logic Pipeline'}</span>
+                <span className={`text-xs font-black uppercase tracking-widest ${textDim}`}>{isAr ? '01 · خط تدفق المعرفة' : '01 · Logic Pipeline'}</span>
                 <div className={`h-px flex-1 ${isLight ? 'bg-slate-200' : 'bg-white/10'}`} />
             </div>
 
@@ -134,7 +134,7 @@ const TechnicalArchitecture: React.FC = () => {
         {/* SECTION 3: Deep Context (The Brain) */}
         <section>
             <div className="flex items-center gap-4 mb-10">
-                <span className={`text-xs font-black uppercase tracking-widest ${textDim}`}>{isAr ? '02 — السياق العميق' : '02 — Deep Context'}</span>
+                <span className={`text-xs font-black uppercase tracking-widest ${textDim}`}>{isAr ? '02 · السياق العميق' : '02 · Deep Context'}</span>
                 <div className={`h-px flex-1 ${isLight ? 'bg-slate-200' : 'bg-white/10'}`} />
             </div>
 

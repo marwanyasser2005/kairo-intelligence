@@ -247,6 +247,9 @@ export interface EnergyAnalysisReport {
 }
 
 export interface MobilityInputs {
+    oneWayDistanceKm?: number;
+    actualMonthlyCostEgp?: number;
+    dailyCommuteMinutes?: number;
     occupationType: string;
     weeklyCommuteDays: number;
     governorate: string;

@@ -383,6 +383,58 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                                 {['Low', 'Moderate', 'High', 'Extreme'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                             </select>
                                         </div>
+                                        <div className={`rounded-2xl border p-4 ${borderSubtle} ${isLight ? 'bg-emerald-50/60' : 'bg-emerald-500/[0.05]'}`}>
+                                            <div className="mb-4">
+                                                <p className={`text-sm font-bold ${textMain}`}>{isAr ? 'أرقام رحلتك الفعلية' : 'Your actual trip figures'}</p>
+                                                <p className={`mt-1 text-xs leading-5 ${textMuted}`}>
+                                                    {isAr ? 'إضافتها اختيارية، لكنها ترفع دقة النتيجة. لو سبتها فاضية هنستخدم متوسط النطاق اللي اخترته ونوضح ده في التقرير.' : 'Optional, but they improve accuracy. Empty fields use the selected range midpoint and the report will disclose that assumption.'}
+                                                </p>
+                                            </div>
+                                            <div className="grid gap-4 sm:grid-cols-2">
+                                                <div>
+                                                    <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>{isAr ? 'المسافة في اتجاه واحد (كم)' : 'One-way distance (km)'}</label>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max="500"
+                                                        step="0.1"
+                                                        inputMode="decimal"
+                                                        className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none ${inputBg}`}
+                                                        value={inputs.oneWayDistanceKm ?? ''}
+                                                        onChange={(event) => updateInput('oneWayDistanceKm', event.target.value === '' ? undefined : Number(event.target.value))}
+                                                        placeholder={isAr ? 'مثال: 14' : 'e.g. 14'}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>{isAr ? 'وقت الذهاب والعودة يوميًا (دقيقة)' : 'Daily round-trip time (min)'}</label>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max="600"
+                                                        step="1"
+                                                        inputMode="numeric"
+                                                        className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none ${inputBg}`}
+                                                        value={inputs.dailyCommuteMinutes ?? ''}
+                                                        onChange={(event) => updateInput('dailyCommuteMinutes', event.target.value === '' ? undefined : Number(event.target.value))}
+                                                        placeholder={isAr ? 'مثال: 75' : 'e.g. 75'}
+                                                    />
+                                                </div>
+                                                <div className="sm:col-span-2">
+                                                    <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>{isAr ? 'تكلفتك الشهرية الفعلية (جنيه)' : 'Actual monthly cost (EGP)'}</label>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max="100000"
+                                                        step="1"
+                                                        inputMode="decimal"
+                                                        className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none ${inputBg}`}
+                                                        value={inputs.actualMonthlyCostEgp ?? ''}
+                                                        onChange={(event) => updateInput('actualMonthlyCostEgp', event.target.value === '' ? undefined : Number(event.target.value))}
+                                                        placeholder={isAr ? 'مثال: 1350' : 'e.g. 1350'}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* Car Specific */}
@@ -470,7 +522,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                         {[
                                             { t: isAr ? 'كفاءة التنقل' : 'Mobility Efficiency', v: `${report.scores.mobility_efficiency}/100`, p: report.scores.mobility_efficiency, i: TargetIcon, c: 'text-emerald-500', bar: 'bg-emerald-500' },
                                             { t: isAr ? 'تكلفة التنقل الشهرية' : 'Monthly Transport Cost', v: `${report.metrics.monthly_cost_egp.toLocaleString()} ${isAr ? 'جنيه' : 'EGP'}`, i: DollarSign, c: 'text-red-500' },
-                                            { t: isAr ? 'الوقت المهدر شهريًا' : 'Monthly Time Lost', v: `${report.metrics.monthly_hours_lost} ${isAr ? 'ساعة' : 'hours'}`, i: Clock, c: 'text-amber-500' },
+                                            { t: isAr ? 'وقت التنقل شهريًا' : 'Monthly Commute Time', v: `${report.metrics.monthly_hours_lost} ${isAr ? 'ساعة' : 'hours'}`, i: Clock, c: 'text-amber-500' },
                                             { t: isAr ? 'الانبعاثات الشهرية' : 'Monthly Carbon Burden', v: `${report.metrics.monthly_carbon_kg} kg CO₂`, i: CloudRain, c: 'text-cyan-500' },
                                             { t: isAr ? 'التعرض للزحام' : 'Urban Exposure Risk', v: optionLabel(String(report.scores.urban_exposure)), i: AlertTriangle, c: 'text-orange-500' },
                                             { t: isAr ? 'مؤشر هدر المال' : 'Financial Waste Index', v: `${report.scores.financial_waste_index}/100`, p: report.scores.financial_waste_index, i: Activity, c: 'text-rose-500', bar: 'bg-rose-500' },

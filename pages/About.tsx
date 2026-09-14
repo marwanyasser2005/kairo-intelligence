@@ -244,7 +244,7 @@ const About: React.FC = () => {
                                 <p className={`mt-2 text-sm leading-7 ${textSub}`}>
                                     {isAr
                                         ? 'يدرس بكالوريوس علوم البترول والمعادن بتخصص الجيولوجيا والكيمياء، جامعًا بين فهم الأنظمة الطبيعية وبناء الحلول الرقمية.'
-                                        : 'He is pursuing a Bachelor’s degree in Petroleum and Mineral Sciences, specializing in Geology and Chemistry—connecting natural systems with digital solutions.'}
+                                        : 'He is pursuing a Bachelor’s degree in Petroleum and Mineral Sciences, specializing in Geology and Chemistry, connecting natural systems with digital solutions.'}
                                 </p>
                             </div>
                             <div className={`rounded-2xl border p-5 ${cardBorder}`}>
@@ -324,8 +324,8 @@ const About: React.FC = () => {
                 </h2>
                 <p className={`mt-5 text-lg leading-8 ${textSub}`}>
                     {isAr
-                        ? 'نُقيّم نجاح كايرو بدقة التقدير، والتوفير المُثبت، وقدرته على مساعدة المستخدم والمؤسسة—وليس بعدد الخصائص فقط.'
-                        : 'KAIRO will be judged by estimate accuracy, verified savings and its ability to help people and institutions—not by feature count alone.'}
+                        ? 'نُقيّم نجاح كايرو بدقة التقدير، والتوفير المُثبت، وقدرته على مساعدة المستخدم والمؤسسة، لا بعدد الخصائص فقط.'
+                        : 'KAIRO will be judged by estimate accuracy, verified savings, and its ability to help people and institutions, rather than feature count alone.'}
                 </p>
             </div>
             <div className="grid gap-5 md:grid-cols-3">

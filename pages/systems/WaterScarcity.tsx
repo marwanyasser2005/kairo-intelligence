@@ -240,7 +240,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                                         <input type="number" min="0" value={washingMachineWeekly} onChange={e => setWashingMachineWeekly(Number(e.target.value))} className={inputStyle} />
                                                     </div>
                                                     <div>
-                                                        <label className={labelStyle}>{language === 'ar' ? 'الاستهلاك m³ (اختياري — من الفاتورة)' : 'Consumption m³ (optional — from bill)'}</label>
+                                                        <label className={labelStyle}>{language === 'ar' ? 'الاستهلاك m³ (اختياري، من الفاتورة)' : 'Consumption m³ (optional, from bill)'}</label>
                                                         <input type="number" min="0" value={residentialM3 || ''} placeholder={language === 'ar' ? 'اتركه فارغًا للحساب من الفاتورة' : 'Leave empty to derive from the bill'} onChange={e => setResidentialM3(Number(e.target.value))} className={inputStyle} />
                                                     </div>
                                                     <div className="md:col-span-2">

@@ -47,7 +47,7 @@ const Impact: React.FC = () => {
                         <h3 className={`text-2xl font-medium leading-[1.4] ${textMain}`}>
                             {isAr 
                                 ? 'يتمحور الابتكار في كايرو حول استبدال "التخمين" بـ "القياس الاستدلالي". من خلال نماذج رياضية تربط استهلاك الطاقة والمياه والمواد بالبيانات الاقتصادية السائدة. نحن لا نصدر تقارير فقط، بل نبني أنظمة قرار.'
-                                : 'Kairo\'s innovation centers on replacing "guesswork" with "heuristic measurement." By bridging resource consumption against economic realities, we don\'t just emit reports—we build decision systems.'}
+                                : 'Kairo\'s innovation centers on replacing guesswork with heuristic measurement. By connecting resource consumption with economic realities, we build decision systems instead of merely producing reports.'}
                         </h3>
                     </div>
                 </section>

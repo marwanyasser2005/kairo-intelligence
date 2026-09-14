@@ -219,8 +219,8 @@ const SaasRoadmap: React.FC = () => {
             </h1>
             <p className={`mt-7 max-w-2xl text-lg leading-8 sm:text-xl ${textSub}`}>
               {isAr
-                ? 'الخطة الواقعية لتحويل النموذج البحثي الحالي إلى منصة اشتراكات تخدم الأفراد والشركات والحكومات—ببنية سحابية آمنة، اقتصاديات واضحة، وتحقق ميداني قبل التوسع.'
-                : 'A realistic plan to turn today’s research prototype into a subscription platform for people, companies and governments—with secure cloud foundations, clear economics and field validation before scale.'}
+                ? 'الخطة الواقعية لتحويل النموذج البحثي الحالي إلى منصة اشتراكات تخدم الأفراد والشركات والحكومات ببنية سحابية آمنة واقتصاديات واضحة وتحقق ميداني قبل التوسع.'
+                : 'A realistic plan to turn today’s research prototype into a subscription platform for people, companies, and governments, with secure cloud foundations, clear economics, and field validation before scale.'}
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <a href="#roadmap" className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-kairo-green px-7 text-sm font-extrabold text-[#052019]">

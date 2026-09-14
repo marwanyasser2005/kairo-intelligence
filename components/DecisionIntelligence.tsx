@@ -43,7 +43,7 @@ const profiles: Record<DecisionModule, ModuleDecisionProfile> = {
       url: 'https://www.worldbank.org/en/topic/water/publication/performance-of-water-utilities-in-africa',
       insight: {
         ar: 'أفضل قرارات المياه تجمع القياس والصيانة ومؤشرات الفاقد، ولا تعتمد على قيمة الفاتورة وحدها.',
-        en: 'Better water decisions combine metering, maintenance, and loss indicators—not the bill alone.',
+        en: 'Better water decisions combine metering, maintenance, and loss indicators, not the bill alone.',
       },
     },
     actions: {
@@ -100,7 +100,7 @@ const profiles: Record<DecisionModule, ModuleDecisionProfile> = {
       url: 'https://www.who.int/spain/publications/i/item/9789289058377',
       insight: {
         ar: 'تقييم التنقل الأفضل يجمع الوقت والتكلفة والكربون والمنافع الصحية بدل مؤشر واحد.',
-        en: 'Better mobility appraisal combines time, cost, carbon, and health benefits—not one metric.',
+        en: 'Better mobility appraisal combines time, cost, carbon, and health benefits, not one metric.',
       },
     },
     actions: {

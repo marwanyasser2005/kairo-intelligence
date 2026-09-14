@@ -217,8 +217,8 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
             <p className={`mt-3 border-t pt-3 text-[10px] font-bold leading-5 ${border} ${textSoft}`}>
               {isAr
-                ? '3 خواص أساسية: مياه، طاقة، غذاء — وطبقة إشارات حية تخدمها'
-                : '3 core capabilities: water, energy, food — plus a live signal layer that serves them'}
+                ? '3 خواص أساسية: مياه وطاقة وغذاء، وطبقة إشارات حية تخدمها'
+                : '3 core capabilities: water, energy, and food, plus a live signal layer that serves them'}
             </p>
           </div>
         </header>

@@ -198,7 +198,7 @@ export const translations = {
 
       valuesTitle: "Core Operating Principles",
       values: [
-        { title: "Scientific Accuracy", desc: "We rely on localized constants, peer-reviewed emission factors, and structured AI outputs—not estimates." },
+        { title: "Scientific Accuracy", desc: "We rely on localized constants, peer-reviewed emission factors, and structured AI outputs grounded in declared evidence." },
         { title: "Planet Before Profit", desc: "Long-term system resilience outweighs short-term growth metrics. We optimize for sustainability." },
         { title: "Human-Centered", desc: "Adoption is the real barrier. Complexity prevents action. We design for friction-less integration." },
         { title: "Measurable Impact", desc: "Assumptions are declared. Outputs are traceable. We avoid black-box environmental claims." }
@@ -886,7 +886,7 @@ export const translations = {
           "أكل كتير بيترمي ومبيستفادش بيه",
           "بنتخلص من الإلكترونيات بسرعة قبل وقتها"
         ],
-        closing: "المشكلة مش بس نقص وعي.. دي فجوة في الذكاء البيئي."
+        closing: "المشكلة مش بس نقص وعي، دي فجوة في الذكاء البيئي."
       },
       loop: {
         title: "دايرة الذكاء الخاصة بينا",
@@ -930,7 +930,7 @@ export const translations = {
       
       problem: {
         title: "المشكلة اللي جينا نحلها",
-        bridge: "دي مش مجرد تحديات بيئية أو مناخية.. دي نقص في الرؤية. محدش هيقدر يصلح حاجة مش قادر يقيسها ويشوف تكلفتها.",
+        bridge: "دي مش مجرد تحديات بيئية أو مناخية، دي نقص في الرؤية. ومحدش هيقدر يصلح حاجة مش قادر يقيسها ويشوف تكلفتها.",
         vectors: [
             { title: "أزمة الماية", desc: "مصر بتقرب من خط الفقر المائي، ونصيب الفرد بيقل، وفي نفس الوقت لسه في استهلاك مهدر جوه البيوت من غير ما نحس بيه." },
             { title: "حسبة الكهربا", desc: "التكييفات بقت بتسحب كهربا كتير. والشرائح بتعاقبك على تصرفات صغيرة ممكن تخليك تدفع أرقام خيالية وكمان بتزود الانبعاثات." },
@@ -966,7 +966,7 @@ export const translations = {
 
       valuesTitle: "مبادئنا الأساسية",
       values: [
-        { title: "دقة علمية", desc: "بنعتمد على أسعار وفواتير بجد، ومعايير حسابات الانبعاثات الحالية، وذكاء اصطناعي منظم—مفيش هنا شغل تقديرات تقريبية." },
+        { title: "دقة علمية", desc: "بنعتمد على أسعار وفواتير بجد، ومعايير حسابات الانبعاثات الحالية، وذكاء اصطناعي منظم، من غير تقديرات تقريبية." },
         { title: "الكوكب قبل المكسب", desc: "بنفكر دايماً إزاي نبني سيستم يستمر وينقذ البيئة، مش مجرد أرقام بنكبر بيها مؤقتاً." },
         { title: "التركيز على الإنسان", desc: "علشان السيستم ينجح لازم الناس تستخدمه، عشان كده خلينا الموضوع بسيط ومن غير تعقيدات." },
         { title: "تأثير متقاس", desc: "دايماً بنوضح إحنا حسبناها إزاي ومفيش ادعاءات بيئية وهمية." }
@@ -975,7 +975,7 @@ export const translations = {
       flow: {
         title: "من الرؤية للحل الفعلي",
         steps: ["راقب", "افهم", "خذ نصيحة", "اتأكد"],
-        desc: "نظام بيدعم قراراتك اليومية.. ده هو الذكاء اللي بيفيدك بجد."
+        desc: "نظام بيدعم قراراتك اليومية، ده هو الذكاء اللي بيفيدك بجد."
       },
 
       teamTitle: "مؤسس المشروع",

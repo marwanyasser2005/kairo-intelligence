@@ -34,6 +34,7 @@ import {
 } from "./billExtraction";
 import { computeFoodFacts, foodFactsPromptBlock } from "./foodFacts";
 import { recordAnalysisRunSafe } from "./analysisTelemetry";
+import { computeMobilityFacts } from './mobilityFacts';
 
 const KAIRO_ARABIC_STYLE = `
 Write every user-facing string in clear modern Arabic that any Arab reader can understand,
@@ -796,12 +797,16 @@ const applyElectricityFacts = (
 };
 
 export const runMobilityIntelligence = async (inputs: MobilityInputs, language: string = 'en'): Promise<MobilityIntelligenceReport> => {
+    const facts = computeMobilityFacts(inputs);
     const langPrompt = language === 'ar' ? `${KAIRO_ARABIC_STYLE} Use جنيه for savings and familiar Egyptian mobility context such as الزحام والمترو when relevant.` : "Output in English. Use EGP for cost. Assume Egyptian traffic contexts.";
     const prompt = `ROLE: Mobility Intelligence & Urban Transportation Optimization System Analyst. TASK: Generate a highly detailed mobility analysis for user with the following profile: ${JSON.stringify(inputs)}. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Return JSON.`;
-    const report = await generateFromAPI(prompt, MOBILITY_SCHEMA);
+    const report = await generateFromAPI(`${prompt}\nAuthoritative computed mobility facts: ${JSON.stringify(facts)}. Copy metrics exactly. Factors are declared planning assumptions, not live local measurements. Scores and recommendations remain estimates. Explain missing distance and midpoint assumptions. Do not claim route verification or current fuel prices.`, MOBILITY_SCHEMA);
+    report.metrics = facts.metrics;
 
     recordAnalysisRunSafe({
         module: 'mobility',
+        facts: { ...facts, metrics: facts.metrics },
+        reviewRequired: facts.reviewRequired,
         language: language === 'ar' ? 'ar' : 'en',
         inputs: {
             weekly_commute_days: Number(inputs?.weeklyCommuteDays) || undefined,
@@ -811,6 +816,9 @@ export const runMobilityIntelligence = async (inputs: MobilityInputs, language: 
             commute_time: inputs?.commuteTime,
             monthly_spending_band: inputs?.monthlySpending,
             traffic_exposure: inputs?.trafficExposure,
+            one_way_distance_km: Number(inputs?.oneWayDistanceKm) || undefined,
+            actual_monthly_cost_egp: Number(inputs?.actualMonthlyCostEgp) || undefined,
+            daily_commute_minutes: Number(inputs?.dailyCommuteMinutes) || undefined,
             is_car: inputs?.isCar,
             fuel_type: inputs?.fuelType,
             vehicle_year: inputs?.vehicleYear,
@@ -1150,7 +1158,7 @@ export const analyzeEwasteOCR = async (base64Image: string, language: string = '
 export const analyzeFoodReceiptOCR = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<FoodReceiptExtraction> => {
     const prompt = language === 'ar'
         ? 'حلّل صورة إيصال المشتريات أو البقالة بدقة. استخرج الإجمالي النهائي المطبوع (total_cost_egp) وهو آخر رقم إجمالي في الإيصال وليس مجموعًا جزئيًا، وعدد العناصر المقروءة (items_count)، وتاريخ الإيصال (receipt_date). الأرقام العربية الهندية شائعة فحوّلها إلى أرقام لاتينية. لا تخمّن قيمة غير ظاهرة. أرجع JSON فقط بدون Markdown.'
-        : 'Read this grocery receipt carefully. Extract the final printed total (total_cost_egp) — the last total on the receipt, not an intermediate subtotal — the count of readable items (items_count), and the receipt date (receipt_date). Arabic-Indic digits are common; convert them to Latin digits. Do not invent missing values. Return raw JSON only.';
+        : 'Read this grocery receipt carefully. Extract the final printed total (total_cost_egp), which is the last total on the receipt and not an intermediate subtotal, the count of readable items (items_count), and the receipt date (receipt_date). Arabic-Indic digits are common; convert them to Latin digits. Do not invent missing values. Return raw JSON only.';
     return normalizeFoodExtraction(
         await generateFromAPI(prompt, FOOD_RECEIPT_SCHEMA, undefined, base64Image, imageMimeType),
     );
