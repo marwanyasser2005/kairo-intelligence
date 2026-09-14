@@ -336,17 +336,21 @@ const Home: React.FC = () => {
             </p>
           </MotionDiv>
 
-          <div className="mt-14 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {kairoCapabilities.map((capability, index) => {
-              const Icon = capabilityIcons[capability.id];
-              const accent = capabilityAccentClasses[capability.accent];
-              return (
+          <div className="mt-14 space-y-10">
+            <div className="grid gap-4 md:grid-cols-3">
+              {kairoCapabilities.filter((capability) => capability.tier === 'core').map((capability, index) => {
+                const Icon = capabilityIcons[capability.id];
+                const accent = capabilityAccentClasses[capability.accent];
+                return (
                 <MotionDiv
                   key={capability.id}
                   {...reveal}
-                  transition={{ ...reveal.transition, delay: (index % 4) * 0.055 }}
-                  className={`kairo-feature-card group flex min-h-[390px] flex-col rounded-[1.8rem] border p-6 ${border} ${surface}`}
+                  transition={{ ...reveal.transition, delay: index * 0.055 }}
+                  className={`kairo-feature-card group relative flex min-h-[390px] flex-col overflow-hidden rounded-[1.8rem] border p-6 ring-1 ring-inset ${border} ${surface} ${
+                    isLight ? 'ring-kairo-green/10' : 'ring-white/[0.04]'
+                  }`}
                 >
+                  <span className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${accent.accentBar} to-transparent`} aria-hidden="true" />
                   <span className={`kairo-feature-accent bg-gradient-to-r ${accent.accentBar} to-transparent`} aria-hidden="true" />
                   <div className="flex items-center justify-between">
                     <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${accent.tile}`}>
@@ -407,7 +411,65 @@ const Home: React.FC = () => {
                   </Link>
                 </MotionDiv>
               );
-            })}
+              })}
+            </div>
+
+            <div className="flex items-center gap-4" aria-hidden="true">
+              <span className={`h-px flex-1 ${isLight ? 'bg-slate-900/10' : 'bg-white/10'}`} />
+              <span className={`text-[10px] font-black uppercase tracking-[.16em] ${textSoft}`}>
+                {isAr ? 'خواص مساندة' : 'Support capabilities'}
+              </span>
+              <span className={`h-px flex-1 ${isLight ? 'bg-slate-900/10' : 'bg-white/10'}`} />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {kairoCapabilities.filter((capability) => capability.tier !== 'core').map((capability, index) => {
+                const Icon = capabilityIcons[capability.id];
+                const accent = capabilityAccentClasses[capability.accent];
+                return (
+                <MotionDiv
+                  key={capability.id}
+                  {...reveal}
+                  transition={{ ...reveal.transition, delay: (index % 4) * 0.055 }}
+                  className={`kairo-feature-card group flex min-h-[300px] flex-col rounded-[1.8rem] border p-6 ${border} ${surface}`}
+                >
+                  <span className={`kairo-feature-accent bg-gradient-to-r ${accent.accentBar} to-transparent`} aria-hidden="true" />
+                  <div className="flex items-center justify-between">
+                    <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${accent.tile}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span
+                      title={localize(capability.tierReason, currentLanguage)}
+                      className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${kairoTierBadgeClasses[capability.tier]}`}
+                    >
+                      {localize(TIER_LABELS[capability.tier], currentLanguage)}
+                    </span>
+                  </div>
+
+                  <h3 className={`mt-6 text-lg font-extrabold ${textMain}`}>
+                    {localize(capability.title, currentLanguage)}
+                  </h3>
+                  <p className={`mt-3 text-sm leading-6 ${textSub}`}>
+                    {localize(capability.shortDescription, currentLanguage)}
+                  </p>
+
+                  <div className={`mt-5 rounded-2xl border p-4 ${border} ${isLight ? 'bg-slate-50/80' : 'bg-black/20'}`}>
+                    <p className={`mt-0 text-xs leading-5 ${textSub}`}>
+                      {localize(capability.purpose, currentLanguage)}
+                    </p>
+                  </div>
+
+                  <Link
+                    to={capability.path}
+                    className={`mt-auto inline-flex min-h-11 items-center gap-2 pt-6 text-xs font-black ${textMain}`}
+                  >
+                    {isAr ? 'افهم الخاصية واستخدمها' : 'Understand and use it'}
+                    <ArrowUpRight className={`h-3.5 w-3.5 text-kairo-green ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
+                  </Link>
+                </MotionDiv>
+              );
+              })}
+            </div>
           </div>
         </div>
       </section>
