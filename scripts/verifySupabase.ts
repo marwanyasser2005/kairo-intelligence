@@ -31,18 +31,44 @@ const [authResponse, restResponse] = await Promise.all([
   fetch(`${projectUrl}/rest/v1/kairo_profiles?select=user_id&limit=0`, { headers }),
 ]);
 
-if (!authResponse.ok || !restResponse.ok) {
+if (!authResponse.ok) {
   throw new Error(
-    `Supabase verification failed (auth ${authResponse.status}, rest ${restResponse.status}).`,
+    `Supabase verification failed (auth ${authResponse.status}). The project URL or the publishable key is wrong.`,
   );
 }
 
-console.log(
-  JSON.stringify({
-    ok: true,
-    project: parsed.hostname.split('.')[0],
-    auth: authResponse.status,
-    rest: restResponse.status,
-    keyExposed: false,
-  }),
-);
+// A reachable project that has not run the KAIRO migrations yet answers the
+// data-layer probe with a PostgREST schema error rather than a transport
+// failure. Report that state explicitly so a fresh project is not mistaken for
+// bad credentials, and keep the exit code nonzero: cloud persistence is off
+// until the migrations are applied.
+const restBody = await restResponse.text();
+const schemaNotMigrated = restResponse.status === 404 && restBody.includes('PGRST205');
+if (schemaNotMigrated) {
+  console.log(
+    JSON.stringify({
+      ok: false,
+      project: parsed.hostname.split('.')[0],
+      auth: authResponse.status,
+      rest: restResponse.status,
+      keyExposed: false,
+      reason: 'schema_not_migrated',
+      next: 'Run the files in supabase/migrations/ in order (SQL Editor or `supabase db push`).',
+    }),
+  );
+  process.exitCode = 2;
+} else if (!restResponse.ok) {
+  throw new Error(
+    `Supabase verification failed (auth ${authResponse.status}, rest ${restResponse.status}).`,
+  );
+} else {
+  console.log(
+    JSON.stringify({
+      ok: true,
+      project: parsed.hostname.split('.')[0],
+      auth: authResponse.status,
+      rest: restResponse.status,
+      keyExposed: false,
+    }),
+  );
+}
