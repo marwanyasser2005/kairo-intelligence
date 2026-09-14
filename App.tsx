@@ -12,6 +12,7 @@ import Navbar from './components/Navbar';
 import { KairoBrandMark } from './components/KairoBrand';
 import SeoManager from './components/SeoManager';
 import AIServiceStatus from './components/AIServiceStatus';
+import MobileTabBar from './components/MobileTabBar';
 
 // Lazy loaded pages
 const Home = lazy(() => import('./pages/Home'));
@@ -333,6 +334,7 @@ const AppLayout: React.FC = () => {
         </div>
         <AIServiceStatus />
         <KairoChat />
+        <MobileTabBar />
       </div>
     </>
   );

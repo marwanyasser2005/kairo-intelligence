@@ -377,8 +377,8 @@ const Home: React.FC = () => {
               </span>
               <h2 className={`mt-6 text-4xl font-semibold tracking-[-0.045em] sm:text-6xl ${textMain}`}>
                 {isAr
-                ? 'كل خاصية لها جمهور، غرض، ونتيجة مفهومة. ابدأ بثلاث خواص أساسية تغطي الوقاية والفاتورتين الأثقل، ثم وسّع الصورة بخواص مساندة.'
-                : 'Every capability has an audience, purpose, and clear outcome. Start with three core capabilities covering prevention and the two heaviest bills, then extend with support capabilities.'}
+                ? 'كل خاصية لها جمهور، غرض، ونتيجة مفهومة. ابدأ بثلاث خواص أساسية — المياه والطاقة والغذاء — كنظام موارد متكامل للتنمية المستدامة، ثم توسّع بطبقة الإشارات الحية والخواص المساندة.'
+                : 'Every capability has an audience, purpose, and clear outcome. Start with three core capabilities — water, energy, and food — as one sustainable-development resource system, then extend with the live signal layer and support capabilities.'}
               </h2>
             </div>
             <p className={`text-base leading-8 lg:pb-2 ${textSub}`}>

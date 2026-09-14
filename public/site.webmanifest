@@ -9,6 +9,31 @@
   "display": "standalone",
   "background_color": "#07100e",
   "theme_color": "#07100e",
+  "id": "/",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "utilities", "education"],
+  "shortcuts": [
+    {
+      "name": "ذكاء المياه",
+      "short_name": "المياه",
+      "url": "/systems/water-scarcity"
+    },
+    {
+      "name": "ذكاء الطاقة",
+      "short_name": "الطاقة",
+      "url": "/energy"
+    },
+    {
+      "name": "الأمن الغذائي",
+      "short_name": "الغذاء",
+      "url": "/systems/food-security"
+    },
+    {
+      "name": "الاستباق البيئي",
+      "short_name": "الإشارات",
+      "url": "/monitor"
+    }
+  ],
   "icons": [
     {
       "src": "/branding/kairo-favicon-2026.png",

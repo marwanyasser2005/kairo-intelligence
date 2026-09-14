@@ -127,30 +127,6 @@ export const audienceProfiles: AudienceProfile[] = [
 ];
 
 export const kairoCapabilities: KairoCapability[] = [  {
-    id: 'foresight',
-    tier: 'core',
-    tierReason: { ar: 'حي وبدون إدخال: يخدم الفئات الخمس ويقود القرار الوقائي.', en: 'Live and input-free: serves all five audiences and drives preventive action.' },
-    title: {
-      ar: 'KAIRO SIGNALS · الاستباق البيئي',
-      en: 'KAIRO SIGNALS · Environmental foresight',
-    },
-    shortDescription: {
-      ar: 'يتابع اتجاهات الهواء ومؤشرات المياه حسب الموقع، علشان تقدر تتحرك قبل ما يزيد الأثر.',
-      en: 'Tracks air trends and location-aware water-risk indicators before impacts escalate.',
-    },
-    purpose: {
-      ar: 'يديك وقتًا كافيًا لاتخاذ إجراء وقائي مبني على دليل واضح ومفهوم.',
-      en: 'Give people, teams, and authorities time for preventive action based on understandable evidence.',
-    },
-    outcome: {
-      ar: 'توقع 24 ساعة، أولوية فحص المياه، مستوى الثقة، والعوامل التي أثرت في النتيجة.',
-      en: 'A 24-hour forecast window, water inspection priority, confidence, and result drivers.',
-    },
-    audiences: ['individual', 'community', 'education', 'business', 'government'],
-    path: '/monitor',
-    accent: 'emerald',
-  },
-  {
     id: 'water',
     tier: 'core',
     tierReason: { ar: 'أعلى أثر أمني ومالي، بمحرك حساب حتمي وتوثيق واضح.', en: 'Highest security and financial impact with a deterministic engine.' },
@@ -194,8 +170,8 @@ export const kairoCapabilities: KairoCapability[] = [  {
   },
   {
     id: 'food',
-    tier: 'support',
-    tierReason: { ar: 'أثر مالي كبير لكنه يحتاج بيانات سلوكية أدق.', en: 'Large financial impact but requires more behavioral input.' },
+    tier: 'core',
+    tierReason: { ar: 'نظام الموارد الثالث بعد المياه والطاقة، بأثر مالي مباشر وأولوية وطنية.', en: 'The third resource system after water and energy, with direct financial and national impact.' },
     title: { ar: 'الأمن الغذائي وتقليل الفاقد', en: 'Food security & waste reduction' },
     shortDescription: {
       ar: 'يربط عادات الشراء والاستهلاك بالهدر والتكلفة والمياه والانبعاثات.',
@@ -211,6 +187,30 @@ export const kairoCapabilities: KairoCapability[] = [  {
     },
     audiences: ['individual', 'education', 'business', 'government'],
     path: '/systems/food-security',
+    accent: 'emerald',
+  },
+  {
+    id: 'foresight',
+    tier: 'support',
+    tierReason: { ar: 'طبقة إشارات حية تمتد فوق الخواص الأساسية وتدعم القرار الوقائي.', en: 'A live signal layer spanning the core capabilities and supporting preventive decisions.' },
+    title: {
+      ar: 'KAIRO SIGNALS · الاستباق البيئي',
+      en: 'KAIRO SIGNALS · Environmental foresight',
+    },
+    shortDescription: {
+      ar: 'يتابع اتجاهات الهواء ومؤشرات المياه حسب الموقع، علشان تقدر تتحرك قبل ما يزيد الأثر.',
+      en: 'Tracks air trends and location-aware water-risk indicators before impacts escalate.',
+    },
+    purpose: {
+      ar: 'يديك وقتًا كافيًا لاتخاذ إجراء وقائي مبني على دليل واضح ومفهوم.',
+      en: 'Give people, teams, and authorities time for preventive action based on understandable evidence.',
+    },
+    outcome: {
+      ar: 'توقع 24 ساعة، أولوية فحص المياه، مستوى الثقة، والعوامل التي أثرت في النتيجة.',
+      en: 'A 24-hour forecast window, water inspection priority, confidence, and result drivers.',
+    },
+    audiences: ['individual', 'community', 'education', 'business', 'government'],
+    path: '/monitor',
     accent: 'emerald',
   },
   {

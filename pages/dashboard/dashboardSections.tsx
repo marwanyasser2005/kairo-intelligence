@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowUpRight,
@@ -8,9 +7,9 @@ import {
   Droplet,
   Leaf,
   LocateFixed,
+  Radio,
   Route,
   ShieldCheck,
-  Sparkles,
   Target,
   Wind,
 } from 'lucide-react';
@@ -273,148 +272,331 @@ export const CostChartPanel = ({
   </section>
 );
 
-export const ForesightSection = ({
-  isAr,
-  dir,
-  currentLanguage,
-  earlyWarningData,
-  reveal,
+const SCORE_RING_COLORS: Record<string, string> = {
+  emerald: '#2bd4a7',
+  blue: '#38bdf8',
+  amber: '#f5b942',
+  violet: '#a78bfa',
+  cyan: '#22d3ee',
+};
+
+export const ScoreRing = ({
+  score,
+  accent,
+  label,
 }: {
-  isAr: boolean;
-  dir: string;
+  score?: number;
+  accent: string;
+  label: string;
+}) => {
+  if (score === undefined) return null;
+  const value = Math.max(0, Math.min(100, Math.round(score)));
+  return (
+    <div
+      className="kairo-score-ring"
+      role="img"
+      aria-label={`${label}: ${value}/100`}
+      style={
+        {
+          '--kairo-score': value,
+          '--decision-accent': SCORE_RING_COLORS[accent] ?? SCORE_RING_COLORS.emerald,
+        } as React.CSSProperties
+      }
+    >
+      <span className="kairo-score-ring-core">
+        <strong>{value}</strong>
+        <span>/100</span>
+      </span>
+    </div>
+  );
+};
+
+/**
+ * The core tier: water, energy, and food. These three own the resource systems a
+ * user consumes and pays for, so they get the largest, most decision-oriented
+ * presentation on the dashboard.
+ */
+export const CoreResourcesSection = ({
+  theme,
+  currentLanguage,
+  capabilities,
+  capabilityStates,
+  onNavigate,
+}: {
+  theme: DashboardTheme;
   currentLanguage: 'ar' | 'en';
-  earlyWarningData: EarlyWarningSnapshot | null;
-  reveal: DashboardReveal;
-}) => (
-  <MotionDiv
-    {...reveal}
-    className="relative mt-6 overflow-hidden rounded-[2rem] border border-emerald-400/20 bg-[radial-gradient(circle_at_top_right,rgba(43,212,167,0.18),transparent_40%),linear-gradient(135deg,#09231c,#07110f)] p-6 text-white shadow-[0_28px_80px_rgba(0,0,0,.2)] sm:p-8 lg:p-10"
-  >
-    <div className="pointer-events-none absolute -end-20 -top-28 h-80 w-80 rounded-full border border-emerald-400/15" />
-    <div className="relative grid gap-9 xl:grid-cols-[1.05fr_.95fr]">
-      <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-2 rounded-full bg-emerald-400/10 px-3 py-2 text-[10px] font-black uppercase tracking-[.15em] text-emerald-300">
-            <Sparkles className="h-3.5 w-3.5" />
-            {isAr ? 'خاصية مدمجة في المتابعة' : 'Integrated dashboard capability'}
-          </span>
-          <span className="rounded-full border border-white/10 px-3 py-2 text-[10px] font-bold text-slate-300">
-            {isAr ? 'بيانات حية + مؤشرات مفسّرة' : 'Live data + explainable indicators'}
-          </span>
-        </div>
-        <h2 className="mt-6 text-3xl font-black tracking-[-0.035em] sm:text-5xl">
-          {isAr ? 'الاستباق البيئي' : 'Environmental foresight'}
-        </h2>
-        <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-          {isAr
-            ? 'خاصية متعددة الأهداف تتابع تدهور جودة الهواء المتوقع، وترتب أولوية فحص مؤشرات شبكة المياه، وتربط النتيجة بالموقع ومستوى الثقة قبل اتخاذ الإجراء.'
-            : 'A multi-purpose capability that anticipates air-quality deterioration, prioritizes water-network screening, and connects results to location and confidence before action.'}
-        </p>
+  capabilities: KairoCapability[];
+  capabilityStates: Record<string, CapabilityState>;
+  onNavigate: (path: string) => void;
+}) => {
+  const { isAr, isLight, border, surface, textMain, textSub, textSoft } = theme;
+  if (capabilities.length === 0) return null;
 
-        <div className="mt-7 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4">
-            <p className="text-[10px] font-black uppercase tracking-[.14em] text-emerald-300">
-              {isAr ? 'الغرض' : 'Purpose'}
-            </p>
-            <p className="mt-2 text-sm leading-6 text-white">
-              {isAr
-                ? 'منح وقت مبكر للوقاية، الفحص الميداني، حماية الفئات الحساسة، وتوجيه الموارد.'
-                : 'Create time for prevention, field screening, protection of sensitive groups, and resource allocation.'}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4">
-            <p className="text-[10px] font-black uppercase tracking-[.14em] text-emerald-300">
-              {isAr ? 'ما الذي ستراه؟' : 'What you will see'}
-            </p>
-            <p className="mt-2 text-sm leading-6 text-white">
-              {isAr
-                ? 'توقع هواء 24 ساعة، مؤشر مياه، دقة الموقع، حداثة البيانات، والعوامل المؤثرة.'
-                : 'A 24-hour air forecast, water index, location accuracy, data freshness, and result drivers.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <p className="mb-3 text-[10px] font-black uppercase tracking-[.14em] text-slate-400">
-            {isAr ? 'الفئات المستهدفة' : 'Target audiences'}
+  return (
+    <section className="mt-8">
+      <div className={`mb-4 flex flex-wrap items-end justify-between gap-3 border-b pb-4 ${border}`}>
+        <div>
+          <span className="kairo-eyebrow">
+            <Target className="h-3.5 w-3.5" />
+            {isAr ? 'نظام الموارد المتكامل' : 'Integrated resource system'}
+          </span>
+          <h2 className={`mt-3 text-2xl font-black sm:text-3xl ${textMain}`}>
+            {isAr ? 'الخواص الأساسية: المياه والطاقة والغذاء' : 'Core capabilities: water, energy, food'}
+          </h2>
+          <p className={`mt-2 max-w-3xl text-xs leading-6 sm:text-sm ${textSub}`}>
+            {isAr
+              ? 'ثلاثة أنظمة موارد تستهلكها وتدفع ثمنها مباشرة، ولكل واحد قرار واضح ونتيجة قابلة للقياس. ابدأ من هنا.'
+              : 'Three resource systems you consume and pay for directly, each with a clear decision and a measurable result. Start here.'}
           </p>
-          <div className="flex flex-wrap gap-2">
-            {audienceProfiles.map((profile) => (
-              <span
-                key={profile.id}
-                className="rounded-full border border-white/10 bg-black/15 px-3 py-1.5 text-[10px] font-bold text-slate-200"
-              >
-                {localize(profile.shortLabel, currentLanguage)}
-              </span>
-            ))}
-          </div>
         </div>
-
-        <Link
-          to="/monitor"
-          className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-kairo-green px-6 text-sm font-extrabold text-[#052019]"
-        >
-          {isAr ? 'افتح التحليل التفصيلي' : 'Open detailed analysis'}
-          <ArrowUpRight className={`h-4 w-4 ${dir === 'rtl' ? '-scale-x-100' : ''}`} />
-        </Link>
+        <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black ${border} ${textSub}`}>
+          {isAr ? '3 خواص أساسية' : '3 core capabilities'}
+        </span>
       </div>
 
-      <div className="grid content-start gap-3 sm:grid-cols-2">
-        {[
-          {
-            Icon: Wind,
-            label: isAr ? 'توقع الهواء' : 'Air outlook',
-            value: earlyWarningData?.air?.peakAqi
-              ? `${Math.round(earlyWarningData.air.peakAqi)} AQI`
-              : isAr
-                ? 'يحتاج تحديثًا'
-                : 'Needs refresh',
-            detail: isAr ? 'أعلى قيمة متوقعة خلال 24 ساعة' : 'Expected 24-hour peak',
-          },
-          {
-            Icon: Droplet,
-            label: isAr ? 'مؤشر المياه' : 'Water indicator',
-            value:
-              earlyWarningData?.water?.score !== undefined
-                ? `${Math.round(earlyWarningData.water.score)}/100`
-                : isAr
-                  ? 'يحتاج مدخلات'
-                  : 'Needs input',
-            detail: isAr ? 'ترتيب أولوية الفحص' : 'Inspection-priority index',
-          },
-          {
-            Icon: LocateFixed,
-            label: isAr ? 'سياق الموقع' : 'Location context',
-            value: earlyWarningData?.coordinates
-              ? isAr
-                ? 'متاح'
-                : 'Available'
-              : isAr
-                ? 'اختياري'
-                : 'Optional',
-            detail: isAr ? 'يعمل بإذن المستخدم' : 'Runs with user consent',
-          },
-          {
-            Icon: ShieldCheck,
-            label: isAr ? 'اكتمال الأدلة' : 'Evidence confidence',
-            value:
-              earlyWarningData?.water?.confidence !== undefined
-                ? `${Math.round(earlyWarningData.water.confidence)}%`
-                : '—',
-            detail: isAr ? 'يعرض حدود النتيجة بوضوح' : 'Makes result limits visible',
-          },
-        ].map(({ Icon, label, value, detail }) => (
-          <div key={label} className="rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
-            <Icon className="h-5 w-5 text-emerald-300" />
-            <p className="mt-5 text-xs font-bold text-slate-400">{label}</p>
-            <p className="mt-2 text-xl font-black text-white">{value}</p>
-            <p className="mt-2 text-[11px] leading-5 text-slate-500">{detail}</p>
+      <div className="kairo-metric-grid grid gap-4 lg:grid-cols-3">
+        {capabilities.map((capability) => {
+          const state = capabilityStates[capability.id];
+          const Icon = capabilityIcons[capability.id];
+          const accent = accentClasses[capability.accent];
+          return (
+            <article
+              key={capability.id}
+              className={`kairo-analysis-panel group flex flex-col rounded-[2rem] border p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(0,0,0,.16)] ${border} ${surface}`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${accent.soft} ${accent.icon}`}>
+                  <Icon className="h-6 w-6" />
+                </div>
+                <span
+                  title={localize(capability.tierReason, currentLanguage)}
+                  className="rounded-full bg-kairo-green/15 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-kairo-green"
+                >
+                  {localize(TIER_LABELS[capability.tier], currentLanguage)}
+                </span>
+              </div>
+
+              <h3 className={`mt-5 text-xl font-black ${textMain}`}>
+                {localize(capability.title, currentLanguage)}
+              </h3>
+              <p className={`mt-2 text-sm leading-6 ${textSub}`}>
+                {localize(capability.purpose, currentLanguage)}
+              </p>
+
+              <div className="mt-6 flex items-center gap-5">
+                <ScoreRing score={state.score} accent={capability.accent} label={localize(capability.title, currentLanguage)} />
+                <div className="min-w-0">
+                  <p className={`text-[10px] font-bold uppercase tracking-wider ${textSoft}`}>{state.label}</p>
+                  <p className={`mt-1 text-2xl font-black ${textMain}`}>{state.value}</p>
+                  <p className={`mt-2 text-[11px] leading-5 ${textSoft}`}>{state.evidence}</p>
+                </div>
+              </div>
+
+              <div className={`mt-6 rounded-2xl border p-4 ${border} ${isLight ? 'bg-slate-50/70' : 'bg-black/20'}`}>
+                <p className={`text-[9px] font-black uppercase tracking-wider ${textSoft}`}>
+                  {isAr ? 'النتيجة التي ستحصل عليها' : 'What you will get'}
+                </p>
+                <p className={`mt-1.5 text-[11px] leading-5 ${textSub}`}>
+                  {localize(capability.outcome, currentLanguage)}
+                </p>
+              </div>
+
+              <div className="mt-auto flex flex-wrap items-center gap-2 pt-6">
+                <button
+                  type="button"
+                  onClick={() => onNavigate(capability.path)}
+                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-kairo-green px-5 text-xs font-black text-[#052019] transition hover:bg-[#42e4ba]"
+                >
+                  {state.ready
+                    ? isAr ? 'راجع النتيجة' : 'Review result'
+                    : isAr ? 'ابدأ التحليل' : 'Start analysis'}
+                  <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
+                </button>
+                <span className={`rounded-full border px-2.5 py-1 text-[9px] font-black ${border} ${
+                  state.ready ? 'text-emerald-500' : textSoft
+                }`}>
+                  {state.ready ? (isAr ? 'جاهزة' : 'Ready') : (isAr ? 'لم تبدأ' : 'Not started')}
+                </span>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+};
+
+/**
+ * The signal layer sits directly after the core three: it owns no resource, but
+ * it is the live prevention layer that supports all of them.
+ */
+export const SignalsBand = ({
+  theme,
+  isAr,
+  earlyWarningData,
+  state,
+  onNavigate,
+}: {
+  theme: DashboardTheme;
+  isAr: boolean;
+  earlyWarningData: EarlyWarningSnapshot | null;
+  state: CapabilityState;
+  onNavigate: (path: string) => void;
+}) => {
+  const { border, textMain, textSub, textSoft, isLight } = theme;
+
+  const stats = [
+    {
+      Icon: Wind,
+      label: isAr ? 'ذروة الهواء المتوقعة' : 'Expected air peak',
+      value: earlyWarningData?.air?.peakAqi ? `${Math.round(earlyWarningData.air.peakAqi)} AQI` : '—',
+      detail: isAr ? 'نافذة 24 ساعة' : '24-hour window',
+    },
+    {
+      Icon: Droplet,
+      label: isAr ? 'أولوية فحص المياه' : 'Water inspection priority',
+      value: earlyWarningData?.water?.score !== undefined ? `${Math.round(earlyWarningData.water.score)}/100` : '—',
+      detail: isAr ? 'مؤشر وليس احتمالًا مؤكدًا' : 'An index, not a confirmed probability',
+    },
+    {
+      Icon: LocateFixed,
+      label: isAr ? 'سياق الموقع' : 'Location context',
+      value: earlyWarningData?.coordinates ? (isAr ? 'متاح' : 'Available') : (isAr ? 'اختياري' : 'Optional'),
+      detail: isAr ? 'يعمل بإذن المستخدم' : 'Runs with user consent',
+    },
+    {
+      Icon: ShieldCheck,
+      label: isAr ? 'اكتمال الأدلة' : 'Evidence confidence',
+      value: earlyWarningData?.water?.confidence !== undefined ? `${Math.round(earlyWarningData.water.confidence)}%` : '—',
+      detail: isAr ? 'يعرض حدود النتيجة' : 'Makes limits visible',
+    },
+  ];
+
+  return (
+    <section
+      className={`mt-6 overflow-hidden rounded-[2rem] border p-6 sm:p-7 ${
+        isLight
+          ? 'border-emerald-500/20 bg-[linear-gradient(135deg,rgba(43,212,167,0.10),rgba(255,255,255,0.6))]'
+          : 'border-emerald-400/20 bg-[linear-gradient(135deg,rgba(43,212,167,0.10),rgba(7,17,15,0.9))]'
+      }`}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="max-w-3xl">
+          <span className="kairo-eyebrow">
+            <Radio className="h-3.5 w-3.5" />
+            {isAr ? 'طبقة الإشارات الحية · مساندة' : 'Live signal layer · support'}
+          </span>
+          <h2 className={`mt-3 text-xl font-black sm:text-2xl ${textMain}`}>
+            {isAr ? 'إشارات تسبق الأثر وتخدم الأنظمة الثلاثة' : 'Signals that precede impact and serve all three systems'}
+          </h2>
+          <p className={`mt-2 text-xs leading-6 sm:text-sm ${textSub}`}>
+            {isAr
+              ? 'لا تدير موردًا بمفردها، لكنها تمنح وقتًا للوقاية: توقع هواء، أولوية فحص شبكة المياه، ومستوى ثقة معلن قبل اتخاذ القرار.'
+              : 'It does not own a resource on its own, but it buys prevention time: an air outlook, water-network inspection priority, and stated confidence before you decide.'}
+          </p>
+          <p className={`mt-2 text-[11px] font-bold ${textSoft}`}>
+            {state.label}: {state.value}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onNavigate('/monitor')}
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-kairo-green px-5 text-xs font-black text-[#052019] transition hover:bg-[#42e4ba]"
+        >
+          {isAr ? 'افتح الاستباق البيئي' : 'Open environmental foresight'}
+          <ArrowUpRight className="h-4 w-4 rtl:-scale-x-100" />
+        </button>
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {stats.map(({ Icon, label, value, detail }) => (
+          <div key={label} className={`rounded-2xl border p-4 ${border} ${isLight ? 'bg-white/70' : 'bg-black/20'}`}>
+            <Icon className="h-4 w-4 text-emerald-500" />
+            <p className={`mt-3 text-[10px] font-bold ${textSoft}`}>{label}</p>
+            <p className={`mt-1 text-lg font-black ${textMain}`}>{value}</p>
+            <p className={`mt-1 text-[10px] leading-5 ${textSoft}`}>{detail}</p>
           </div>
         ))}
       </div>
-    </div>
-  </MotionDiv>
-);
+    </section>
+  );
+};
+
+/** Comparison and proof tools layered on top of the results. */
+export const ToolsSection = ({
+  theme,
+  isAr,
+  currentLanguage,
+  capabilities,
+  onNavigate,
+}: {
+  theme: DashboardTheme;
+  isAr: boolean;
+  currentLanguage: 'ar' | 'en';
+  capabilities: KairoCapability[];
+  onNavigate: (path: string) => void;
+}) => {
+  const { border, surface, textMain, textSub, textSoft } = theme;
+  return (
+    <section className="mt-8 grid gap-4 md:grid-cols-2">
+      {capabilities.map((capability) => {
+        const Icon = capabilityIcons[capability.id];
+        return (
+          <article key={capability.id} className={`kairo-analysis-panel rounded-[1.8rem] border p-6 ${border} ${surface}`}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-400">
+                <Icon className="h-5 w-5" />
+              </div>
+              <span className="rounded-full bg-violet-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-violet-400">
+                {localize(TIER_LABELS[capability.tier], currentLanguage)}
+              </span>
+            </div>
+            <h3 className={`mt-4 text-lg font-black ${textMain}`}>{localize(capability.title, currentLanguage)}</h3>
+            <p className={`mt-2 text-xs leading-6 ${textSub}`}>{localize(capability.purpose, currentLanguage)}</p>
+            <button
+              type="button"
+              onClick={() => onNavigate(capability.path)}
+              className={`mt-5 inline-flex min-h-10 items-center gap-2 rounded-full border px-4 text-[11px] font-black ${border} ${textMain}`}
+            >
+              {isAr ? 'افتح الأداة' : 'Open tool'}
+              <ArrowUpRight className="h-3.5 w-3.5 rtl:-scale-x-100" />
+            </button>
+          </article>
+        );
+      })}
+
+      <article className={`kairo-analysis-panel rounded-[1.8rem] border p-6 ${border} ${surface}`}>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-emerald-500">
+            {isAr ? 'إثبات الأثر' : 'Proof of impact'}
+          </span>
+        </div>
+        <h3 className={`mt-4 text-lg font-black ${textMain}`}>
+          {isAr ? 'أثبت النتيجة قبل/بعد' : 'Prove the before/after result'}
+        </h3>
+        <p className={`mt-2 text-xs leading-6 ${textSub}`}>
+          {isAr
+            ? 'سجّل خط الأساس ثم القياس اللاحق، ودع KAIRO يفصل بين القياس والتقدير وحدود الاستدلال.'
+            : 'Record a baseline and a follow-up measurement, and let KAIRO separate measurement, estimation, and inference limits.'}
+        </p>
+        <button
+          type="button"
+          onClick={() => onNavigate('/proof')}
+          className={`mt-5 inline-flex min-h-10 items-center gap-2 rounded-full border px-4 text-[11px] font-black ${border} ${textMain}`}
+        >
+          {isAr ? 'افتح إثبات الأثر' : 'Open proof of impact'}
+          <ArrowUpRight className="h-3.5 w-3.5 rtl:-scale-x-100" />
+        </button>
+        <p className={`mt-4 text-[10px] ${textSoft}`}>
+          {isAr ? 'يفتح لك مقارنة صريحة بين القياس والتقدير.' : 'An explicit comparison between measurement and estimation.'}
+        </p>
+      </article>
+    </section>
+  );
+};
 
 export const AudienceLedgerSection = ({
   theme,

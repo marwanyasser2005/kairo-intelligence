@@ -202,6 +202,25 @@ tests/                Automated quality and security coverage
 utils/                Export, file validation, storage, and calculations
 ~~~
 
+## Capability tiers
+
+The seven result capabilities are split into **three core** and **four support** capabilities, plus the scenario lab as a decision tool. The split is a documented, test-enforced model in `config/capabilityPriority.ts`, not a preference: it scores every capability on financial impact, audience reach, operational readiness, verifiability, national urgency, decision frequency, and resource-system ownership.
+
+| Tier | Capabilities | Why |
+| --- | --- | --- |
+| **Core** | Water, Energy, Food | The water–energy–food resource system: domains a user consumes and pays for directly, each with a deterministic engine and a measurable outcome |
+| **Support** | KAIRO SIGNALS (live early warning), Mobility, Urban exposure, ReKairo circularity | The live prevention layer plus the capabilities that extend the picture to a daily pattern |
+| **Tool** | Scenario lab, Proof of impact | Comparison and verification layered on top of results |
+
+## Mobile app readiness
+
+The web app is built so it can be wrapped as an Android or iOS application without rewriting screens:
+
+- **Installable PWA**: `public/site.webmanifest` declares `display: standalone`, app shortcuts to the core three and the signal layer, theme colors, and a maskable icon; `index.html` sets `viewport-fit=cover` and the iOS `apple-mobile-web-app-*` meta tags.
+- **App-style navigation**: `components/MobileTabBar.tsx` renders a bottom tab bar on phones with the same information architecture as the dashboard (water, energy, food, signals), and the shell reserves space for it including `env(safe-area-inset-bottom)` on notched devices.
+- **No browser-only assumptions**: every AI call goes through the same-origin `/api/ai/generate` gateway, so a native shell only needs to point at the deployed origin; there are no provider keys or CORS dependencies in the client.
+- **Capacitor path**: `npx cap add android` / `npx cap add ios` against this repository, then point the WebView at the deployed origin (or `dist/`), and reuse the existing manifest icons for the launcher.
+
 ## Deployment
 
 The production application is deployed on Vercel. Configure secrets only through encrypted project environment variables, run the full quality gates, then deploy the production build. The official experience is available at [www.kairo-ai.tech](https://www.kairo-ai.tech/).

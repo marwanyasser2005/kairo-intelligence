@@ -1704,3 +1704,16 @@ html[dir='rtl'] .kairo-page h1 {
     display: none !important;
   }
 }
+
+@layer components {
+  .kairo-app-tabbar {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* Keep page content clear of the phone tab bar. */
+@media (max-width: 1023px) {
+  .kairo-site {
+    padding-bottom: 5.25rem;
+  }
+}

@@ -19,8 +19,8 @@ import {
   type CapabilityId,
 } from '../config/kairoCapabilities.js';
 
-const EXPECTED_CORE: CapabilityId[] = ['foresight', 'water', 'energy'];
-const EXPECTED_SUPPORT: CapabilityId[] = ['food', 'mobility', 'exposure', 'ewaste'];
+const EXPECTED_CORE: CapabilityId[] = ['water', 'energy', 'food'];
+const EXPECTED_SUPPORT: CapabilityId[] = ['foresight', 'mobility', 'exposure', 'ewaste'];
 
 test('the product split is exactly three core and four support capabilities', () => {
   assert.deepEqual(
@@ -56,13 +56,11 @@ test('the weighted priority model selects exactly the declared core tier', () =>
     .filter((capability) => capability.tier !== 'tool')
     .map((capability) => capability.id);
 
-  // The model ranks by score (water, energy, foresight) while the UI lists the
-  // core tier in config order (foresight first as the live entry point), so the
-  // assertion compares membership rather than position.
-  assert.deepEqual(
-    [...topRankedCapabilities(resultIds, 3)].sort(),
-    [...EXPECTED_CORE].sort(),
-  );
+  // The model ranks resource owners first, which matches the declared core
+  // tier in order: water, energy, then food.
+  assert.deepEqual(topRankedCapabilities(resultIds, 3), EXPECTED_CORE);
+  const ranking = rankedCapabilities(resultIds);
+  assert.equal(ranking[3].id, 'foresight', 'the live signal layer leads the support tier');
 
   // The split must stay defensible: every core score beats every support score.
   const coreScores = coreCapabilities.map((capability) => capabilityPriorityScore(capability.id));
@@ -114,10 +112,43 @@ test('each tier carries a localized label and a stated reason in both languages'
 test('the dashboard and home surfaces label the core group explicitly', async () => {
   const sections = await readFile(new URL('../pages/dashboard/dashboardSections.tsx', import.meta.url), 'utf8');
   const home = await readFile(new URL('../pages/Home.tsx', import.meta.url), 'utf8');
+  const dashboard = await readFile(new URL('../pages/Dashboard.tsx', import.meta.url), 'utf8');
 
-  assert.match(sections, /الخواص الأساسية/);
+  assert.match(sections, /CoreResourcesSection/);
+  assert.match(sections, /SignalsBand/);
+  assert.match(sections, /ToolsSection/);
+  assert.match(sections, /الخواص الأساسية: المياه والطاقة والغذاء/);
   assert.match(sections, /خواص مساندة/);
-  assert.match(sections, /TIER_LABELS/);
+  assert.match(dashboard, /coreCapabilities/);
+  assert.match(dashboard, /supportCapabilities/);
   assert.match(home, /TIER_LABELS/);
   assert.match(home, /ثلاث خواص أساسية/);
+});
+
+test('the phone app shell ships the same core information architecture', async () => {
+  const tabBar = await readFile(new URL('../components/MobileTabBar.tsx', import.meta.url), 'utf8');
+  const app = await readFile(new URL('../App.tsx', import.meta.url), 'utf8');
+  const manifest = JSON.parse(
+    await readFile(new URL('../public/site.webmanifest', import.meta.url), 'utf8'),
+  ) as { display: string; shortcuts?: Array<{ url: string }> };
+
+  assert.match(app, /MobileTabBar/);
+  for (const path of ['/dashboard', '/systems/water-scarcity', '/energy', '/systems/food-security', '/monitor']) {
+    assert.ok(tabBar.includes(path), `tab bar is missing ${path}`);
+  }
+  assert.equal(manifest.display, 'standalone');
+  const shortcutUrls = (manifest.shortcuts ?? []).map((shortcut) => shortcut.url);
+  for (const path of ['/systems/water-scarcity', '/energy', '/systems/food-security', '/monitor']) {
+    assert.ok(shortcutUrls.includes(path), `manifest shortcut is missing ${path}`);
+  }
+});
+
+test('the app shell respects phone safe areas', async () => {
+  const css = await readFile(new URL('../index.css', import.meta.url), 'utf8');
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+
+  assert.match(css, /\.kairo-app-tabbar/);
+  assert.match(css, /env\(safe-area-inset-bottom/);
+  assert.match(html, /viewport-fit=cover/);
+  assert.match(html, /apple-mobile-web-app-title/);
 });

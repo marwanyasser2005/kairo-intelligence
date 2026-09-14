@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Chip } from '@heroui/react';
 import { useReducedMotion } from 'framer-motion';
-import { CircleGauge, Droplet, Leaf, Wind } from 'lucide-react';
+import { CircleGauge, Droplet, Layers, Leaf, Wind } from 'lucide-react';
 import type {
   CarbonAnalysisReport,
   EnergyAnalysisReport,
@@ -37,11 +37,13 @@ import {
 import {
   AudienceLedgerSection,
   CapabilityCardsSection,
+  CoreResourcesSection,
   CostChartPanel,
-  ForesightSection,
   MotionDiv,
   PathSection,
   ScoreChartPanel,
+  SignalsBand,
+  ToolsSection,
 } from './dashboard/dashboardSections';
 
 interface DashboardProps {
@@ -125,6 +127,9 @@ const Dashboard: React.FC<DashboardProps> = ({
   const filteredCapabilities = kairoCapabilities.filter((capability) =>
     capability.audiences.includes(audience),
   );
+  const coreCapabilities = filteredCapabilities.filter((capability) => capability.tier === 'core');
+  const supportCapabilities = filteredCapabilities.filter((capability) => capability.tier === 'support');
+  const toolCapabilities = filteredCapabilities.filter((capability) => capability.tier === 'tool');
   const selectedAudience = getAudienceProfile(audience) ?? audienceProfiles[0];
   const scoreChartData = useMemo(
     () => buildScoreChartData(capabilityStates, isAr),
@@ -212,8 +217,8 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
             <p className={`mt-3 border-t pt-3 text-[10px] font-bold leading-5 ${border} ${textSoft}`}>
               {isAr
-                ? '3 خواص أساسية (وقاية حية، مياه، طاقة) + 4 خواص مساندة'
-                : '3 core capabilities (live foresight, water, energy) + 4 support'}
+                ? '3 خواص أساسية: مياه، طاقة، غذاء — وطبقة إشارات حية تخدمها'
+                : '3 core capabilities: water, energy, food — plus a live signal layer that serves them'}
             </p>
           </div>
         </header>
@@ -273,6 +278,22 @@ const Dashboard: React.FC<DashboardProps> = ({
           ))}
         </section>
 
+        <CoreResourcesSection
+          theme={themeTokens}
+          currentLanguage={currentLanguage}
+          capabilities={coreCapabilities}
+          capabilityStates={capabilityStates}
+          onNavigate={(path) => navigate(path)}
+        />
+
+        <SignalsBand
+          theme={themeTokens}
+          isAr={isAr}
+          earlyWarningData={earlyWarningData}
+          state={capabilityStates.foresight}
+          onNavigate={(path) => navigate(path)}
+        />
+
         <MotionDiv
           {...reveal}
           className="mt-6 grid gap-5 xl:grid-cols-[1.08fr_.92fr]"
@@ -305,30 +326,50 @@ const Dashboard: React.FC<DashboardProps> = ({
           isLight={isLight}
         />
 
-        <ForesightSection
-          isAr={isAr}
-          dir={dir}
-          currentLanguage={currentLanguage}
-          earlyWarningData={earlyWarningData}
-          reveal={reveal}
-        />
-
         <section className="mt-10">
+          <div className={`mb-4 flex flex-wrap items-end justify-between gap-3 border-b pb-4 ${border}`}>
+            <div>
+              <span className="kairo-eyebrow">
+                <Layers className="h-3.5 w-3.5" />
+                {isAr ? 'خواص مساندة' : 'Support capabilities'}
+              </span>
+              <h2 className={`mt-3 text-2xl font-black sm:text-3xl ${textMain}`}>
+                {isAr ? 'وسّع الصورة حسب نمط حياتك' : 'Extend the picture to your daily pattern'}
+              </h2>
+              <p className={`mt-2 max-w-3xl text-xs leading-6 sm:text-sm ${textSub}`}>
+                {isAr
+                  ? 'أربع خواص مساندة تكمل نظام الموارد: إشارات حية، تنقل، تعرض حضري، واقتصاد دائري.'
+                  : 'Four support capabilities complete the resource system: live signals, mobility, urban exposure, and circularity.'}
+              </p>
+            </div>
+            <span className={`rounded-full border px-3 py-1.5 text-[10px] font-black ${border} ${textSub}`}>
+              {isAr ? '4 خواص مساندة' : '4 support capabilities'}
+            </span>
+          </div>
+
+          <CapabilityCardsSection
+            theme={themeTokens}
+            currentLanguage={currentLanguage}
+            reveal={reveal}
+            filteredCapabilities={supportCapabilities}
+            capabilityStates={capabilityStates}
+            onNavigate={(path) => navigate(path)}
+          />
+
+          <ToolsSection
+            theme={themeTokens}
+            isAr={isAr}
+            currentLanguage={currentLanguage}
+            capabilities={toolCapabilities}
+            onNavigate={(path) => navigate(path)}
+          />
+
           <AudienceLedgerSection
             theme={themeTokens}
             currentLanguage={currentLanguage}
             audience={audience}
             onAudienceChange={setAudience}
             selectedAudience={selectedAudience}
-            filteredCapabilities={filteredCapabilities}
-            capabilityStates={capabilityStates}
-            onNavigate={(path) => navigate(path)}
-          />
-
-          <CapabilityCardsSection
-            theme={themeTokens}
-            currentLanguage={currentLanguage}
-            reveal={reveal}
             filteredCapabilities={filteredCapabilities}
             capabilityStates={capabilityStates}
             onNavigate={(path) => navigate(path)}
