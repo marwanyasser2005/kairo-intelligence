@@ -18,6 +18,7 @@ import EvidenceAndImpact, {
   type EvidencePassportItem,
 } from '../components/EvidenceAndImpact';
 import { usePersistentState } from '../utils/storage';
+import { formatOptionalValue } from '../utils/displayLabels';
 import {
   audienceProfiles,
   getAudienceProfile,
@@ -234,9 +235,11 @@ const Dashboard: React.FC<DashboardProps> = ({
             {
               Icon: Wind,
               label: isAr ? 'ذروة الهواء المتوقعة' : 'Expected air peak',
-              value: earlyWarningData?.air?.peakAqi
-                ? `${Math.round(earlyWarningData.air.peakAqi)} AQI`
-                : '—',
+              value: formatOptionalValue(
+                earlyWarningData?.air?.peakAqi,
+                (peakAqi) => `${Math.round(peakAqi)} AQI`,
+                isAr ? 'ar' : 'en',
+              ),
               detail: earlyWarningData?.air
                 ? isAr
                   ? 'ضمن نافذة 24 ساعة'
@@ -253,13 +256,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                   ? `${Math.round(earlyWarningData.water.score)}/100`
                   : water
                     ? `${Math.round(water.metrics?.leak_probability_score || 0)}/100`
-                    : '—',
+                    : formatOptionalValue(null, () => '', isAr ? 'ar' : 'en'),
               detail: isAr ? 'مؤشر أولوية وليس احتمالًا مؤكدًا' : 'Priority index, not confirmed probability',
             },
             {
               Icon: Leaf,
               label: isAr ? 'الأثر الكربوني المجمع' : 'Combined carbon context',
-              value: totalCarbon > 0 ? `${totalCarbon.toFixed(1)} kg` : '—',
+              value: totalCarbon > 0 ? `${totalCarbon.toFixed(1)} kg` : formatOptionalValue(null, () => '', isAr ? 'ar' : 'en'),
               detail: isAr ? 'من نتائج الجلسة المحفوظة' : 'From saved session results',
             },
           ].map(({ Icon, label, value, detail }) => (

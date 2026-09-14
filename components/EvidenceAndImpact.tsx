@@ -15,7 +15,13 @@ import {
   Sparkles,
   ArrowUpRight,
 } from 'lucide-react';
-import { usePersistentState } from '../utils/storage';
+import { formatOptionalValue } from '../utils/displayLabels';
+import { usePersistentState} from '../utils/storage';
+
+// Snapshot ids are generated only from the click handler; keeping the
+// generator at module scope makes that explicit to the compiler rules.
+const buildSnapshotId = (): string =>
+  globalThis.crypto?.randomUUID?.() ?? `${Date.now()}`;
 
 export type EvidenceKind =
   | 'live'
@@ -121,7 +127,7 @@ const EvidenceAndImpact: React.FC<EvidenceAndImpactProps> = ({
     if (readyItems.length === 0) return;
 
     const snapshot: ImpactSnapshot = {
-      id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}`,
+      id: buildSnapshotId(),
       capturedAt: new Date().toISOString(),
       type: history.length === 0 ? 'baseline' : 'follow-up',
       completed: readyItems.length,
@@ -276,14 +282,15 @@ const EvidenceAndImpact: React.FC<EvidenceAndImpactProps> = ({
                 },
                 {
                   label: isArabic ? 'متوسط الدرجات' : 'Average score',
-                  value: currentAverage === null ? '—' : `${currentAverage}/100`,
+                  value: formatOptionalValue(currentAverage, (average) => `${average}/100`, isArabic ? 'ar' : 'en'),
                 },
                 {
                   label: isArabic ? 'من خط الأساس' : 'From baseline',
-                  value:
-                    scoreChange === null
-                      ? '—'
-                      : `${scoreChange > 0 ? '+' : ''}${scoreChange}`,
+                  value: formatOptionalValue(
+                    scoreChange,
+                    (change) => `${change > 0 ? '+' : ''}${change}`,
+                    isArabic ? 'ar' : 'en',
+                  ),
                 },
               ].map((metric) => (
                 <div

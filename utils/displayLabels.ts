@@ -66,3 +66,20 @@ export const riskToneClass = (value: string): string => TONE_CLASSES[riskTone(va
 
 export const riskToneEmoji = (value: string): string =>
   ({ safe: '🟢', watch: '🟡', warn: '🟠', danger: '🔴', neutral: '⚪' })[riskTone(value)];
+
+/**
+ * Placeholder for a metric that has no value yet. Arabic shows a clear word
+ * instead of a Latin dash, which reads like a broken glyph in RTL layouts.
+ */
+export const formatOptionalValue = (
+  value: number | string | null | undefined,
+  format: (value: number) => string,
+  language: Language,
+): string => {
+  if (value === null || value === undefined || value === '' || (typeof value === 'number' && !Number.isFinite(value))) {
+    return language === 'ar' ? 'غير متاح بعد' : 'Not available yet';
+  }
+  if (typeof value === 'number') return format(value);
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? format(numeric) : value;
+};

@@ -62,6 +62,7 @@ import {
   SignalMetric,
   TrustPill,
 } from './liveMonitor/monitorParts';
+import { formatOptionalValue } from '../utils/displayLabels';
 import {
   collectDeviceSignals,
   requestPreciseLocation,
@@ -412,7 +413,7 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
                     hour: '2-digit',
                     minute: '2-digit',
                   })
-                : '—'
+                : formatOptionalValue(null, () => '', isArabic ? 'ar' : 'en')
             }
             detail={
               snapshot

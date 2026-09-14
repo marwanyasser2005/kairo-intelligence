@@ -36,6 +36,7 @@ import {
   type EarlyWarningSnapshot,
   type ScoreChartDatum,
 } from './dashboardDisplay';
+import { formatOptionalValue } from '../../utils/displayLabels';
 
 // Matches the project-wide escape hatch for framer-motion's generic component.
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -450,13 +451,13 @@ export const SignalsBand = ({
     {
       Icon: Wind,
       label: isAr ? 'ذروة الهواء المتوقعة' : 'Expected air peak',
-      value: earlyWarningData?.air?.peakAqi ? `${Math.round(earlyWarningData.air.peakAqi)} AQI` : '—',
+      value: formatOptionalValue(earlyWarningData?.air?.peakAqi, (peakAqi) => `${Math.round(peakAqi)} AQI`, isAr ? 'ar' : 'en'),
       detail: isAr ? 'نافذة ٢٤ ساعة' : '24-hour window',
     },
     {
       Icon: Droplet,
       label: isAr ? 'أولوية فحص المياه' : 'Water inspection priority',
-      value: earlyWarningData?.water?.score !== undefined ? `${Math.round(earlyWarningData.water.score)}/100` : '—',
+      value: formatOptionalValue(earlyWarningData?.water?.score, (score) => `${Math.round(score)}/100`, isAr ? 'ar' : 'en'),
       detail: isAr ? 'مؤشر وليس احتمالًا مؤكدًا' : 'An index, not a confirmed probability',
     },
     {
@@ -468,7 +469,7 @@ export const SignalsBand = ({
     {
       Icon: ShieldCheck,
       label: isAr ? 'اكتمال الأدلة' : 'Evidence confidence',
-      value: earlyWarningData?.water?.confidence !== undefined ? `${Math.round(earlyWarningData.water.confidence)}%` : '—',
+      value: formatOptionalValue(earlyWarningData?.water?.confidence, (confidence) => `${Math.round(confidence)}%`, isAr ? 'ar' : 'en'),
       detail: isAr ? 'يعرض حدود النتيجة' : 'Makes limits visible',
     },
   ];
