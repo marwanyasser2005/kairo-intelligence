@@ -15,7 +15,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "tsx --test tests/tokenRouter.test.ts tests/agentRouter.test.ts tests/tabiGateway.test.ts tests/geminiGateway.test.ts tests/earlyWarning.test.ts tests/scenarioLab.test.ts tests/security.test.ts tests/supabase.test.ts tests/uiSystem.test.ts tests/seo.test.ts tests/impactVerification.test.ts tests/calculations.test.ts tests/dashboardLogic.test.ts",
+    "test": "tsx --test tests/tokenRouter.test.ts tests/agentRouter.test.ts tests/tabiGateway.test.ts tests/geminiGateway.test.ts tests/earlyWarning.test.ts tests/scenarioLab.test.ts tests/security.test.ts tests/supabase.test.ts tests/uiSystem.test.ts tests/seo.test.ts tests/impactVerification.test.ts tests/calculations.test.ts tests/dashboardLogic.test.ts tests/tariffEngine.test.ts tests/displayLabels.test.ts",
     "verify:gemini": "tsx scripts/verifyGemini.ts",
     "verify:kairo-ai": "tsx scripts/verifyKairoGemini.ts",
     "verify:tokenrouter": "tsx scripts/verifyTokenRouter.ts",

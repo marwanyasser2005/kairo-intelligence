@@ -174,6 +174,12 @@ export interface EnergyAnalysisInputs {
     lighting_type?: 'led' | 'traditional' | 'mixed';
     has_solar_panels?: 'yes' | 'no';
     has_high_consumption_devices?: 'yes' | 'no';
+    /** Optional meter reading, preferred over inferring from the bill. */
+    monthly_kwh?: number;
+    ac_type?: 'inverter' | 'standard' | 'old';
+    ac_set_temperature?: number;
+    /** Declared commercial price when kWh is unknown (EGP per kWh). */
+    assumed_kwh_price_egp?: number;
     
     // Advanced Audit (Corporate specifics)
     computers_count?: number;
@@ -185,6 +191,10 @@ export interface EnergyAnalysisInputs {
 }
 
 export interface EnergyAnalysisReport {
+    meta?: {
+        timestamp: string;
+        methodology: string;
+    };
     metrics: {
         estimated_consumption_kwh: number;
         energy_efficiency_score: number;
@@ -318,6 +328,8 @@ export interface WaterAnalysisInputs {
     irrigation_systems?: 'yes' | 'no';
     cooling_towers?: 'yes' | 'no';
     cleaning_systems?: 'yes' | 'no';
+    /** Declared blended water rate (EGP per m³, including fees). */
+    assumed_rate_egp_per_m3?: number;
 
     // OCR overrides
     ocrData?: WaterBillExtraction | null;

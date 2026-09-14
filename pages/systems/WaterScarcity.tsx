@@ -3,6 +3,7 @@ import { Droplet, Waves, Scale, ShieldCheck, Loader2, Activity, Building2, Uploa
 import { motion, AnimatePresence } from 'framer-motion';
 import { runWaterAnalysis } from '../../services/tokenRouterService';
 import { WaterAnalysisReport, WaterData, WaterBillExtraction, WaterAnalysisInputs } from '../../types';
+import { localizeDisplayValue, riskToneClass } from '../../utils/displayLabels';
 import { usePersistentState } from '../../utils/storage';
 import { useApp } from '../../contexts/AppContext';
 import ModuleToolbar from '../../components/ModuleToolbar';
@@ -38,6 +39,8 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
     const [dampStains, setDampStains] = usePersistentState<'yes' | 'no'>('kairo_water_stains', 'no');
     const [toiletRefills, setToiletRefills] = usePersistentState<'yes' | 'no'>('kairo_water_refills', 'no');
     const [washingMachineWeekly, setWashingMachineWeekly] = usePersistentState('kairo_water_washing', 3);
+    const [residentialM3, setResidentialM3] = usePersistentState('kairo_water_res_m3', 0);
+    const [blendedRate, setBlendedRate] = usePersistentState('kairo_water_rate', 12.5);
     
     // Corporate Inputs
     const [facilityType, setFacilityType] = usePersistentState<'office' | 'factory' | 'hotel' | 'restaurant' | 'hospital' | 'university' | 'school'>('kairo_water_facility', 'office');
@@ -70,12 +73,16 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                 damp_stains: dampStains,
                 toilet_refills: toiletRefills,
                 washing_machine_weekly: washingMachineWeekly,
+                assumed_rate_egp_per_m3: blendedRate > 0 ? blendedRate : undefined,
                 ocrData
             };
             
             if (type === 'residential') {
                 inputs.family_size = familySize;
                 inputs.housing_type = housingType;
+                if (residentialM3 > 0) {
+                    inputs.monthly_water_use_m3 = residentialM3;
+                }
             } else {
                 inputs.facility_type = facilityType;
                 inputs.employees_count = employees;
@@ -99,35 +106,11 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
     const textMain = isLight ? 'text-gray-900' : 'text-white';
     const textSub = isLight ? 'text-gray-600' : 'text-gray-400';
     const bgCard = isLight ? 'bg-white border-gray-200' : 'bg-gray-900 border-white/10';
-    const inputStyle = `w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring2-2 focus:ring-blue-500/50 transition-all ${isLight ? "bg-slate-50 border border-slate-200 text-slate-900" : "bg-black/20 border border-white/10 text-white"}`;
+    const inputStyle = `w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${isLight ? "bg-slate-50 border border-slate-200 text-slate-900" : "bg-black/20 border border-white/10 text-white"}`;
     const labelStyle = `block text-xs font-bold uppercase tracking-wider mb-2 ${textSub}`;
 
-    const getRiskColor = (level: string) => {
-        switch(level) {
-            case 'Excellent': return 'text-green-500';
-            case 'Very Good': return 'text-blue-500';
-            case 'Good': return 'text-yellow-500';
-            case 'Needs Improvement': return 'text-orange-500';
-            case 'High Risk': return 'text-red-500';
-            default: return 'text-blue-500';
-        }
-    };
-    const localizeLevel = (value: string) => {
-        if (language !== 'ar') return value;
-        return ({
-            Excellent: 'ممتاز',
-            'Very Good': 'جيد جدًا',
-            Good: 'جيد',
-            'Needs Improvement': 'يحتاج تحسين',
-            'High Risk': 'مخاطرة مرتفعة',
-            High: 'مرتفع',
-            Medium: 'متوسط',
-            Low: 'منخفض',
-            Zero: 'بدون تكلفة',
-            Fast: 'سريع',
-            Slow: 'يحتاج وقتًا',
-        } as Record<string, string>)[value] || value;
-    };
+    const getRiskColor = (level: string) => riskToneClass(level);
+    const localizeLevel = (value: string) => localizeDisplayValue(value, language === 'ar' ? 'ar' : 'en');
 
     return (
         <div className="w-full min-h-screen pt-32 lg:pt-36 pb-20 px-4 md:px-6 lg:px-8 space-y-8 max-w-7xl mx-auto" dir={dir}>
@@ -243,9 +226,24 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                                         <span className={textMain}>{language === 'ar' ? 'يعاد ملء السيفون باستمرار؟' : 'Toilet refilling continuously?'}</span>
                                                     </label>
                                                 </div>
-                                                <div className="pt-4">
-                                                    <label className={labelStyle}>{language === 'ar' ? 'مرات تشغيل الغسالة أسبوعياً' : 'Washing machine runs / week'}</label>
-                                                    <input type="number" min="0" value={washingMachineWeekly} onChange={e => setWashingMachineWeekly(Number(e.target.value))} className={inputStyle} />
+                                                <div className="pt-4 grid md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className={labelStyle}>{language === 'ar' ? 'مرات تشغيل الغسالة أسبوعياً' : 'Washing machine runs / week'}</label>
+                                                        <input type="number" min="0" value={washingMachineWeekly} onChange={e => setWashingMachineWeekly(Number(e.target.value))} className={inputStyle} />
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelStyle}>{language === 'ar' ? 'الاستهلاك m³ (اختياري — من الفاتورة)' : 'Consumption m³ (optional — from bill)'}</label>
+                                                        <input type="number" min="0" value={residentialM3 || ''} placeholder={language === 'ar' ? 'اتركه فارغًا للحساب من الفاتورة' : 'Leave empty to derive from the bill'} onChange={e => setResidentialM3(Number(e.target.value))} className={inputStyle} />
+                                                    </div>
+                                                    <div className="md:col-span-2">
+                                                        <label className={labelStyle}>{language === 'ar' ? 'سعر المتر المكعب المفترض (جنيه/م³ شامل الرسوم)' : 'Assumed Rate (EGP/m³ incl. fees)'}</label>
+                                                        <input type="number" min="0" step="0.5" value={blendedRate} onChange={e => setBlendedRate(Number(e.target.value))} className={inputStyle} />
+                                                        <p className={`mt-2 text-[11px] leading-5 ${textSub}`}>
+                                                            {language === 'ar'
+                                                                ? 'يُستخدم فقط عند غياب قراءة العدّاد أو الفاتورة، ويختلف من محافظة لأخرى.'
+                                                                : 'Used only when no meter or bill reading is available; the blended rate differs by governorate.'}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </MotionDiv>
@@ -260,7 +258,9 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                                         <option value="office">{language === 'ar' ? 'مكتب / مبنى إداري' : 'Office'}</option>
                                                         <option value="factory">{language === 'ar' ? 'مصنع' : 'Factory'}</option>
                                                         <option value="hotel">{language === 'ar' ? 'فندق' : 'Hotel'}</option>
+                                                        <option value="restaurant">{language === 'ar' ? 'مطعم' : 'Restaurant'}</option>
                                                         <option value="hospital">{language === 'ar' ? 'مستشفى' : 'Hospital'}</option>
+                                                        <option value="university">{language === 'ar' ? 'جامعة' : 'University'}</option>
                                                         <option value="school">{language === 'ar' ? 'مدرسة' : 'School'}</option>
                                                     </select>
                                                 </div>
@@ -392,7 +392,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                         </div>
                         <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'فاقد مالي مقدر' : 'Financial Loss'}</div>
-                            <div className={`kairo-metric-value text-4xl font-bold text-red-500`}>{(report.metrics?.financial_loss_estimate_egp || 0).toLocaleString()} <span className="text-sm text-gray-400">EGP/Yr</span></div>
+                            <div className={`kairo-metric-value text-4xl font-bold text-red-500`}>{(report.metrics?.financial_loss_estimate_egp || 0).toLocaleString()} <span className="text-sm text-gray-400">{language === 'ar' ? 'جنيه/شهر' : 'EGP/mo'}</span></div>
                         </div>
                         <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'مستوى المخاطرة' : 'Risk Level'}</div>
@@ -408,6 +408,18 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                         status={localizeLevel(report.metrics?.water_risk_level || '')}
                         confidence="medium"
                     />
+
+                    {report.meta?.methodology && (
+                        <div className={`${bgCard} border rounded-2xl p-6`}>
+                            <h3 className="text-sm font-bold uppercase mb-3 text-gray-500">{language === 'ar' ? 'منهج الحساب' : 'Calculation method'}</h3>
+                            <p className={`text-sm leading-7 ${textSub}`}>{report.meta.methodology}</p>
+                            <p className={`mt-2 text-xs ${textSub}`}>
+                                {language === 'ar'
+                                    ? 'الحجم والسعر والكربون محسوبة حتمياً من القراءة أو الفاتورة، وتقديرات التسرب والتوفير تحليلية بمستوى ثقة متوسط.'
+                                    : 'Volume, price, and carbon are computed deterministically from the reading or bill; leak and savings estimates are analytical with medium confidence.'}
+                            </p>
+                        </div>
+                    )}
 
                     <div className="grid lg:grid-cols-3 gap-8">
                         {/* Benchmarks & Charts */}
@@ -509,6 +521,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                                     {[
                                         { label: language==='ar'? 'إصلاح التسربات' : 'Fix Leaks', data: report.scenario_simulation?.fix_leaks, color: 'text-orange-500' },
                                         { label: language==='ar'? 'توفير 10%' : 'Reduce 10%', data: report.scenario_simulation?.reduce_10_percent, color: 'text-blue-500' },
+                                        { label: language==='ar'? 'توفير 25%' : 'Reduce 25%', data: report.scenario_simulation?.reduce_25_percent, color: 'text-cyan-500' },
                                         { label: language==='ar'? 'تركيب أجهزة توفير' : 'Install Aerators', data: report.scenario_simulation?.install_aerators, color: 'text-green-500' },
                                     ].map((scenario, i) => (
                                         scenario.data && (

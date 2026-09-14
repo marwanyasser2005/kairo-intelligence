@@ -23,45 +23,44 @@ const AVG_MEAL_WEIGHT_KG = 0.5;
 const CO2_PER_KWH_EGYPT = 0.45;
 
 /**
+ * Egyptian residential electricity slabs (2024-2025, non-commercial).
+ * Egypt charges the rate of the bracket the reading falls into against the whole
+ * consumption, so a single rate applies to the full month.
+ */
+export interface EgyptianElectricitySlab {
+    maxKwh: number;
+    ratePerKwh: number;
+    tier: number;
+}
+
+export const EGYPT_RESIDENTIAL_ELECTRICITY_SLABS: readonly EgyptianElectricitySlab[] = [
+    { maxKwh: 50, ratePerKwh: 0.58, tier: 1 },
+    { maxKwh: 100, ratePerKwh: 0.68, tier: 2 },
+    { maxKwh: 200, ratePerKwh: 0.83, tier: 3 },
+    { maxKwh: 350, ratePerKwh: 1.25, tier: 4 },
+    { maxKwh: 650, ratePerKwh: 1.40, tier: 5 },
+    { maxKwh: 1000, ratePerKwh: 1.50, tier: 6 },
+    { maxKwh: Number.POSITIVE_INFINITY, ratePerKwh: 1.65, tier: 7 },
+];
+
+/** Shared platform constants so every module uses the same assumptions. */
+export const ELECTRICITY_GRID_CARBON_KG_PER_KWH = CO2_PER_KWH_EGYPT;
+export const WATER_CARBON_KG_PER_M3 = CO2_PER_M3_WATER;
+export const WATER_BLENDED_RATE_EGP_PER_M3 = COST_PER_CUBIC_METER_WATER;
+/** Editable fallback for commercial/industrial bills when kWh is unknown. */
+export const DEFAULT_COMMERCIAL_KWH_PRICE_EGP = 2.0;
+
+/**
  * Egyptian Electricity Tariff Engine (2024-2025 Slabs)
  * Domestic Consumption (Non-Commercial)
  */
 export const calculateEgyptianElectricBill = (kwh: number): { bill: number, tier: number, nextTier: number } => {
-    let bill = 0;
-    let tier = 1;
-    let nextTier = 0;
+    const slab = EGYPT_RESIDENTIAL_ELECTRICITY_SLABS.find((candidate) => kwh <= candidate.maxKwh)
+        ?? EGYPT_RESIDENTIAL_ELECTRICITY_SLABS[EGYPT_RESIDENTIAL_ELECTRICITY_SLABS.length - 1];
+    const bill = kwh * slab.ratePerKwh;
+    const nextTier = Number.isFinite(slab.maxKwh) ? slab.maxKwh - kwh : 0;
 
-    if (kwh <= 50) {
-        bill = kwh * 0.58;
-        tier = 1;
-        nextTier = 50 - kwh;
-    } else if (kwh <= 100) {
-        bill = kwh * 0.68;
-        tier = 2;
-        nextTier = 100 - kwh;
-    } else if (kwh <= 200) {
-        bill = kwh * 0.83;
-        tier = 3;
-        nextTier = 200 - kwh;
-    } else if (kwh <= 350) {
-        bill = kwh * 1.25;
-        tier = 4;
-        nextTier = 350 - kwh;
-    } else if (kwh <= 650) {
-        bill = kwh * 1.40;
-        tier = 5;
-        nextTier = 650 - kwh;
-    } else if (kwh <= 1000) {
-        bill = kwh * 1.50;
-        tier = 6;
-        nextTier = 1000 - kwh;
-    } else {
-        bill = kwh * 1.65; // Fixed rate for high consumers
-        tier = 7;
-        nextTier = 0;
-    }
-
-    return { bill: parseFloat(bill.toFixed(2)), tier, nextTier };
+    return { bill: parseFloat(bill.toFixed(2)), tier: slab.tier, nextTier };
 };
 
 export const calculateImpact = (water: WaterData, food: FoodData, energy: EnergyData): CalculatorResults => {

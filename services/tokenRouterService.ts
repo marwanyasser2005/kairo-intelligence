@@ -14,10 +14,18 @@ import {
     TelemetryProfile,
     ElectricityBillExtraction,
     EnergyAnalysisInputs,
-    WaterAnalysisInputs
+    WaterAnalysisInputs,
+    WaterBillExtraction
 } from "../types";
 
 import { generateFromAPI } from "./aiClient";
+import {
+    clampRange,
+    clampScore,
+    computeElectricityFacts,
+    computeWaterFacts,
+    factsPromptBlock,
+} from "./tariffEngine";
 
 const KAIRO_ARABIC_STYLE = `
 Write every user-facing string in clear modern Arabic that any Arab reader can understand,
@@ -545,17 +553,24 @@ const EWASTE_SCHEMA = {
     required: ["device_identity", "device_health_score", "device_grade", "circular_economy_score", "device_longevity_index", "recommended_pathway", "pathway_reasoning", "alternative_pathways", "economic_analysis", "environmental_impact", "urban_mining_potential", "security_risk_assessment", "ai_executive_recommendation"]
 };
 
-const BILL_SCHEMA = {
+const ELECTRICITY_OCR_SCHEMA = {
     type: "OBJECT",
     properties: {
-        kwh: { type: "NUMBER" },
-        totalAmount: { type: "NUMBER" },
-        currency: { type: "STRING" },
+        meter_number: { type: "STRING" },
+        subscription_type: { type: "STRING" },
+        property_type: { type: "STRING" },
+        previous_reading: { type: "NUMBER" },
+        current_reading: { type: "NUMBER" },
+        consumption_kwh: { type: "NUMBER" },
+        total_amount: { type: "NUMBER" },
+        additional_fees: { type: "NUMBER" },
+        consumption_tier: { type: "STRING" },
+        distribution_company: { type: "STRING" },
         confidence: { type: "NUMBER" },
         isStub: { type: "BOOLEAN" },
         message: { type: "STRING" }
     },
-    required: ['kwh', 'totalAmount', 'currency', 'confidence']
+    required: ['consumption_kwh', 'total_amount', 'confidence']
 };
 
 const EWASTE_OCR_SCHEMA = {
@@ -645,26 +660,64 @@ export const KairoOrchestrator = {
 export const runEnergyAnalysis = async (inputs: EnergyAnalysisInputs, language: string = 'en'): Promise<EnergyAnalysisReport> => {
     const isAr = language === 'ar';
     const langInstructions = isAr ? `${KAIRO_ARABIC_STYLE} Use جنيه مصري. Explain peak load, energy waste, and return on investment in familiar Arabic.` : 'Output in English. Use EGP and refer to Egyptian electricity tariffs.';
+    const facts = computeElectricityFacts(inputs);
 
     const prompt = `
         You are a world-class Energy Efficiency and Sustainability AI Assessor. Execute a deep-dive Energy Intelligence Analysis.
-        Evaluate the user's energy consumption based on the following inputs (Note: kWh might be missing, infer from bill EGP if necessary, depending on the property type).
-        
+        Evaluate the user's energy consumption based on the following inputs.
+
         INPUTS:
         ${JSON.stringify(inputs, null, 2)}
-        
+
+        ${factsPromptBlock(facts, isAr ? 'ar' : 'en')}
+
         INSTRUCTIONS:
-        1. Base calculations on Egyptian Electricity Tariffs if a monthly bill is provided and kWh is not explicitly stated.
+        1. The computed facts above are authoritative. Use the consumption, tier, average price, and carbon values exactly as given; never recompute them from the bill.
         2. Identify behavioral flags (e.g., leaving ACs on all day, running non-inverter appliances) and suggest actionable optimizations.
-        3. Determine carbon footprint based on the local grid (roughly 0.4 - 0.5 kg CO2 per kWh).
-        4. Benchmarks should compare against typical Egyptian households or comparable businesses.
-        5. Populate the scenarios with realistic estimates for Return on Investment (ROI) and cost/emissions savings if applied.
-        
+        3. Determine the waste signals and efficiency scores yourself, but keep every score between 0 and 100.
+        4. financial_loss_estimate_egp must be a MONTHLY figure and must never exceed the monthly cost.
+        5. Benchmarks should compare against typical Egyptian households or comparable businesses.
+        6. Populate the scenarios with realistic estimates for Return on Investment (ROI) and cost/emissions savings if applied.
+
         ${langInstructions}
         ${KAIRO_EVIDENCE_RULES}
     `;
 
-    return generateFromAPI(prompt, ENERGY_SCHEMA);
+    const report = await generateFromAPI(prompt, ENERGY_SCHEMA);
+
+    return applyElectricityFacts(report, facts, isAr);
+};
+
+const applyElectricityFacts = (
+    report: EnergyAnalysisReport,
+    facts: ReturnType<typeof computeElectricityFacts>,
+    isAr: boolean,
+): EnergyAnalysisReport => {
+    const monthlyCost = facts.monthlyCostEgp || report.metrics?.financial_loss_estimate_egp || 0;
+    const metrics = report.metrics ?? ({} as EnergyAnalysisReport['metrics']);
+
+    return {
+        ...report,
+        meta: {
+            timestamp: new Date().toISOString(),
+            methodology: facts.methodology[isAr ? 'ar' : 'en'],
+        },
+        metrics: {
+            ...metrics,
+            estimated_consumption_kwh: facts.consumptionKwh,
+            average_kwh_price_egp: facts.averagePriceEgpPerKwh,
+            carbon_footprint_kg: facts.carbonKg,
+            current_tariff_tier: facts.tier ? `${facts.tier}` : metrics.current_tariff_tier,
+            energy_efficiency_score: clampScore(metrics.energy_efficiency_score),
+            energy_waste_score: clampScore(metrics.energy_waste_score),
+            cost_optimization_score: clampScore(metrics.cost_optimization_score),
+            financial_loss_estimate_egp: clampRange(metrics.financial_loss_estimate_egp, 0, monthlyCost),
+        },
+        benchmarks: {
+            ...report.benchmarks,
+            user_estimated_kwh: facts.consumptionKwh,
+        },
+    };
 };
 
 export const runMobilityIntelligence = async (inputs: MobilityInputs, language: string = 'en'): Promise<MobilityIntelligenceReport> => {
@@ -686,12 +739,50 @@ export const runContextEngine = async (lat: number, lng: number, language: strin
 };
 
 export const runWaterAnalysis = async (inputs: WaterAnalysisInputs, language: string = 'en'): Promise<WaterAnalysisReport> => {
-    const langPrompt = language === 'ar' 
+    const isAr = language === 'ar';
+    const langPrompt = isAr
         ? `${KAIRO_ARABIC_STYLE} Use Egyptian water context, جنيه, and the accessible term ترشيد المياه.`
         : "Output in English. Be highly professional.";
-    
-    const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Water Resource Management. TASK: Perform advanced AI water efficiency and scarcity analysis based on realistic household/corporate data. Avoid engineering assumptions like counting leaky drops; use holistic smart analysis of behavioral signs, bills, and facility types. DATA: ${JSON.stringify(inputs)}. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Return highly structured, insightful JSON.`;
-    return generateFromAPI(prompt, WATER_SCHEMA);
+    const facts = computeWaterFacts(inputs);
+
+    const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Water Resource Management. TASK: Perform advanced AI water efficiency and scarcity analysis based on realistic household/corporate data. Avoid engineering assumptions like counting leaky drops; use holistic smart analysis of behavioral signs, bills, and facility types. DATA: ${JSON.stringify(inputs)}. ${factsPromptBlock(facts, isAr ? 'ar' : 'en')} INSTRUCTIONS: The computed facts above are authoritative for volume, price, and carbon; use them verbatim and never recompute from the bill. financial_loss_estimate_egp must be a MONTHLY figure and must never exceed the monthly cost. annual_water_waste_liters must not exceed the annual consumption implied by the computed volume. Keep every score between 0 and 100. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Return highly structured, insightful JSON.`;
+
+    const report = await generateFromAPI(prompt, WATER_SCHEMA);
+
+    return applyWaterFacts(report, facts, isAr);
+};
+
+const applyWaterFacts = (
+    report: WaterAnalysisReport,
+    facts: ReturnType<typeof computeWaterFacts>,
+    isAr: boolean,
+): WaterAnalysisReport => {
+    const metrics = report.metrics ?? ({} as WaterAnalysisReport['metrics']);
+    const monthlyCost = facts.monthlyCostEgp || 0;
+    const annualLiters = facts.consumptionM3 * 1000 * 12;
+
+    return {
+        ...report,
+        meta: {
+            timestamp: new Date().toISOString(),
+            methodology: facts.methodology[isAr ? 'ar' : 'en'],
+        },
+        metrics: {
+            ...metrics,
+            water_efficiency_score: clampScore(metrics.water_efficiency_score),
+            leak_probability_score: clampScore(metrics.leak_probability_score),
+            household_sustainability_score: clampScore(metrics.household_sustainability_score),
+            water_scarcity_impact_score: clampScore(metrics.water_scarcity_impact_score),
+            annual_water_waste_liters: Number.isFinite(annualLiters) && annualLiters > 0
+                ? clampRange(metrics.annual_water_waste_liters, 0, annualLiters)
+                : Math.max(0, Number(metrics.annual_water_waste_liters) || 0),
+            financial_loss_estimate_egp: clampRange(metrics.financial_loss_estimate_egp, 0, monthlyCost),
+        },
+        benchmarks: {
+            ...report.benchmarks,
+            user_estimated_liters: facts.consumptionM3 * 1000,
+        },
+    };
 };
 
 export const runFoodWasteAnalysis = async (inputs: any, language: string = 'en'): Promise<any> => { const langPrompt = language === 'ar' ? `${KAIRO_ARABIC_STYLE} Focus on familiar purchasing, storage, and consumption behavior.` : 'Output in English.'; const prompt = `ROLE: Global Expert in AI Product Design, UX, Sustainability & Supply Chain. TASK: Analyze household food waste impact conceptually and practically. DATA: ${JSON.stringify(inputs)}. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Provide deep, realistic insights. Return JSON.`; return generateFromAPI(prompt, FOOD_SCHEMA); };
@@ -725,33 +816,17 @@ export const analyzeElectricityBill = async (base64Image: string, language: stri
     const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
     
     const prompt = `
-        Analyze this Egyptian Electricity Bill. Extract monthly consumption (kWh) and total cost.
+        Analyze this Egyptian Electricity Bill. Extract the full structured reading:
+        meter number, subscription type, property type, previous and current readings,
+        monthly consumption in kWh, total amount in EGP, additional fees, the printed
+        consumption tier, and the distribution company.
+        Never invent a reading that is not visible; reduce confidence instead.
+        All monetary values are EGP.
         ${langPrompt}
     `;
 
-    return generateFromAPI(prompt, BILL_SCHEMA, undefined, base64Image, imageMimeType);
+    return generateFromAPI(prompt, ELECTRICITY_OCR_SCHEMA, undefined, base64Image, imageMimeType);
 };
-
-export const analyzeWaterBill = async (base64Image: string, language: string = 'en', imageMimeType?: string): Promise<ElectricityBillExtraction> => {
-    const langPrompt = language === 'ar' ? KAIRO_ARABIC_STYLE : "Output in English.";
-    
-    const prompt = `
-        Analyze this Egyptian Water Bill. Extract monthly volumetric consumption in cubic meters and map it to the "kwh" field in the output schema. Extract total cost and map to "totalAmount".
-        ${langPrompt}
-    `;
-
-    return generateFromAPI(prompt, BILL_SCHEMA, undefined, base64Image, imageMimeType);
-};
-
-export interface WaterBillExtraction {
-    meter_number?: string;
-    bill_date?: string;
-    current_reading?: number;
-    previous_reading?: number;
-    consumption_m3?: number;
-    total_cost_egp?: number;
-    isStub?: boolean;
-}
 
 export interface FoodReceiptExtraction {
     total_cost_egp: number;

@@ -225,11 +225,11 @@ const BillUploader: React.FC<BillUploaderProps> = ({ onDataExtracted, onUpload, 
                                         <div className="grid grid-cols-2 gap-4 mb-4">
                                             <div>
                                                 <div className="text-[10px] text-gray-400 mb-1">{t.bill.consumption}</div>
-                                                <div className={`text-xl font-bold ${textMain}`}>{billType === 'water' ? result.total_consumption_m3 : result.kwh} <span className="text-xs text-gray-500">{billType === 'water' ? (language === 'ar' ? 'متر مكعب' : 'm³') : 'kWh'}</span></div>
+                                                <div className={`text-xl font-bold ${textMain}`}>{billType === 'water' ? result.total_consumption_m3 : result.consumption_kwh} <span className="text-xs text-gray-500">{billType === 'water' ? (language === 'ar' ? 'متر مكعب' : 'm³') : 'kWh'}</span></div>
                                             </div>
                                             <div>
                                                 <div className="text-[10px] text-gray-400 mb-1">{t.bill.cost}</div>
-                                                <div className={`text-xl font-bold ${textMain}`}>{billType === 'water' ? result.total_amount : result.totalAmount} <span className="text-xs text-gray-500">{result.currency}</span></div>
+                                                <div className={`text-xl font-bold ${textMain}`}>{result.total_amount} <span className="text-xs text-gray-500">{billType === 'water' ? (result.currency || 'EGP') : 'EGP'}</span></div>
                                             </div>
                                         </div>
 

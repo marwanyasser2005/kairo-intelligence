@@ -9,6 +9,7 @@ import CapabilityContext from '../components/CapabilityContext';
 import DecisionIntelligence from '../components/DecisionIntelligence';
 import { runEnergyAnalysis } from '../services/tokenRouterService';
 import { EnergyAnalysisReport, EnergyAnalysisInputs, EnergyBillExtraction } from '../types';
+import { localizeDisplayValue, riskToneClass } from '../utils/displayLabels';
 import { ResponsiveContainer, Tooltip as RechartsTooltip, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 
 const MotionDiv = motion.div as any;
@@ -34,25 +35,29 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
     const [occupants, setOccupants] = usePersistentState('kairo_en_occ', 4);
     const [area, setArea] = usePersistentState('kairo_en_area', 120);
     const [bill, setBill] = usePersistentState('kairo_en_bill', 500);
-    const [billIncreased] = usePersistentState<'yes' | 'no' | 'unknown'>('kairo_en_inc', 'unknown');
+    const [billIncreased, setBillIncreased] = usePersistentState<'yes' | 'no' | 'unknown'>('kairo_en_inc', 'unknown');
     const [acCount, setAcCount] = usePersistentState('kairo_en_ac_c', 2);
     const [acHours, setAcHours] = usePersistentState('kairo_en_ac_h', 6);
-    const [fridgeCount] = usePersistentState('kairo_en_fridge', 1);
-    const [hasHeater] = usePersistentState<'yes'|'no'>('kairo_en_heater', 'yes');
-    const [hasDishwasher] = usePersistentState<'yes'|'no'>('kairo_en_dish', 'no');
-    const [hasDryer] = usePersistentState<'yes'|'no'>('kairo_en_dryer', 'no');
-    const [occupancyHours] = usePersistentState('kairo_en_occh', 12);
+    const [acType, setAcType] = usePersistentState<'inverter' | 'standard' | 'old'>('kairo_en_ac_type', 'standard');
+    const [acSetpoint, setAcSetpoint] = usePersistentState('kairo_en_ac_temp', 22);
+    const [fridgeCount, setFridgeCount] = usePersistentState('kairo_en_fridge', 1);
+    const [hasHeater, setHasHeater] = usePersistentState<'yes'|'no'>('kairo_en_heater', 'yes');
+    const [hasDishwasher, setHasDishwasher] = usePersistentState<'yes'|'no'>('kairo_en_dish', 'no');
+    const [hasDryer, setHasDryer] = usePersistentState<'yes'|'no'>('kairo_en_dryer', 'no');
+    const [occupancyHours, setOccupancyHours] = usePersistentState('kairo_en_occh', 12);
     const [lighting, setLighting] = usePersistentState<'led' | 'traditional' | 'mixed'>('kairo_en_light', 'mixed');
-    const [hasSolar] = usePersistentState<'yes'|'no'>('kairo_en_solar', 'no');
-    const [hasHighP] = usePersistentState<'yes'|'no'>('kairo_en_high', 'no');
+    const [hasSolar, setHasSolar] = usePersistentState<'yes'|'no'>('kairo_en_solar', 'no');
+    const [hasHighP, setHasHighP] = usePersistentState<'yes'|'no'>('kairo_en_high', 'no');
+    const [meterKwh, setMeterKwh] = usePersistentState('kairo_en_kwh', 0);
 
     // Advanced (Corporate)
     const [computers, setComputers] = usePersistentState('kairo_en_comp', 20);
     const [servers, setServers] = usePersistentState('kairo_en_serv', 1);
-    const [shifts] = usePersistentState('kairo_en_shifts', 1);
-    const [hasDataCenter] = usePersistentState<'yes'|'no'>('kairo_en_dc', 'no');
+    const [shifts, setShifts] = usePersistentState('kairo_en_shifts', 1);
+    const [hasDataCenter, setHasDataCenter] = usePersistentState<'yes'|'no'>('kairo_en_dc', 'no');
     const [hasCooling, setHasCooling] = usePersistentState<'yes'|'no'>('kairo_en_cool', 'yes');
-    const [hasInd] = usePersistentState<'yes'|'no'>('kairo_en_ind', 'no');
+    const [hasInd, setHasInd] = usePersistentState<'yes'|'no'>('kairo_en_ind', 'no');
+    const [commercialPrice, setCommercialPrice] = usePersistentState('kairo_en_comm_price', 2);
 
     // OCR State
     const [ocrData, setOcrData] = useState<EnergyBillExtraction | null>(null);
@@ -78,6 +83,9 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                 lighting_type: lighting,
                 has_solar_panels: hasSolar,
                 has_high_consumption_devices: hasHighP,
+                ac_type: acType,
+                ac_set_temperature: acSetpoint,
+                monthly_kwh: meterKwh > 0 ? meterKwh : undefined,
             };
             
             if (activeTab === 'audit' || type === 'corporate') {
@@ -87,6 +95,9 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                 inputs.has_data_center = hasDataCenter;
                 inputs.has_cooling_systems = hasCooling;
                 inputs.has_industrial_equipment = hasInd;
+                if (commercialPrice > 0) {
+                    inputs.assumed_kwh_price_egp = commercialPrice;
+                }
             }
             
             const result = await runEnergyAnalysis(inputs, language);
@@ -106,17 +117,8 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
     const inputStyle = `w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${isLight ? "bg-slate-50 border border-slate-200 text-slate-900" : "bg-black/20 border border-white/10 text-white"}`;
     const labelStyle = `block text-xs font-bold uppercase tracking-wider mb-2 ${textSub}`;
 
-    const getRiskColor = (risk: string) => {
-        if (!risk) return 'text-gray-500';
-        const r = risk.toLowerCase();
-        if (r.includes('high') || r.includes('severe') || r.includes('عالي')) return 'text-red-500';
-        if (r.includes('medium') || r.includes('moderate') || r.includes('متوسط')) return 'text-orange-500';
-        return 'text-green-500';
-    };
-    const localizeRisk = (value: string) => {
-        if (!isAr) return value;
-        return ({ Low: 'منخفض', Medium: 'متوسط', Moderate: 'متوسط', High: 'مرتفع', Severe: 'شديد' } as Record<string, string>)[value] || value;
-    };
+    const getRiskColor = (risk: string) => riskToneClass(risk);
+    const localizeRisk = (value: string) => localizeDisplayValue(value, isAr ? 'ar' : 'en');
 
     const navTabs = [
         { id: 'quick', icon: <Target className="w-5 h-5" />, label: isAr ? 'التقييم السريع' : 'Quick Assessment' },
@@ -227,6 +229,18 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                                     <input type="number" min="0" value={acHours} onChange={e => setAcHours(Number(e.target.value))} className={inputStyle} />
                                                 </div>
                                                 <div>
+                                                    <label className={labelStyle}>{isAr ? 'نوع التكييف' : 'AC Type'}</label>
+                                                    <select value={acType} onChange={e => setAcType(e.target.value as any)} className={inputStyle}>
+                                                        <option value="inverter">{isAr ? 'إنفرتر (موفر)' : 'Inverter'}</option>
+                                                        <option value="standard">{isAr ? 'عادي' : 'Standard'}</option>
+                                                        <option value="old">{isAr ? 'قديم' : 'Old'}</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className={labelStyle}>{isAr ? 'درجة حرارة التكييف (مئوية)' : 'AC Set Temperature (°C)'}</label>
+                                                    <input type="number" min="16" max="30" value={acSetpoint} onChange={e => setAcSetpoint(Number(e.target.value))} className={inputStyle} />
+                                                </div>
+                                                <div>
                                                     <label className={labelStyle}>{isAr ? 'نوع الإضاءة' : 'Lighting Type'}</label>
                                                     <select value={lighting} onChange={e => setLighting(e.target.value as any)} className={inputStyle}>
                                                         <option value="led">LED</option>
@@ -234,6 +248,39 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                                         <option value="mixed">{isAr ? 'مختلط' : 'Mixed'}</option>
                                                     </select>
                                                 </div>
+                                                <div>
+                                                    <label className={labelStyle}>{isAr ? 'عدد الثلاجات' : 'Refrigerators'}</label>
+                                                    <input type="number" min="0" value={fridgeCount} onChange={e => setFridgeCount(Number(e.target.value))} className={inputStyle} />
+                                                </div>
+                                                <div>
+                                                    <label className={labelStyle}>{isAr ? 'ساعات الإشغال اليومية' : 'Daily Occupancy Hours'}</label>
+                                                    <input type="number" min="0" max="24" value={occupancyHours} onChange={e => setOccupancyHours(Number(e.target.value))} className={inputStyle} />
+                                                </div>
+                                                <div>
+                                                    <label className={labelStyle}>{isAr ? 'قراءة العدّاد kWh (اختياري)' : 'Meter Reading kWh (optional)'}</label>
+                                                    <input type="number" min="0" value={meterKwh || ''} placeholder={isAr ? 'من الفاتورة' : 'From the bill'} onChange={e => setMeterKwh(Number(e.target.value))} className={inputStyle} />
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-6 grid md:grid-cols-3 gap-4">
+                                                {[
+                                                    { key: 'heater', label: isAr ? 'سخان كهربائي' : 'Electric heater', value: hasHeater, set: setHasHeater },
+                                                    { key: 'dishwasher', label: isAr ? 'غسالة أطباق' : 'Dishwasher', value: hasDishwasher, set: setHasDishwasher },
+                                                    { key: 'dryer', label: isAr ? 'مجفف ملابس' : 'Dryer', value: hasDryer, set: setHasDryer },
+                                                    { key: 'solar', label: isAr ? 'ألواح شمسية' : 'Solar panels', value: hasSolar, set: setHasSolar },
+                                                    { key: 'highPower', label: isAr ? 'أجهزة عالية الاستهلاك' : 'High-consumption devices', value: hasHighP, set: setHasHighP },
+                                                    { key: 'billUp', label: isAr ? 'الفاتورة ارتفعت مؤخرًا' : 'Bill increased recently', value: billIncreased === 'yes' ? 'yes' : 'no', set: (v: 'yes' | 'no') => setBillIncreased(v) },
+                                                ].map(item => (
+                                                    <label key={item.key} className="flex items-center gap-3 text-sm cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={item.value === 'yes'}
+                                                            onChange={e => item.set(e.target.checked ? 'yes' : 'no')}
+                                                            className="w-4 h-4 accent-amber-500 border-gray-300 rounded"
+                                                        />
+                                                        <span className={textMain}>{item.label}</span>
+                                                    </label>
+                                                ))}
                                             </div>
                                         </div>
 
@@ -250,11 +297,36 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                                         <input type="number" min="0" value={servers} onChange={e => setServers(Number(e.target.value))} className={inputStyle} />
                                                     </div>
                                                     <div>
+                                                        <label className={labelStyle}>{isAr ? 'عدد الورديات' : 'Shifts'}</label>
+                                                        <input type="number" min="1" max="3" value={shifts} onChange={e => setShifts(Number(e.target.value))} className={inputStyle} />
+                                                    </div>
+                                                    <div>
                                                         <label className={labelStyle}>{isAr ? 'نظام تبريد مركزي' : 'Central Cooling'}</label>
                                                         <select value={hasCooling} onChange={e => setHasCooling(e.target.value as any)} className={inputStyle}>
                                                             <option value="yes">{isAr ? 'نعم' : 'Yes'}</option>
                                                             <option value="no">{isAr ? 'لا' : 'No'}</option>
                                                         </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelStyle}>{isAr ? 'غرفة بيانات (Data Center)' : 'Data Center'}</label>
+                                                        <select value={hasDataCenter} onChange={e => setHasDataCenter(e.target.value as any)} className={inputStyle}>
+                                                            <option value="yes">{isAr ? 'نعم' : 'Yes'}</option>
+                                                            <option value="no">{isAr ? 'لا' : 'No'}</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelStyle}>{isAr ? 'معدات صناعية' : 'Industrial Equipment'}</label>
+                                                        <select value={hasInd} onChange={e => setHasInd(e.target.value as any)} className={inputStyle}>
+                                                            <option value="yes">{isAr ? 'نعم' : 'Yes'}</option>
+                                                            <option value="no">{isAr ? 'لا' : 'No'}</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className={labelStyle}>{isAr ? 'سعر الكيلوواط المفترض (جنيه)' : 'Assumed kWh Price (EGP)'}</label>
+                                                        <input type="number" min="0" step="0.1" value={commercialPrice} onChange={e => setCommercialPrice(Number(e.target.value))} className={inputStyle} />
+                                                        <p className={`mt-2 text-[11px] leading-5 ${textSub}`}>
+                                                            {isAr ? 'يُستخدم فقط عند غياب قراءة العدّاد أو الفاتورة.' : 'Used only when no meter or bill reading is available.'}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </MotionDiv>
@@ -351,6 +423,18 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                             confidence="medium"
                         />
 
+                        {report.meta?.methodology && (
+                            <div className={`${bgCard} border rounded-3xl p-6`}>
+                                <h3 className={`text-sm font-bold uppercase mb-3 text-gray-500`}>{isAr ? 'منهج الحساب' : 'Calculation method'}</h3>
+                                <p className={`text-sm leading-7 ${textSub}`}>{report.meta.methodology}</p>
+                                <p className={`mt-2 text-xs ${textSub}`}>
+                                    {isAr
+                                        ? 'الاستهلاك والشريحة والسعر والكربون محسوبة حتمياً من الفاتورة أو العدّاد، والتقديرات الأخرى (الهدر والسيناريوهات) تحليلية بمستوى ثقة متوسط.'
+                                        : 'Consumption, tier, price, and carbon are computed deterministically from the bill or meter; waste and scenario figures are analytical estimates with medium confidence.'}
+                                </p>
+                            </div>
+                        )}
+
                         <div className="grid lg:grid-cols-3 gap-8">
                             {/* Analytics Col */}
                             <div className="lg:col-span-2 space-y-8">
@@ -385,7 +469,11 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                         <div className="space-y-4 flex flex-col justify-center">
                                             <div className="p-4 rounded-2xl bg-gray-100 dark:bg-white/5">
                                                 <div className="text-xs text-gray-500 uppercase font-bold mb-1">{isAr?'الشريحة الحالية':'Current Tariff Tier'}</div>
-                                                <div className={`font-black text-xl ${textMain}`}>{report.metrics?.current_tariff_tier || 'N/A'}</div>
+                                                <div className={`font-black text-xl ${textMain}`}>
+                                                    {report.metrics?.current_tariff_tier
+                                                        ? (isAr ? `الشريحة ${report.metrics.current_tariff_tier}` : `Tier ${report.metrics.current_tariff_tier}`)
+                                                        : (isAr ? 'غير محددة' : 'Not set')}
+                                                </div>
                                             </div>
                                             <div className="p-4 rounded-2xl bg-orange-100/50 dark:bg-orange-500/10">
                                                 <div className="text-xs text-orange-600 dark:text-orange-400 uppercase font-bold mb-1">{isAr?'متوسط سعر الكيلووات':'Avg Price per kWh'}</div>
