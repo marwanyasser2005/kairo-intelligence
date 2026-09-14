@@ -196,10 +196,21 @@ export interface EnergyAnalysisInputs {
     has_industrial_equipment?: 'yes' | 'no';
 }
 
+/** The exact inputs the deterministic engine used, shown back to the user. */
+export interface AnalysisAuthoritativeMeta {
+    consumption: number;
+    unit: 'kWh' | 'm3';
+    amount_egp: number;
+    source: string;
+    review_required: boolean;
+    warnings: string[];
+}
+
 export interface EnergyAnalysisReport {
     meta?: {
         timestamp: string;
         methodology: string;
+        authoritative?: AnalysisAuthoritativeMeta;
     };
     metrics: {
         estimated_consumption_kwh: number;
@@ -358,6 +369,7 @@ export interface WaterAnalysisReport {
     meta: {
         timestamp: string;
         methodology: string;
+        authoritative?: AnalysisAuthoritativeMeta;
     };
     metrics: {
         water_efficiency_score: number;

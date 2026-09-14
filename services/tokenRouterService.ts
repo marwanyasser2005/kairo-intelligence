@@ -716,6 +716,14 @@ const applyElectricityFacts = (
         meta: {
             timestamp: new Date().toISOString(),
             methodology: facts.methodology[isAr ? 'ar' : 'en'],
+            authoritative: {
+                consumption: facts.consumptionKwh,
+                unit: 'kWh' as const,
+                amount_egp: facts.monthlyCostEgp,
+                source: facts.sourceLabel[isAr ? 'ar' : 'en'],
+                review_required: facts.reviewRequired,
+                warnings: facts.warnings.map((warning) => warning[isAr ? 'ar' : 'en']),
+            },
         },
         metrics: {
             ...metrics,
@@ -781,6 +789,14 @@ const applyWaterFacts = (
         meta: {
             timestamp: new Date().toISOString(),
             methodology: facts.methodology[isAr ? 'ar' : 'en'],
+            authoritative: {
+                consumption: facts.consumptionM3,
+                unit: 'm3' as const,
+                amount_egp: facts.monthlyCostEgp,
+                source: facts.sourceLabel[isAr ? 'ar' : 'en'],
+                review_required: facts.reviewRequired,
+                warnings: facts.warnings.map((warning) => warning[isAr ? 'ar' : 'en']),
+            },
         },
         metrics: {
             ...metrics,
@@ -831,6 +847,10 @@ export const analyzeWaterBillOCR = async (base64Image: string, language: string 
         Never invent a reading, a meter number, or a tier that is not visible. If a key figure is unreadable,
         return 0 for it and lower the confidence instead of guessing. Return raw JSON only.
         All monetary values are EGP unless the bill states another currency.
+        SELF-CHECK before answering: divide the total amount by the volume in m³. That rate must fall between
+        1 and 40 EGP/m³ for an Egyptian bill, and a household normally uses under 60 m³ per month. If your
+        numbers fail this check you misread the bill: re-examine which figure is the volume (m³) and which
+        is the amount due, and never treat a meter serial, subscription number, or barcode digits as volume.
         ${langPrompt}
     `;
 
@@ -854,6 +874,11 @@ export const analyzeElectricityBill = async (base64Image: string, language: stri
         Never invent a reading, a meter number, or a tier that is not visible. If a key figure is unreadable,
         return 0 for it and lower the confidence instead of guessing. Return raw JSON only.
         All monetary values are EGP.
+        SELF-CHECK before answering: divide the total amount by the consumption. For an Egyptian bill that
+        effective price must fall between 0.5 and 15 EGP/kWh, and a household (منازل) reading is normally
+        under 2,000 kWh per month. If your numbers fail this check you misread the bill: re-examine which
+        figure is the consumption (ك.و.س / فرق القراءة) and which is the amount due, and never treat a meter
+        serial, subscription number, barcode digits, or a previous/current reading as the consumption.
         ${langPrompt}
     `;
 

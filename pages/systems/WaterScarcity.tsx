@@ -400,7 +400,7 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                         </div>
                         <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'فاقد مالي مقدر' : 'Financial Loss'}</div>
-                            <div className={`kairo-metric-value text-4xl font-bold text-red-500`}>{(report.metrics?.financial_loss_estimate_egp || 0).toLocaleString()} <span className="text-sm text-gray-400">{language === 'ar' ? 'جنيه/شهر' : 'EGP/mo'}</span></div>
+                            <div className={`kairo-metric-value text-4xl font-bold text-red-500`}>{(report.metrics?.financial_loss_estimate_egp || 0).toLocaleString(language === 'ar' ? 'ar-EG' : 'en-GB')} <span className="text-sm text-gray-400">{language === 'ar' ? 'جنيه/شهر' : 'EGP/mo'}</span></div>
                         </div>
                         <div className={`${bgCard} kairo-metric-card border rounded-2xl p-6 relative overflow-hidden`}>
                             <div className="text-xs text-gray-500 uppercase font-bold mb-2">{language === 'ar' ? 'مستوى المخاطرة' : 'Risk Level'}</div>
@@ -420,6 +420,40 @@ const WaterScarcity: React.FC<WaterScarcityProps> = ({ report, setGlobalReport, 
                     {report.meta?.methodology && (
                         <div className={`${bgCard} border rounded-2xl p-6`}>
                             <h3 className="text-sm font-bold uppercase mb-3 text-gray-500">{language === 'ar' ? 'منهج الحساب' : 'Calculation method'}</h3>
+                            {report.meta.authoritative && (
+                                <div className={`mb-4 flex flex-wrap items-center gap-2 rounded-2xl border p-3 ${
+                                    report.meta.authoritative.review_required
+                                        ? 'border-rose-500/30 bg-rose-500/10'
+                                        : isLight ? 'border-slate-200 bg-slate-50' : 'border-white/10 bg-white/[0.03]'
+                                }`}>
+                                    <span className={`text-[11px] font-black ${report.meta.authoritative.review_required ? 'text-rose-500' : textMain}`}>
+                                        {language === 'ar' ? 'القيم المعتمدة في التحليل:' : 'Values used in the analysis:'}
+                                    </span>
+                                    <span className={`text-[11px] font-bold ${textMain}`} dir="ltr">
+                                        {report.meta.authoritative.consumption.toLocaleString(language === 'ar' ? 'ar-EG' : 'en-GB')} m³
+                                        {' · '}
+                                        {report.meta.authoritative.amount_egp.toLocaleString(language === 'ar' ? 'ar-EG' : 'en-GB')} {language === 'ar' ? 'جنيه' : 'EGP'}
+                                    </span>
+                                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${isLight ? 'border-slate-300 text-slate-600' : 'border-white/15 text-slate-300'}`}>
+                                        {report.meta.authoritative.source}
+                                    </span>
+                                    {report.meta.authoritative.review_required && (
+                                        <span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-black text-white">
+                                            {language === 'ar' ? 'تحتاج مراجعة' : 'Needs review'}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                            {report.meta.authoritative?.review_required && report.meta.authoritative.warnings.length > 0 && (
+                                <ul className="mb-4 space-y-1">
+                                    {report.meta.authoritative.warnings.map((warning, index) => (
+                                        <li key={index} className="flex items-start gap-2 text-[11px] leading-5 text-rose-500">
+                                            <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                                            {warning}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                             <p className={`text-sm leading-7 ${textSub}`}>{report.meta.methodology}</p>
                             <p className={`mt-2 text-xs ${textSub}`}>
                                 {language === 'ar'

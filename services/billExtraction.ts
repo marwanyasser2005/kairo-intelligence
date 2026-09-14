@@ -242,8 +242,97 @@ export const describeExtractionFields = (
   ];
 };
 
-/** Apply user corrections on top of an extracted bill (pure, testable). */
-export const applyExtractionEdits = <T extends object>(
+/**
+ * Plausibility review. A vision model can misread a bill and still return a
+ * perfectly typed object, so every extraction is checked against the physical
+ * bounds of Egyptian tariffs before it is allowed to drive an analysis.
+ */
+export interface BillReview {
+  needsReview: boolean;
+  warnings: Array<{ ar: string; en: string }>;
+}
+
+/** Lowest and highest plausible effective price per kWh (EGP). */
+export const ELECTRICITY_PRICE_BOUNDS = { min: 0.5, max: 15 } as const;
+export const WATER_PRICE_BOUNDS = { min: 1, max: 40 } as const;
+
+export const reviewBillExtraction = (
+  type: BillType,
+  data: ElectricityBillExtraction | WaterBillExtraction | FoodReceiptExtraction,
+  options: { peopleCount?: number } = {},
+): BillReview => {
+  const warnings: Array<{ ar: string; en: string }> = [];
+
+  if (type === 'electricity') {
+    const item = data as ElectricityBillExtraction;
+    const consumption = toPositive(item.consumption_kwh);
+    const amount = toPositive(item.total_amount);
+    const residential = item.property_type !== 'commercial';
+
+    if (consumption > 0 && amount > 0) {
+      const price = amount / consumption;
+      if (price < ELECTRICITY_PRICE_BOUNDS.min || price > ELECTRICITY_PRICE_BOUNDS.max) {
+        warnings.push({
+          ar: `الاستهلاك والمبلغ غير متسقين: سعر الكيلوواط الناتج ${price.toFixed(2)} جنيه، خارج النطاق المعقول (${ELECTRICITY_PRICE_BOUNDS.min}–${ELECTRICITY_PRICE_BOUNDS.max}). راجع أرقام الفاتورة يدويًا.`,
+          en: `Consumption and amount disagree: the implied price is ${price.toFixed(2)} EGP/kWh, outside the plausible range (${ELECTRICITY_PRICE_BOUNDS.min}-${ELECTRICITY_PRICE_BOUNDS.max}). Check the bill figures.`,
+        });
+      }
+    }
+
+    if (residential && consumption > 5000) {
+      warnings.push({
+        ar: `الاستهلاك ${consumption.toLocaleString('ar-EG')} ك.و.س أعلى بكثير من نطاق الاشتراك المنزلي المعتاد. تأكد أنك لم تقرأ رقم العدّاد أو الباركود بدل الاستهلاك.`,
+        en: `Consumption of ${consumption.toLocaleString('en-GB')} kWh is far above a household subscription. Make sure a meter or barcode number was not read as consumption.`,
+      });
+    }
+
+    const days = toPositive(item.billing_period_days);
+    if (days > 0 && days < 20) {
+      warnings.push({
+        ar: `فترة الفوترة ${days} يومًا فقط (قراءة جزئية)، فقد يكون الاستهلاك أقل من شهر كامل.`,
+        en: `The billing period is only ${days} days (a partial reading), so consumption may cover less than a full month.`,
+      });
+    }
+  }
+
+  if (type === 'water') {
+    const item = data as WaterBillExtraction;
+    const volume = toPositive(item.total_consumption_m3);
+    const amount = toPositive(item.total_amount);
+
+    if (volume > 0 && amount > 0) {
+      const rate = amount / volume;
+      if (rate < WATER_PRICE_BOUNDS.min || rate > WATER_PRICE_BOUNDS.max) {
+        warnings.push({
+          ar: `الحجم والمبلغ غير متسقين: سعر المتر الناتج ${rate.toFixed(2)} جنيه، خارج النطاق المعقول (${WATER_PRICE_BOUNDS.min}–${WATER_PRICE_BOUNDS.max}).`,
+          en: `Volume and amount disagree: the implied rate is ${rate.toFixed(2)} EGP/m³, outside the plausible range (${WATER_PRICE_BOUNDS.min}-${WATER_PRICE_BOUNDS.max}).`,
+        });
+      }
+    }
+
+    const people = Number(options.peopleCount) || 0;
+    if (people > 0 && volume > 0) {
+      const litersPerPersonPerDay = (volume * 1000) / (people * 30);
+      if (litersPerPersonPerDay > 600) {
+        warnings.push({
+          ar: `الاستهلاك يعادل ${Math.round(litersPerPersonPerDay)} لتر للفرد يوميًا، وهو أعلى من النطاق المعتاد. راجع القراءة أو عدد الأفراد.`,
+          en: `Consumption equals ${Math.round(litersPerPersonPerDay)} L per person per day, above the usual range. Check the reading or the occupancy count.`,
+        });
+      }
+    }
+
+    if (volume > 3000 && people === 0) {
+      warnings.push({
+        ar: 'حجم الاستهلاك كبير لاستخدام منزلي؛ تأكد من وحدة القياس ورقم العدّاد.',
+        en: 'The volume is large for a household; verify the unit and the meter number.',
+      });
+    }
+  }
+
+  return { needsReview: warnings.length > 0, warnings };
+};
+
+/** Apply user corrections on top of an extracted bill (pure, testable). */export const applyExtractionEdits = <T extends object>(
   data: T,
   edits: Record<string, number>,
 ): T => {

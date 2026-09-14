@@ -8,6 +8,7 @@ import {
   type EgyptianElectricitySlab,
 } from '../utils/calculations';
 import type { EnergyAnalysisInputs, WaterAnalysisInputs } from '../types';
+import { reviewBillExtraction } from './billExtraction';
 
 export type Language = 'ar' | 'en';
 
@@ -16,6 +17,9 @@ export interface AnalysisFacts {
   source: 'ocr' | 'meter' | 'bill-inversion' | 'assumption';
   sourceLabel: { ar: string; en: string };
   methodology: { ar: string; en: string };
+  /** Set when the inputs fail a physical plausibility check. */
+  reviewRequired: boolean;
+  warnings: Array<{ ar: string; en: string }>;
 }
 
 export interface ElectricityFacts extends AnalysisFacts {
@@ -164,10 +168,22 @@ export const computeElectricityFacts = (
     averagePriceEgpPerKwh = round(billEgp / consumptionKwh, 2);
   }
 
+  const review = inputs.ocrData
+    ? reviewBillExtraction('electricity', inputs.ocrData)
+    : { needsReview: false, warnings: [] };
+  if (review.needsReview) {
+    methodology = {
+      ar: `${methodology.ar} تحذير: ${review.warnings.map((warning) => warning.ar).join(' ')}`,
+      en: `${methodology.en} Warning: ${review.warnings.map((warning) => warning.en).join(' ')}`,
+    };
+  }
+
   return {
     source,
     sourceLabel: SOURCE_LABELS[source],
     methodology,
+    reviewRequired: review.needsReview,
+    warnings: review.warnings,
     consumptionKwh,
     tier,
     averagePriceEgpPerKwh,
@@ -227,10 +243,24 @@ export const computeWaterFacts = (
     },
   };
 
+  const review = inputs.ocrData
+    ? reviewBillExtraction('water', inputs.ocrData, {
+        peopleCount: Number(inputs.family_size) || Number(inputs.employees_count) || 0,
+      })
+    : { needsReview: false, warnings: [] };
+  const methodology = review.needsReview
+    ? {
+        ar: `${sourceNote[source].ar} تحذير: ${review.warnings.map((warning) => warning.ar).join(' ')}`,
+        en: `${sourceNote[source].en} Warning: ${review.warnings.map((warning) => warning.en).join(' ')}`,
+      }
+    : sourceNote[source];
+
   return {
     source,
     sourceLabel: SOURCE_LABELS[source],
-    methodology: sourceNote[source],
+    methodology,
+    reviewRequired: review.needsReview,
+    warnings: review.warnings,
     consumptionM3,
     blendedRateEgpPerM3: effectiveRate,
     monthlyCostEgp: billEgp > 0 ? round(billEgp, 2) : round(consumptionM3 * effectiveRate, 2),
@@ -260,6 +290,11 @@ export const factsPromptBlock = (
     'tier' in facts && facts.tier ? `- tariff_tier: ${facts.tier}` : '',
     'Use these values verbatim for consumption, price, tier, and carbon. Do not recompute or replace them.',
     'All monetary values you return must be monthly EGP unless the field name says annual.',
+    facts.reviewRequired
+      ? `PLAUSIBILITY WARNING: this reading failed KAIRO's physical checks (${facts.warnings
+          .map((warning) => warning[language])
+          .join(' ')}). Treat every derived figure as low-confidence, state the uncertainty in your user-facing text, and recommend verifying the bill values instead of presenting precise savings.`
+      : '',
   ].filter(Boolean).join('\n');
 };
 

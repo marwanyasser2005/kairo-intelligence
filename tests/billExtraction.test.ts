@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import {
   applyExtractionEdits,
+  reviewBillExtraction,
   consumptionFromReadings,
   describeExtractionFields,
   extractionQuality,
@@ -164,4 +165,69 @@ test('image fitting only downscales when the longest edge exceeds the limit', ()
   const invalid = fitWithin(0, Number.NaN, 1600);
   assert.equal(invalid.resized, false);
   assert.ok(invalid.width >= 1 && invalid.height >= 1);
+});
+
+test('regression: the misread bill that produced 0.05 EGP/kWh is flagged', () => {
+  // Real production case: a household bill was read as 335,453 kWh against
+  // ~16,773 EGP, implying an impossible 0.05 EGP/kWh effective price.
+  const misread = normalizeElectricityExtraction({
+    consumption_kwh: 335453,
+    total_amount: 16773,
+    confidence: 0.8,
+    property_type: 'residential',
+  });
+  const review = reviewBillExtraction('electricity', misread);
+
+  assert.equal(review.needsReview, true);
+  assert.ok(review.warnings.some((warning) => warning.en.includes('implied price')));
+  assert.ok(review.warnings.some((warning) => warning.en.includes('far above a household')));
+});
+
+test('a plausible household bill passes the review without warnings', () => {
+  const normal = normalizeElectricityExtraction({
+    consumption_kwh: 450,
+    total_amount: 400,
+    confidence: 0.9,
+    property_type: 'residential',
+    billing_period_days: 30,
+  });
+  const review = reviewBillExtraction('electricity', normal);
+  assert.equal(review.needsReview, false);
+  assert.equal(review.warnings.length, 0);
+});
+
+test('a partial billing period is called out even when the numbers agree', () => {
+  const partial = normalizeElectricityExtraction({
+    consumption_kwh: 60,
+    total_amount: 40,
+    confidence: 0.9,
+    billing_period_days: 10,
+  });
+  const review = reviewBillExtraction('electricity', partial);
+  assert.equal(review.needsReview, true);
+  assert.ok(review.warnings.some((warning) => warning.en.includes('partial reading')));
+});
+
+test('commercial readings above household range are accepted', () => {
+  const industrial = normalizeElectricityExtraction({
+    consumption_kwh: 40000,
+    total_amount: 60000,
+    confidence: 0.9,
+    property_type: 'commercial',
+  });
+  const review = reviewBillExtraction('electricity', industrial);
+  assert.equal(review.needsReview, false);
+});
+
+test('water review catches impossible rates and per-person outliers', () => {
+  const misread = normalizeWaterExtraction({ total_consumption_m3: 4, total_amount: 900, confidence: 0.9 });
+  assert.equal(reviewBillExtraction('water', misread).needsReview, true);
+
+  const heavy = normalizeWaterExtraction({ total_consumption_m3: 120, total_amount: 900, confidence: 0.9 });
+  const review = reviewBillExtraction('water', heavy, { peopleCount: 4 });
+  assert.equal(review.needsReview, true);
+  assert.ok(review.warnings.some((warning) => warning.en.includes('per person per day')));
+
+  const normal = normalizeWaterExtraction({ total_consumption_m3: 18, total_amount: 150, confidence: 0.9 });
+  assert.equal(reviewBillExtraction('water', normal, { peopleCount: 4 }).needsReview, false);
 });

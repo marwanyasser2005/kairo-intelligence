@@ -10,6 +10,7 @@ import {
   describeExtractionFields,
   extractionQuality,
   normalizeDigits,
+  reviewBillExtraction,
   type BillType,
 } from '../services/billExtraction';
 import { prepareBillImage, type PreparedBillImage } from '../utils/billImage';
@@ -60,6 +61,11 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
 
   const fields = useMemo(
     () => (activeResult ? describeExtractionFields(billType, activeResult as any) : []),
+    [activeResult, billType],
+  );
+
+  const review = useMemo(
+    () => (activeResult ? reviewBillExtraction(billType, activeResult as any) : { needsReview: false, warnings: [] }),
     [activeResult, billType],
   );
 
@@ -159,10 +165,13 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
     if (!autoAnalyze || !result || !onAnalyze || autoTriggeredRef.current) return;
     const extracted = activeResult;
     if (!extracted) return;
+    // Never auto-analyze a reading that failed the plausibility check; the user
+    // must confirm or correct it first.
+    if (review.needsReview) return;
     autoTriggeredRef.current = true;
     void handleRunAnalysis();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoAnalyze, result]);
+  }, [autoAnalyze, result, review.needsReview]);
 
   const handleReset = () => {
     setFile(null);
@@ -318,6 +327,24 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
                       </div>
                     </div>
 
+                    {review.needsReview && (
+                      <div className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3">
+                        <div className="flex items-start gap-2 text-rose-500">
+                          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                          <div className="space-y-1">
+                            <p className="text-xs font-black">
+                              {isAr ? 'القيم المستخرجة غير متسقة — راجعها قبل التحليل' : 'Extracted values are inconsistent — review before analyzing'}
+                            </p>
+                            {review.warnings.map((warning, index) => (
+                              <p key={index} className="text-[11px] leading-5 opacity-90">
+                                {warning[isAr ? 'ar' : 'en']}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
                       {fields.map((field) => (
                         <div
@@ -363,11 +390,15 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
                         <button
                           type="button"
                           onClick={handleRunAnalysis}
-                          disabled={analyzingReport}
-                          className="flex-1 min-w-[160px] py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2"
+                          disabled={analyzingReport || (review.needsReview && !isEditing)}
+                          className={`flex-1 min-w-[160px] py-2.5 disabled:opacity-60 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 ${
+                            review.needsReview ? 'bg-rose-600 hover:bg-rose-700' : 'bg-green-600 hover:bg-green-700'
+                          }`}
                         >
                           {analyzingReport ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                          {t.bill.analyzeNow}
+                          {review.needsReview
+                            ? (isAr ? 'صحّح القيم أولًا لتفعيل التحليل' : 'Correct the values to enable analysis')
+                            : t.bill.analyzeNow}
                         </button>
                       )}
                       <button

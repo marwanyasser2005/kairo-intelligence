@@ -410,11 +410,11 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                             </div>
                             <div className={`${bgCard} kairo-metric-card border rounded-3xl p-6 relative overflow-hidden`}>
                                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{isAr?'استهلاك مقدر':'Est. Consumption'}</div>
-                                <div className={`kairo-metric-value text-4xl font-black text-amber-500`}>{report.metrics?.estimated_consumption_kwh || 0} <span className="text-lg font-normal text-gray-500">kWh</span></div>
+                                <div className={`kairo-metric-value text-4xl font-black text-amber-500`}>{(report.metrics?.estimated_consumption_kwh || 0).toLocaleString(isAr ? 'ar-EG' : 'en-GB')} <span className="text-lg font-normal text-gray-500">kWh</span></div>
                             </div>
                             <div className={`${bgCard} kairo-metric-card border rounded-3xl p-6 relative overflow-hidden`}>
                                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{isAr?'فاقد مالي مقدر':'Financial Waste'}</div>
-                                <div className={`kairo-metric-value text-4xl font-black text-red-500`}>{(report.metrics?.financial_loss_estimate_egp || 0).toLocaleString()} <span className="text-lg font-normal text-gray-500">EGP/m</span></div>
+                                <div className={`kairo-metric-value text-4xl font-black text-red-500`}>{(report.metrics?.financial_loss_estimate_egp || 0).toLocaleString(isAr ? 'ar-EG' : 'en-GB')} <span className="text-lg font-normal text-gray-500">{isAr ? 'جنيه/شهر' : 'EGP/mo'}</span></div>
                             </div>
                             <div className={`${bgCard} kairo-metric-card border rounded-3xl p-6 relative overflow-hidden`}>
                                 <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">{isAr?'مخاطر الحمل وقت الذروة':'Peak Load Risk'}</div>
@@ -434,6 +434,40 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                         {report.meta?.methodology && (
                             <div className={`${bgCard} border rounded-3xl p-6`}>
                                 <h3 className={`text-sm font-bold uppercase mb-3 text-gray-500`}>{isAr ? 'منهج الحساب' : 'Calculation method'}</h3>
+                                {report.meta.authoritative && (
+                                    <div className={`mb-4 flex flex-wrap items-center gap-2 rounded-2xl border p-3 ${
+                                        report.meta.authoritative.review_required
+                                            ? 'border-rose-500/30 bg-rose-500/10'
+                                            : isLight ? 'border-slate-200 bg-slate-50' : 'border-white/10 bg-white/[0.03]'
+                                    }`}>
+                                        <span className={`text-[11px] font-black ${report.meta.authoritative.review_required ? 'text-rose-500' : textMain}`}>
+                                            {isAr ? 'القيم المعتمدة في التحليل:' : 'Values used in the analysis:'}
+                                        </span>
+                                        <span className={`text-[11px] font-bold ${textMain}`} dir="ltr">
+                                            {report.meta.authoritative.consumption.toLocaleString(isAr ? 'ar-EG' : 'en-GB')} {report.meta.authoritative.unit === 'kWh' ? 'kWh' : 'm³'}
+                                            {' · '}
+                                            {report.meta.authoritative.amount_egp.toLocaleString(isAr ? 'ar-EG' : 'en-GB')} {isAr ? 'جنيه' : 'EGP'}
+                                        </span>
+                                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${isLight ? 'border-slate-300 text-slate-600' : 'border-white/15 text-slate-300'}`}>
+                                            {report.meta.authoritative.source}
+                                        </span>
+                                        {report.meta.authoritative.review_required && (
+                                            <span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-black text-white">
+                                                {isAr ? 'تحتاج مراجعة' : 'Needs review'}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                                {report.meta.authoritative?.review_required && report.meta.authoritative.warnings.length > 0 && (
+                                    <ul className="mb-4 space-y-1">
+                                        {report.meta.authoritative.warnings.map((warning, index) => (
+                                            <li key={index} className="flex items-start gap-2 text-[11px] leading-5 text-rose-500">
+                                                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                                                {warning}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                                 <p className={`text-sm leading-7 ${textSub}`}>{report.meta.methodology}</p>
                                 <p className={`mt-2 text-xs ${textSub}`}>
                                     {isAr
@@ -489,7 +523,7 @@ const EnergyIntelligence: React.FC<EnergyIntelligenceProps> = ({ report, setGlob
                                             </div>
                                             <div className="p-4 rounded-2xl bg-red-100/50 dark:bg-red-500/10">
                                                 <div className="text-xs text-red-600 dark:text-red-400 uppercase font-bold mb-1">{isAr?'البصمة الكربونية الشهرية':'Monthly Carbon Footprint'}</div>
-                                                <div className={`font-black text-xl text-red-700 dark:text-red-500`}>{report.metrics?.carbon_footprint_kg || 0} Kg CO₂</div>
+                                                <div className={`font-black text-xl text-red-700 dark:text-red-500`}>{(report.metrics?.carbon_footprint_kg || 0).toLocaleString(isAr ? 'ar-EG' : 'en-GB')} Kg CO₂</div>
                                             </div>
                                         </div>
                                     </div>
