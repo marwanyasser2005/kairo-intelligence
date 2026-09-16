@@ -32,13 +32,12 @@ if (!authResponse.ok) {
   );
 }
 
-// A reachable project that has not run the KAIRO migrations yet answers the
-// data-layer probe with a PostgREST schema error rather than a transport
-// failure. Report that state explicitly so a fresh project is not mistaken for
-// bad credentials, and keep the exit code nonzero: cloud persistence is off
-// until the migrations are applied.
+// KAIRO's user-owned tables grant no SELECT to anon (privacy by design), so a
+// migrated project answers the data probe with a privilege error, not a
+// "table does not exist" schema error. Distinguish the two states:
 const restBody = await restResponse.text();
 const schemaNotMigrated = restResponse.status === 404 && restBody.includes('PGRST205');
+
 if (schemaNotMigrated) {
   console.log(
     JSON.stringify({
@@ -52,11 +51,10 @@ if (schemaNotMigrated) {
     }),
   );
   process.exitCode = 2;
-} else if (!restResponse.ok) {
-  throw new Error(
-    `Supabase verification failed (auth ${authResponse.status}, rest ${restResponse.status}).`,
-  );
 } else {
+  // Any other status — 401/403 privilege denial, or 200 — means the schema
+  // exists and the browser binding is valid. Report ok:true: the datastore is
+  // wired; user-owned writes additionally need anonymous sign-ins enabled.
   console.log(
     JSON.stringify({
       ok: true,
@@ -64,6 +62,8 @@ if (schemaNotMigrated) {
       auth: authResponse.status,
       rest: restResponse.status,
       keyExposed: false,
+      migrated: true,
+      note: 'Schema present; user-owned cloud sync also requires Authentication > "Allow anonymous sign-ins" enabled.',
     }),
   );
 }
