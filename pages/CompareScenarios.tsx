@@ -44,6 +44,7 @@ import CapabilityContext from '../components/CapabilityContext';
 import ModuleToolbar from '../components/ModuleToolbar';
 import { audienceProfiles, localize, type AudienceId } from '../config/kairoCapabilities';
 import { getSupabaseConnectionState } from '../utils/supabase';
+import DecisionStageExplainer from '../components/DecisionStageExplainer';
 
 const MotionDiv = motion.div as any;
 
@@ -271,6 +272,7 @@ const CompareScenarios: React.FC = () => {
             </div>
           </div>
         </header>
+        <DecisionStageExplainer stage="scenario" />
 
         <section className="kairo-metric-grid mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           {[

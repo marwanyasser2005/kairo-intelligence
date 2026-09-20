@@ -63,10 +63,10 @@ What KAIRO provides
 - Water-scarcity and consumption-efficiency analysis, keeping inspection priority distinct from leak probability.
 - Food-waste analysis across purchasing, storage, consumption, and disposal behavior.
 - Energy, cost, emissions, and efficiency-opportunity analysis.
-- Low-impact mobility analysis covering time, cost, emissions, and urban exposure.
-- Air-quality and urban-exposure analysis with precautionary actions, not medical diagnosis.
-- E-waste analysis and repair, reuse, and recycling pathways.
-- A scenario lab, impact dashboards, organizational sustainability indicators, and KAIRO SIGNALS environmental foresight.
+- Low-impact mobility analysis for routine, repeated, one-way, and single round trips, including long distances, purpose, outbound/return modes, time, cost, and declared emissions assumptions.
+- Time-activity urban-exposure fingerprints combining forecast context with indoor, outdoor, commute, ventilation, traffic, activity, and vulnerability inputs; this is environmental guidance, not medical diagnosis.
+- ReKairo device analysis based on purchase evidence, exact model, battery/condition, repair quote, update support, parts availability, data security, and repair/reuse/resale/recycling pathways. Utility bills are not device evidence.
+- A scenario lab for pre-action assumptions, impact dashboards, organizational sustainability indicators, and KAIRO SIGNALS environmental foresight with a Signal-to-Proof handoff.
 - A Proof of Impact workspace that records the action, baseline, follow-up, and evidence sources; normalises measurement periods; calculates reviewable savings; and uses AI to assess inference limits and repeatability.
 - Visual Arabic and English reports that distinguish measurements, inputs, calculations, forecasts, and estimates.
 

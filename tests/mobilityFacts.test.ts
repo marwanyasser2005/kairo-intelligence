@@ -47,3 +47,16 @@ test('mobility facts disclose fallback assumptions', () => {
   assert.equal(facts.reviewRequired, true);
   assert.equal(facts.metrics.monthly_cost_egp, 1500);
 });
+
+test('a long one-off round trip is not annualized', () => {
+  const facts = computeMobilityFacts({ ...base, tripPattern: 'single-round-trip', tripPurpose: 'Intercity', oneWayDistanceKm: 700, returnDistanceKm: 700, primaryTransport: 'Intercity Train', returnTransport: 'Intercity Train', actualMonthlyCostEgp: 950 });
+  assert.equal(facts.trip_context.total_distance_km, 1400);
+  assert.equal(facts.metrics.monthly_carbon_kg, 49);
+  assert.equal(facts.metrics.annual_carbon_kg, 49);
+});
+
+test('one-way trips omit the return leg', () => {
+  const facts = computeMobilityFacts({ ...base, tripPattern: 'one-way', oneWayDistanceKm: 100, returnDistanceKm: 900, primaryTransport: 'Intercity Bus' });
+  assert.equal(facts.trip_context.total_distance_km, 100);
+  assert.equal(facts.trip_context.return_mode, 'لا توجد رحلة عودة');
+});

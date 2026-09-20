@@ -27,6 +27,7 @@ import {
   type ImpactMetricId,
 } from '../services/impactVerification';
 import { usePersistentState } from '../utils/storage';
+import DecisionStageExplainer from '../components/DecisionStageExplainer';
 
 interface AiImpactReview {
   executiveSummary: string;
@@ -235,6 +236,7 @@ Review only the supplied deterministic calculations. Never invent readings, savi
             </div>
           </div>
         </motion.header>
+        <DecisionStageExplainer stage="proof" />
 
         <section className="mt-6 grid gap-6 xl:grid-cols-[.82fr_1.18fr]" aria-labelledby="action-title">
           <div className="kairo-glass-panel rounded-[2rem] p-5 sm:p-7">
@@ -403,4 +405,3 @@ Review only the supplied deterministic calculations. Never invent readings, savi
 };
 
 export default ImpactVerification;
-

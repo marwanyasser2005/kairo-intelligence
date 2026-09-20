@@ -219,16 +219,16 @@ export const kairoCapabilities: KairoCapability[] = [  {
     tierReason: { ar: 'قرار يومي متكرر، وأثره متوسط ويحتاج نمط رحلات.', en: 'A frequent daily decision with medium impact that needs trip patterns.' },
     title: { ar: 'التنقل منخفض الأثر', en: 'Low-impact mobility' },
     shortDescription: {
-      ar: 'يقارن رحلاتك من ناحية التكلفة والوقت والانبعاثات.',
-      en: 'Compares travel patterns through cost, time, and carbon.',
+      ar: 'يفهم نوع المشوار، تكراره ومسافته ووسيلة الذهاب والعودة، ثم يقارن التكلفة والوقت والانبعاثات.',
+      en: 'Understands trip purpose, frequency, distance, and outbound/return modes before comparing cost, time, and carbon.',
     },
     purpose: {
       ar: 'يساعدك تختار بدائل تنقل واقعية تقلل التكلفة والانبعاثات وتوفر الوقت.',
       en: 'Choose realistic mobility alternatives that reduce cost and emissions and support urban planning.',
     },
     outcome: {
-      ar: 'بصمة شهرية، درجة كفاءة للتنقل، وبدائل واضحة تناسب نمط رحلاتك.',
-      en: 'Monthly footprint, mobility efficiency, and clear alternatives for each trip pattern.',
+      ar: 'نتيجة مناسبة لرحلة واحدة أو نمط شهري، مع افتراضات معلنة وبدائل واقعية للمسافات القريبة والبعيدة.',
+      en: 'A one-off or monthly result with visible assumptions and realistic alternatives for short and long distances.',
     },
     audiences: ['individual', 'community', 'business', 'government'],
     path: '/transport',
@@ -240,16 +240,16 @@ export const kairoCapabilities: KairoCapability[] = [  {
     tierReason: { ar: 'صحي ووقائي بطبيعته، ونتيجته تقديرية لا قياس حسّاس.', en: 'Health-oriented by nature; its result is contextual, not a sensor reading.' },
     title: { ar: 'التعرض الحضري وجودة الهواء', en: 'Urban exposure & air quality' },
     shortDescription: {
-      ar: 'يحوّل بيانات الموقع والهواء إلى صورة بسيطة تشرح تعرضك اليومي.',
-      en: 'Turns location and air data into an understandable view of daily exposure.',
+      ar: 'يبني بصمة تعرض من الوقت والمكان والتنقل والتهوية والنشاط، وليس رقم AQI وحده.',
+      en: 'Builds an exposure fingerprint from time, place, mobility, ventilation, and activity, not AQI alone.',
     },
     purpose: {
       ar: 'يساعد الفئات الحساسة والفرق والجهات تقلل التعرض وتختار وقت ومكان التدخل.',
       en: 'Help sensitive groups, communities, and authorities reduce exposure and plan interventions.',
     },
     outcome: {
-      ar: 'مؤشر تعرض تقديري، أسباب واضحة، وتوصيات عملية للوقت والمكان.',
-      en: 'Exposure index, factor explanation, and practical time- and location-based guidance.',
+      ar: 'توزيع التعرض بين الداخل والخارج والتنقل، نافذة حركة أقل تعرضًا، وإجراء مناسب للفئة الحساسة.',
+      en: 'Indoor/outdoor/commute exposure shares, a lower-exposure time window, and vulnerability-aware action.',
     },
     audiences: ['individual', 'community', 'education', 'business', 'government'],
     path: '/systems/urban-exposure',
@@ -261,8 +261,8 @@ export const kairoCapabilities: KairoCapability[] = [  {
     tierReason: { ar: 'قرار متقطع لكنه عالي القيمة لحظة اتخاذه.', en: 'An occasional decision, but high value at the moment it is taken.' },
     title: { ar: 'ReKairo للاقتصاد الدائري', en: 'ReKairo circular economy' },
     shortDescription: {
-      ar: 'يقيّم حالة جهازك وعمره المتبقي، ويقترح أفضل مسار: استخدام، إصلاح، بيع أو تدوير.',
-      en: 'Evaluates device life and the best repair, reuse, or recycling path.',
+      ar: 'يقرأ دليل شراء الجهاز وحالته ويوازن تكلفة الإصلاح والعمر المطلوب وتوفر القطع قبل اقتراح المسار الدائري.',
+      en: 'Uses device purchase and condition evidence, repair cost, desired life, and parts availability to choose a circular path.',
     },
     purpose: {
       ar: 'يساعدك تطوّل عمر الجهاز، تسترد جزءًا من قيمته، وتقلل المخلفات الإلكترونية الخطرة.',

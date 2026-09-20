@@ -95,6 +95,9 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
     const [dailyUsageHours, setDailyUsageHours] = usePersistentState('kre_daily_usage', 4);
     const [yearsOfUse, setYearsOfUse] = usePersistentState('kre_years_use', 2);
     const [batteryHealth, setBatteryHealth] = usePersistentState('kre_battery', 100);
+    const [repairQuoteEgp, setRepairQuoteEgp] = usePersistentState('kre_repair_quote', 0);
+    const [partsAvailability, setPartsAvailability] = usePersistentState('kre_parts', 'Unknown');
+    const [plannedUseMonths, setPlannedUseMonths] = usePersistentState('kre_planned_months', 24);
     const [details, setDetails] = usePersistentState('kre_details', '');
 
     // Booleans
@@ -134,6 +137,7 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
         try {
             const inputData = {
                 deviceType, brand, model, deviceSearchQuery: deviceQuery, purchaseYear, purchasePrice, dailyUsageHours, yearsOfUse, batteryHealth,
+                repairQuoteEgp, partsAvailability, plannedUseMonths,
                 condition: {
                     isFullyFunctional, hasScreenCracks, hasBatteryIssues, hasCameraIssues, hasAudioIssues, hasPortIssues, previouslyRepaired, supportsLatestUpdates
                 },
@@ -366,15 +370,37 @@ const EwasteRecycler: React.FC<EwasteRecyclerProps> = ({ report, setGlobalReport
 
                                 {/* Usage & Hardware State */}
                                 <div className={`${bgCard} border rounded-3xl p-6`}>
-                                    <h3 className={`font-bold mb-4 flex items-center gap-2 ${textMain}`}><Cpu className="w-5 h-5 text-purple-500"/> {isAr ? 'حالة الجهاز والأداء' : 'Hardware State & Usage'}</h3>
-                                    <div className="grid md:grid-cols-2 gap-4 mb-6">
+                                    <h3 className={`font-bold mb-4 flex items-center gap-2 ${textMain}`}><Cpu className="w-5 h-5 text-purple-500"/> {isAr ? 'حالة الجهاز والأداء' : 'Device Condition & Performance'}</h3>
+                                    <div className="space-y-4 mb-4">
                                         <div>
                                             <label className="text-xs font-bold uppercase text-gray-500 mb-2 block">{isAr ? 'ساعات الاستخدام اليومي' : 'Daily Usage (Hours)'}</label>
                                             <input type="number" min="0" max="24" value={dailyUsageHours} onChange={e => setDailyUsageHours(Number(e.target.value))} className={`w-full p-3 rounded-xl border ${inputBg}`} />
+                                            <p className={`text-[11px] mt-1 ${textSub}`}>{isAr ? 'متوسط الساعات اليومية لاستخدام الجهاز' : 'Average daily usage hours'}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold uppercase text-gray-500 mb-2 block">{isAr ? 'عرض سعر الإصلاح (جنيه)' : 'Repair Quote (EGP)'}</label>
+                                            <input type="number" min="0" value={repairQuoteEgp} onChange={e => setRepairQuoteEgp(Number(e.target.value))} className={`w-full p-3 rounded-xl border ${inputBg}`} placeholder={isAr ? '0 لو غير متاح' : '0 if unavailable'} />
+                                            <p className={`text-[11px] mt-1 ${textSub}`}>{isAr ? 'سعر المحترفين لإصلاح الجهاز (اختياري)' : 'Professional repair cost estimate (optional)'}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold uppercase text-gray-500 mb-2 block">{isAr ? 'توافر قطع الغيار' : 'Parts Availability'}</label>
+                                            <select value={partsAvailability} onChange={e => setPartsAvailability(e.target.value)} className={`w-full p-3 rounded-xl border ${inputBg}`}>
+                                                <option value="Unknown">{isAr ? 'غير معروف' : 'Unknown'}</option>
+                                                <option value="Easy">{isAr ? 'متاح بسهولة' : 'Easy to source'}</option>
+                                                <option value="Limited">{isAr ? 'محدود' : 'Limited'}</option>
+                                                <option value="Unavailable">{isAr ? 'غير متاح' : 'Unavailable'}</option>
+                                            </select>
+                                            <p className={`text-[11px] mt-1 ${textSub}`}>{isAr ? 'مدى صعوبة الحصول على قطعة بديلة' : 'How hard is it to source replacement parts'}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold uppercase text-gray-500 mb-2 block">{isAr ? 'الوقت المطلوب للموارد (شهر)' : 'Resource Retention Period (Months)'}</label>
+                                            <input type="number" min="1" max="120" value={plannedUseMonths} onChange={e => setPlannedUseMonths(Number(e.target.value))} className={`w-full p-3 rounded-xl border ${inputBg}`} />
+                                            <p className={`text-[11px] mt-1 ${textSub}`}>{isAr ? 'كم شهر تريد الاستمرار في الاستخدام قبل اتخاذ قرار دوري' : 'How many months you plan to keep the device before a circular decision'}</p>
                                         </div>
                                         <div>
                                             <label className="text-xs font-bold uppercase text-gray-500 mb-2 block">{isAr ? 'صحة البطارية (%)' : 'Battery Health (%)'}</label>
                                             <input type="number" min="0" max="100" value={batteryHealth} onChange={e => setBatteryHealth(Number(e.target.value))} className={`w-full p-3 rounded-xl border ${inputBg}`} />
+                                            <p className={`text-[11px] mt-1 ${textSub}`}>{isAr ? 'نسبة صحة البطارية حالياً' : 'Current battery health percentage'}</p>
                                         </div>
                                     </div>
                                     <div className="grid md:grid-cols-2 gap-3">

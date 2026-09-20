@@ -120,6 +120,20 @@ export interface ExposureAgentInputs {
     transportMode: string;
     lat?: number;
     lon?: number;
+    commuteMinutes?: number;
+    indoorHours?: number;
+    indoorEnvironment?: 'home' | 'office' | 'school' | 'workshop' | 'mixed';
+    ventilation?: 'closed' | 'natural' | 'filtered';
+    cookingExposure?: 'none' | 'electric' | 'gas-vented' | 'gas-unvented' | 'biomass';
+    nearbyTraffic?: 'low' | 'medium' | 'high';
+    sensitiveGroup?: 'general' | 'child' | 'older-adult' | 'pregnant' | 'asthma-cardio';
+    activityLevel?: 'rest' | 'light' | 'moderate' | 'intense';
+    preferredStartHour?: number;
+    forecastAqi?: number;
+    forecastPm25?: number;
+    forecastObservedAt?: string;
+    forecastBestHour?: string;
+    forecastBestAqi?: number;
 }
 
 export interface TelemetryProfile {
@@ -266,9 +280,24 @@ export interface MobilityInputs {
     acUsage?: string;
     fromLocation?: string;
     toLocation?: string;
+    tripPattern?: 'routine' | 'single-round-trip' | 'one-way' | 'repeated';
+    tripPurpose?: 'Work' | 'Study' | 'Errand' | 'Healthcare' | 'Leisure' | 'Intercity' | 'Airport' | 'Other';
+    tripsPerMonth?: number;
+    returnDistanceKm?: number;
+    distanceConfidence?: 'known' | 'estimated';
 }
 
 export interface MobilityIntelligenceReport {
+    trip_context?: {
+        pattern: string;
+        purpose: string;
+        trips_per_month: number;
+        total_distance_km: number;
+        distance_source: string;
+        outbound_mode: string;
+        return_mode: string;
+        calculation_note: string;
+    };
     metrics: {
         monthly_cost_egp: number;
         monthly_carbon_kg: number;
@@ -491,6 +520,24 @@ export interface ExposureAnalysis {
     methodology_note: string;
     predicted_annual_accumulation_pm25: number;
     peak_exposure_times: string[];
+    exposure_profile?: {
+        daily_dose_index: number;
+        outdoor_share_percent: number;
+        commute_share_percent: number;
+        indoor_share_percent: number;
+        vulnerability_modifier: number;
+        dominant_microenvironment: string;
+    };
+    action_window?: {
+        recommended_time: string;
+        reason: string;
+        expected_reduction_percent: number;
+    };
+    evidence?: {
+        source: string;
+        observed_at: string;
+        confidence: 'live-context' | 'user-context' | 'estimated';
+    };
 }
 
 export interface CarbonAnalysisReport {

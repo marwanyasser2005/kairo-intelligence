@@ -33,6 +33,7 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
   const { t, theme, language } = useApp();
   const isLight = theme === 'light';
   const isAr = language === 'ar';
+  const isDeviceEvidence = Boolean(onUpload);
 
   const [billType, setBillType] = useState<BillType>(forceType || 'electricity');
   const [file, setFile] = useState<File | null>(null);
@@ -45,6 +46,7 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
   const [edits, setEdits] = useState<Record<string, number>>({});
   const [isEditing, setIsEditing] = useState(false);
   const [autoAnalyze, setAutoAnalyze] = usePersistentState<boolean>('kairo_bill_auto_analyze', true);
+  const [customComplete, setCustomComplete] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const autoTriggeredRef = useRef(false);
@@ -87,6 +89,13 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
 
       const base64 = image.base64;
       const mime = image.mimeType;
+      setPreview(image.base64 ? `data:${mime};base64,${image.base64}` : null);
+
+      if (onUpload) {
+        await onUpload(base64, mime);
+        setCustomComplete(true);
+        return null;
+      }
       const data =
         billType === 'electricity'
           ? await analyzeElectricityBill(base64, language, mime)
@@ -96,7 +105,6 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
 
       setResult(data);
       setEdits({});
-      setPreview(image.base64 ? `data:${mime};base64,${image.base64}` : null);
       onDataExtracted?.(billType, data);
       return data;
     } catch (err) {
@@ -105,13 +113,14 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
     } finally {
       setAnalyzing(false);
     }
-  }, [billType, language, onDataExtracted, t.common.error]);
+  }, [billType, language, onDataExtracted, onUpload, t.common.error]);
 
   const processFile = async (selected: File) => {
     setError(null);
     setResult(null);
     setEdits({});
     setPrepared(null);
+    setCustomComplete(false);
     autoTriggeredRef.current = false;
 
     if (selected.size <= 0 || selected.size > MAX_UPLOAD_BYTES) {
@@ -184,6 +193,7 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
     setResult(null);
     setEdits({});
     setIsEditing(false);
+    setCustomComplete(false);
     setError(null);
     autoTriggeredRef.current = false;
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -202,11 +212,11 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
             <FileText className="w-5 h-5" />
           </div>
           <div>
-            <h3 className={`font-bold ${textMain}`}>{t.bill.title}</h3>
-            <p className={`text-xs ${textSub}`}>{t.bill.subtitle}</p>
+            <h3 className={`font-bold ${textMain}`}>{isDeviceEvidence ? (isAr ? 'دليل شراء وحالة الجهاز' : 'Device purchase and condition evidence') : t.bill.title}</h3>
+            <p className={`text-xs ${textSub}`}>{isDeviceEvidence ? (isAr ? 'فاتورة شراء، ملصق المواصفات أو تقرير صحة البطارية. لا نستخدم فواتير المياه أو الكهرباء هنا.' : 'Purchase receipt, specification label, or battery-health report. Utility bills are not used here.') : t.bill.subtitle}</p>
           </div>
         </div>
-        {!forceType && (
+        {!forceType && !isDeviceEvidence && (
           <div className="flex gap-2">
             {(['electricity', 'water'] as const).map((candidate) => (
               <button
@@ -244,10 +254,12 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
           />
           <UploadCloud className="w-8 h-8 mx-auto mb-3 text-gray-400 group-hover:text-indigo-500 transition-colors" />
           <p className="text-sm text-gray-500 font-medium group-hover:text-indigo-500 transition-colors">
-            {t.bill.dropzone}
+            {isDeviceEvidence ? (isAr ? 'ارفع دليل الجهاز' : 'Upload device evidence') : t.bill.dropzone}
           </p>
           <p className={`mt-2 text-[11px] ${textSub}`}>
-            {isAr ? 'ارفع صورة الفاتورة فقط، وسيقرأها كايرو ويستخرج بياناتها فورًا.' : 'Just upload the bill image. Kairo reads it and extracts the data for you automatically.'}
+            {isDeviceEvidence
+              ? (isAr ? 'صورة واضحة لفاتورة الشراء أو اسم الموديل أو صحة البطارية. تجنب إظهار الاسم والعنوان وأي بيانات شخصية.' : 'Use a clear purchase receipt, model label, or battery-health screen. Hide names, addresses, and personal data.')
+              : (isAr ? 'ارفع صورة الفاتورة فقط، وسيقرأها كايرو ويستخرج بياناتها فورًا.' : 'Just upload the bill image. Kairo reads it and extracts the data for you automatically.')}
           </p>
           {error && (
             <div className="mt-3 text-xs text-red-500 flex items-center justify-center gap-1">
@@ -258,7 +270,7 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
       ) : (
         <div className="space-y-4">
           <div className={`relative rounded-2xl overflow-hidden border ${isLight ? 'border-gray-200' : 'border-white/10'}`}>
-            <img src={preview} alt={isAr ? 'معاينة الفاتورة' : 'Bill preview'} className="w-full h-44 object-contain bg-black/20" />
+            <img src={preview} alt={isDeviceEvidence ? (isAr ? 'معاينة دليل الجهاز' : 'Device evidence preview') : (isAr ? 'معاينة الفاتورة' : 'Bill preview')} className="w-full h-44 object-contain bg-black/20" />
             <button
               type="button"
               onClick={handleReset}
@@ -268,7 +280,7 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
               <X className="w-4 h-4" />
             </button>
 
-            {!result && !analyzing && (
+            {!result && !analyzing && !customComplete && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/25">
                 <button
                   type="button"
@@ -286,6 +298,13 @@ const BillUploader: React.FC<BillUploaderProps> = ({ forceType, onDataExtracted,
               </div>
             )}
           </div>
+
+          {isDeviceEvidence && customComplete && (
+            <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-4 text-sm text-emerald-500 flex items-start gap-2">
+              <Check className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{isAr ? 'اتقرأ دليل الجهاز واتنقلت البيانات المتاحة لنموذج ReKairo. راجع القيم قبل تشغيل التقييم.' : 'Device evidence was read and available fields were added to ReKairo. Review them before running the assessment.'}</span>
+            </div>
+          )}
 
           {prepared?.resized && (
             <p className={`text-[11px] flex items-center gap-1.5 ${textSub}`}>

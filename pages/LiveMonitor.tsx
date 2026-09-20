@@ -76,6 +76,7 @@ import type {
   FoodWasteAnalysisReport,
   WaterAnalysisReport,
 } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 interface LiveMonitorProps {
   carbonReport?: CarbonAnalysisReport | null;
@@ -88,6 +89,7 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
   const { language, theme } = useApp();
   const isArabic = language === 'ar';
   const isLight = theme === 'light';
+  const navigate = useNavigate();
   const [deviceSignals, setDeviceSignals] = useState<DeviceSignalSnapshot | null>(null);
   const [location, setLocation] = useState<PreciseLocation | null>(null);
   const [snapshot, setSnapshot] = useState<EnvironmentalSnapshot | null>(null);
@@ -156,6 +158,21 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
     () => computeWaterLeakRisk(profile, snapshot),
     [profile, snapshot],
   );
+
+  const sendSignalToProof = (kind: 'air' | 'water') => {
+    const isAir = kind === 'air';
+    const evidence = isAir
+      ? `${copy.eyebrow}: AQI ${airWarning?.currentAqi ?? '—'}, 24h peak ${airWarning?.peakAqi ?? '—'}, source Open-Meteo, ${snapshot?.air.observedAt ?? ''}`
+      : `${copy.eyebrow}: water screening score ${waterRisk.score}/100, evidence confidence ${waterRisk.confidence}%`;
+    localStorage.setItem('kairo_verified_action_v1', JSON.stringify({
+      title: isAir ? (isArabic ? 'تقليل التعرض في نافذة جودة الهواء' : 'Reduce exposure during the air-quality window') : (isArabic ? 'فحص أولوية خطر المياه' : 'Inspect priority water risk'),
+      owner: '',
+      startedAt: new Date().toISOString().slice(0, 10),
+      scope: isAir ? (isArabic ? 'الموقع ونافذة التوقع الحالية' : 'Current location and forecast window') : (isArabic ? 'قطاع الشبكة أو الموقع المحدد' : 'Selected network sector or site'),
+      notes: evidence,
+    }));
+    navigate('/proof');
+  };
 
   useEffect(() => {
     try {
@@ -751,6 +768,41 @@ const LiveMonitor: React.FC<LiveMonitorProps> = () => {
               )}
             </Card.Content>
           </Card>
+        </section>
+
+        <section className={`mt-6 rounded-[2rem] border p-5 sm:p-7 ${isLight ? 'border-emerald-950/10 bg-[#f7fbf9]' : 'border-emerald-500/15 bg-emerald-500/[0.045]'}`}>
+          <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <Chip color="success" variant="soft"><Chip.Label>KAIRO Signal-to-Proof</Chip.Label></Chip>
+              <h2 className="mt-4 text-2xl font-black sm:text-3xl">{isArabic ? 'الإشارة لا تنتهي عند التحذير؛ تتحول لخطة قابلة للقياس.' : 'A signal does not stop at an alert; it becomes a measurable action.'}</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-500">{isArabic ? 'ميزة KAIRO الفريدة تربط السبب والنافذة الزمنية والفئة المتأثرة بإجراء محدد، ثم تنقل نفس الدليل إلى «إثبات الأثر» لمقارنة ما قبل التنفيذ وما بعده.' : 'KAIRO\'s unique capability links cause, timing, affected audience and a specific action, then carries the same evidence into Proof of Impact for a before/after comparison.'}</p>
+              <div className="mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <p className={`text-xs font-bold text-emerald-700 mb-1`}>{isArabic ? 'ميزة تنافسية جديدة:' : 'New competitive feature:'}</p>
+                <p className={`text-xs text-emerald-600`}>{isArabic ? 'انتقال آلف نقطة من الإشارة إلى الإثبات مع حفظ السياق الكامل، بما في ذلك الموقع، الوقت، وفئة المستخدمين المتأثرين.' : 'One-click transition from signal to verified proof with full context preservation, including location, timing, and affected user segments.'}</p>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              {airWarning && (
+                <Button variant="primary" onPress={() => sendSignalToProof('air')} className="w-full">
+                  <Wind className="h-4 w-4" /> {isArabic ? 'حوّل إشارة الهواء لخطة' : 'Turn air signal into a plan'}
+                </Button>
+              )}
+              <Button 
+                variant="secondary" 
+                onPress={() => sendSignalToProof('water')}
+                className={waterRisk.level === 'critical' ? 'ring-2 ring-red-400' : ''}
+              >
+                <Droplets className="h-4 w-4" /> {isArabic ? 'حوّل خطر المياه لفحص' : 'Turn water risk into an inspection'}
+              </Button>
+              {waterRisk.level === 'critical' && (
+                <div className="pt-2">
+                  <Chip color="danger" size="sm" variant="soft">
+                    <Chip.Label>{isArabic ? 'تحذير حرج!' : 'Critical alert!'}</Chip.Label>
+                  </Chip>
+                </div>
+              )}
+            </div>
+          </div>
         </section>
 
         <section className="mt-6 grid gap-6 xl:grid-cols-12">

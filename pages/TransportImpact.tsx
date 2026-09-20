@@ -51,6 +51,23 @@ const AR_OPTION_LABELS: Record<string, string> = {
     Motorcycle: 'دراجة نارية',
     Walking: 'مشي',
     Bicycle: 'دراجة',
+    'Intercity Train': 'قطار بين المدن',
+    'Intercity Bus': 'أتوبيس بين المدن',
+    Carpool: 'مشاركة سيارة',
+    Taxi: 'تاكسي',
+    'Domestic Flight': 'طيران داخلي',
+    Ferry: 'عبّارة',
+    routine: 'روتيني متكرر',
+    'single-round-trip': 'رحلة واحدة ذهاب وعودة',
+    'one-way': 'رحلة ذهاب فقط',
+    repeated: 'متكرر بعدد محدد',
+    Work: 'شغل',
+    Study: 'دراسة',
+    Errand: 'مشوار شخصي',
+    Healthcare: 'رعاية صحية',
+    Leisure: 'ترفيه',
+    Intercity: 'بين المدن',
+    Airport: 'مطار',
     'Same as Primary': 'نفس وسيلة الذهاب',
     Direct: 'مباشر من غير تبديل',
     '1 Transfer': 'تبديل واحد',
@@ -116,7 +133,11 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
         passengers: '1',
         acUsage: 'Frequently',
         fromLocation: '',
-        toLocation: ''
+        toLocation: '',
+        tripPattern: 'routine',
+        tripPurpose: 'Work',
+        tripsPerMonth: 2,
+        distanceConfidence: 'known',
     });
 
     const updateInput = (key: keyof MobilityInputs, value: any) => {
@@ -314,19 +335,41 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                     {/* Section 1 */}
                                     <div className="space-y-5">
                                         <h3 className={`text-xs font-semibold uppercase tracking-widest flex items-center gap-2 ${textDim}`}><Briefcase className="w-3.5 h-3.5" /> 1. {isAr ? 'الملف الشخصي' : 'Profile'}</h3>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'نوع الرحلة' : 'Trip pattern'}</label>
+                                                <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.tripPattern || 'routine'} onChange={(e) => updateInput('tripPattern', e.target.value)}>
+                                                    {['routine', 'single-round-trip', 'one-way', 'repeated'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'غرض المشوار' : 'Trip purpose'}</label>
+                                                <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.tripPurpose || 'Work'} onChange={(e) => updateInput('tripPurpose', e.target.value)}>
+                                                    {['Work', 'Study', 'Errand', 'Healthcare', 'Leisure', 'Intercity', 'Airport', 'Other'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
+                                                </select>
+                                            </div>
                                             <div>
                                                 <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'المهنة' : 'Occupation'}</label>
                                                 <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.occupationType} onChange={(e) => updateInput('occupationType', e.target.value)}>
                                                     {['Employee', 'Student', 'Hybrid Worker', 'Field Worker', 'Business Owner', 'Freelancer', 'Remote'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                                 </select>
                                             </div>
-                                            <div>
-                                                <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'أيام التنقل/أسبوع' : 'Commute Days'}</label>
-                                                <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.weeklyCommuteDays} onChange={(e) => updateInput('weeklyCommuteDays', Number(e.target.value))}>
-                                                    {[1,2,3,4,5,6,7].map(t => <option key={t} value={t}>{t}</option>)}
-                                                </select>
-                                            </div>
+                                            {(inputs.tripPattern || 'routine') === 'routine' && (
+                                                <div className="space-y-3">
+                                                    <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'أيام التنقل/أسبوع' : 'Commute Days'}</label>
+                                                    <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.weeklyCommuteDays} onChange={(e) => updateInput('weeklyCommuteDays', Number(e.target.value))}>
+                                                        {[1,2,3,4,5,6,7].map(t => <option key={t} value={t}>{t}</option>)}
+                                                    </select>
+                                                    <p className={`text-[10px] font-medium ${textMuted}`}>{isAr ? 'عدد الأيام التي تتنقل فيها أسبوعيًا (1-7)' : 'Number of days you travel per week (1-7)'}</p>
+                                                </div>
+                                            )}
+                                            {inputs.tripPattern === 'repeated' && (
+                                                <div className="space-y-3">
+                                                    <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'عدد الرحلات شهريًا' : 'Trips per month'}</label>
+                                                    <input type="number" min="1" max="120" className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.tripsPerMonth || 1} onChange={(e) => updateInput('tripsPerMonth', Number(e.target.value))} />
+                                                    <p className={`text-[10px] font-medium ${textMuted}`}>{isAr ? 'عدد الرحلات الفردية التي تخططها شهيديًا' : 'Number of individual trips planned monthly'}</p>
+                                                </div>
+                                            )}
                                         </div>
                                         <div>
                                             <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'المحافظة' : 'Governorate'}</label>
@@ -345,15 +388,15 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                                 updateInput('primaryTransport', e.target.value);
                                                 updateInput('isCar', e.target.value === 'Private Car');
                                             }}>
-                                                {['Metro', 'Train', 'Bus', 'Microbus', 'Private Car', 'Uber', 'Careem', 'Motorcycle', 'Walking', 'Bicycle'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
+                                                {['Metro', 'Train', 'Intercity Train', 'Bus', 'Intercity Bus', 'Microbus', 'Private Car', 'Carpool', 'Taxi', 'Uber', 'Careem', 'Motorcycle', 'Domestic Flight', 'Ferry', 'Walking', 'Bicycle'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                             </select>
                                         </div>
-                                        <div>
+                                        {inputs.tripPattern !== 'one-way' && <div>
                                             <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'المواصلة (عودة)' : 'Return Transport'}</label>
                                             <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.returnTransport} onChange={(e) => updateInput('returnTransport', e.target.value)}>
-                                                {['Same as Primary', 'Metro', 'Train', 'Bus', 'Microbus', 'Private Car', 'Uber', 'Careem', 'Motorcycle', 'Walking'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
+                                                {['Same as Primary', 'Metro', 'Train', 'Intercity Train', 'Bus', 'Intercity Bus', 'Microbus', 'Private Car', 'Carpool', 'Taxi', 'Uber', 'Careem', 'Motorcycle', 'Domestic Flight', 'Ferry', 'Walking', 'Bicycle'].map(t => <option key={t} value={t}>{optionLabel(t)}</option>)}
                                             </select>
-                                        </div>
+                                        </div>}
                                         <div>
                                             <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'عدد التحويلات' : 'Transfers'}</label>
                                             <select className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.transfers} onChange={(e) => updateInput('transfers', e.target.value)}>
@@ -396,7 +439,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                                     <input
                                                         type="number"
                                                         min="0"
-                                                        max="500"
+                                                        max="20000"
                                                         step="0.1"
                                                         inputMode="decimal"
                                                         className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none ${inputBg}`}
@@ -404,7 +447,15 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                                         onChange={(event) => updateInput('oneWayDistanceKm', event.target.value === '' ? undefined : Number(event.target.value))}
                                                         placeholder={isAr ? 'مثال: 14' : 'e.g. 14'}
                                                     />
+                                                    <select className={`mt-2 w-full rounded-xl border px-3 py-2 text-xs outline-none ${inputBg}`} value={inputs.distanceConfidence || 'known'} onChange={(event) => updateInput('distanceConfidence', event.target.value)}>
+                                                        <option value="known">{isAr ? 'المسافة معروفة' : 'Known distance'}</option>
+                                                        <option value="estimated">{isAr ? 'المسافة تقريبية' : 'Estimated distance'}</option>
+                                                    </select>
                                                 </div>
+                                                {inputs.tripPattern !== 'one-way' && <div>
+                                                    <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>{isAr ? 'مسافة العودة لو مختلفة (كم)' : 'Return distance if different (km)'}</label>
+                                                    <input type="number" min="0" max="20000" step="0.1" inputMode="decimal" className={`w-full rounded-xl border px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.returnDistanceKm ?? ''} onChange={(event) => updateInput('returnDistanceKm', event.target.value === '' ? undefined : Number(event.target.value))} placeholder={isAr ? 'اتركها فارغة لو نفس المسافة' : 'Leave blank if it is the same'} />
+                                                </div>}
                                                 <div>
                                                     <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>{isAr ? 'وقت الذهاب والعودة يوميًا (دقيقة)' : 'Daily round-trip time (min)'}</label>
                                                     <input
@@ -420,7 +471,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                                     />
                                                 </div>
                                                 <div className="sm:col-span-2">
-                                                    <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>{isAr ? 'تكلفتك الشهرية الفعلية (جنيه)' : 'Actual monthly cost (EGP)'}</label>
+                                                    <label className={`block text-[10px] font-bold uppercase tracking-widest mb-2 ${textMuted}`}>{isAr ? ((inputs.tripPattern === 'single-round-trip' || inputs.tripPattern === 'one-way') ? 'تكلفة الرحلة كاملة (جنيه)' : 'تكلفتك الشهرية الفعلية (جنيه)') : ((inputs.tripPattern === 'single-round-trip' || inputs.tripPattern === 'one-way') ? 'Total journey cost (EGP)' : 'Actual monthly cost (EGP)')}</label>
                                                     <input
                                                         type="number"
                                                         min="0"
@@ -517,6 +568,17 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                     animate={{ opacity: 1, y: 0 }} 
                                     className="space-y-8"
                                 >
+                                    {report.trip_context && (
+                                        <div className={`kairo-analysis-panel rounded-3xl border p-5 sm:p-6 ${borderSubtle} ${bgCard}`}>
+                                            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                                                <div><div className={`text-[10px] font-bold uppercase tracking-widest ${textMuted}`}>{isAr ? 'نوع الرحلة' : 'Pattern'}</div><div className={`mt-1 font-black ${textMain}`}>{optionLabel(report.trip_context.pattern)}</div></div>
+                                                <div><div className={`text-[10px] font-bold uppercase tracking-widest ${textMuted}`}>{isAr ? 'الغرض' : 'Purpose'}</div><div className={`mt-1 font-black ${textMain}`}>{optionLabel(report.trip_context.purpose)}</div></div>
+                                                <div><div className={`text-[10px] font-bold uppercase tracking-widest ${textMuted}`}>{isAr ? 'المسافة المحسوبة' : 'Modelled distance'}</div><div className={`mt-1 font-black ${textMain}`}>{report.trip_context.total_distance_km.toLocaleString()} km</div></div>
+                                                <div><div className={`text-[10px] font-bold uppercase tracking-widest ${textMuted}`}>{isAr ? 'وسيلة الذهاب' : 'Outbound mode'}</div><div className={`mt-1 font-black ${textMain}`}>{optionLabel(report.trip_context.outbound_mode)}</div></div>
+                                            </div>
+                                            <p className={`mt-4 text-xs leading-6 ${textMuted}`}>{report.trip_context.calculation_note}</p>
+                                        </div>
+                                    )}
                                     {/* SCORE CARDS */}
                                     <div className="kairo-metric-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                                         {[

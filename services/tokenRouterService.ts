@@ -35,6 +35,7 @@ import {
 import { computeFoodFacts, foodFactsPromptBlock } from "./foodFacts";
 import { recordAnalysisRunSafe } from "./analysisTelemetry";
 import { computeMobilityFacts } from './mobilityFacts';
+import { computeExposureFacts } from './exposureFacts';
 
 const KAIRO_ARABIC_STYLE = `
 Write every user-facing string in clear modern Arabic that any Arab reader can understand,
@@ -67,7 +68,10 @@ const EXPOSURE_SCHEMA = {
         mitigation_strategy: { type: "ARRAY", items: { type: "STRING" } },
         methodology_note: { type: "STRING" },
         predicted_annual_accumulation_pm25: { type: "NUMBER" },
-        peak_exposure_times: { type: "ARRAY", items: { type: "STRING" } }
+        peak_exposure_times: { type: "ARRAY", items: { type: "STRING" } },
+        exposure_profile: { type: "OBJECT", properties: { daily_dose_index: { type: "NUMBER" }, outdoor_share_percent: { type: "NUMBER" }, commute_share_percent: { type: "NUMBER" }, indoor_share_percent: { type: "NUMBER" }, vulnerability_modifier: { type: "NUMBER" }, dominant_microenvironment: { type: "STRING" } }, required: ['daily_dose_index', 'outdoor_share_percent', 'commute_share_percent', 'indoor_share_percent', 'vulnerability_modifier', 'dominant_microenvironment'] },
+        action_window: { type: "OBJECT", properties: { recommended_time: { type: "STRING" }, reason: { type: "STRING" }, expected_reduction_percent: { type: "NUMBER" } }, required: ['recommended_time', 'reason', 'expected_reduction_percent'] },
+        evidence: { type: "OBJECT", properties: { source: { type: "STRING" }, observed_at: { type: "STRING" }, confidence: { type: "STRING" } }, required: ['source', 'observed_at', 'confidence'] }
     },
     required: ['estimated_aqi', 'pm25_concentration_ug_m3', 'risk_level', 'health_implication', 'mitigation_strategy', 'methodology_note', 'predicted_annual_accumulation_pm25', 'peak_exposure_times']
 };
@@ -640,8 +644,14 @@ export const runExposureAgent = async (inputs: ExposureAgentInputs, language: st
     const langInstruction = language === 'ar' 
         ? KAIRO_ARABIC_STYLE
         : "Output in English.";
-    const prompt = `ROLE: Environmental Analyst. TASK: Estimate exposure. ${langInstruction} ${KAIRO_EVIDENCE_RULES} DATA: ${JSON.stringify(inputs)}`;
+    const facts = computeExposureFacts(inputs);
+    const prompt = `ROLE: Personal environmental exposure analyst. TASK: Explain the user's time-weighted exposure across home/indoor space, commute and outdoor activity. This is not a generic AQI screen. ${langInstruction} ${KAIRO_EVIDENCE_RULES} DATA: ${JSON.stringify(inputs)}. AUTHORITATIVE PROFILE: ${JSON.stringify(facts)}. Copy supplied forecast AQI and PM2.5 exactly when present. Copy exposure_profile, action_window and evidence exactly. Recommend a concrete route, time or ventilation adjustment, and make clear that this is environmental guidance rather than medical advice.`;
     const report = await generateFromAPI(prompt, EXPOSURE_SCHEMA);
+    report.exposure_profile = facts.exposure_profile;
+    report.action_window = facts.action_window;
+    report.evidence = facts.evidence;
+    if (inputs.forecastAqi != null) report.estimated_aqi = inputs.forecastAqi;
+    if (inputs.forecastPm25 != null) report.pm25_concentration_ug_m3 = inputs.forecastPm25;
 
     recordAnalysisRunSafe({
         module: 'exposure',
@@ -649,6 +659,10 @@ export const runExposureAgent = async (inputs: ExposureAgentInputs, language: st
         inputs: {
             hours_outdoors: Number(inputs?.hoursOutdoors) || undefined,
             transport_mode: inputs?.transportMode,
+            commute_minutes: inputs?.commuteMinutes,
+            indoor_hours: inputs?.indoorHours,
+            indoor_environment: inputs?.indoorEnvironment,
+            sensitive_group: inputs?.sensitiveGroup,
         },
         metrics: {
             estimated_aqi: report?.estimated_aqi,
@@ -799,9 +813,10 @@ const applyElectricityFacts = (
 export const runMobilityIntelligence = async (inputs: MobilityInputs, language: string = 'en'): Promise<MobilityIntelligenceReport> => {
     const facts = computeMobilityFacts(inputs);
     const langPrompt = language === 'ar' ? `${KAIRO_ARABIC_STYLE} Use جنيه for savings and familiar Egyptian mobility context such as الزحام والمترو when relevant.` : "Output in English. Use EGP for cost. Assume Egyptian traffic contexts.";
-    const prompt = `ROLE: Mobility Intelligence & Urban Transportation Optimization System Analyst. TASK: Generate a highly detailed mobility analysis for user with the following profile: ${JSON.stringify(inputs)}. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Return JSON.`;
-    const report = await generateFromAPI(`${prompt}\nAuthoritative computed mobility facts: ${JSON.stringify(facts)}. Copy metrics exactly. Factors are declared planning assumptions, not live local measurements. Scores and recommendations remain estimates. Explain missing distance and midpoint assumptions. Do not claim route verification or current fuel prices.`, MOBILITY_SCHEMA);
+    const prompt = `ROLE: Mobility Intelligence & Urban Transportation Optimization System Analyst. TASK: Generate a decision-ready mobility analysis for this trip: ${JSON.stringify(inputs)}. ${langPrompt} ${KAIRO_EVIDENCE_RULES} Return JSON.`;
+    const report = await generateFromAPI(`${prompt}\nAuthoritative computed mobility facts: ${JSON.stringify(facts)}. Copy metrics exactly. Distinguish clearly between a recurring commute and a one-off journey. Never annualize a one-off journey. Compare realistic alternatives for the declared purpose, distance and outbound/return modes. Factors are declared planning assumptions, not live local measurements. Scores and recommendations remain estimates. Do not claim route verification, live schedules or current fuel prices.`, MOBILITY_SCHEMA);
     report.metrics = facts.metrics;
+    report.trip_context = facts.trip_context;
 
     recordAnalysisRunSafe({
         module: 'mobility',
@@ -810,6 +825,9 @@ export const runMobilityIntelligence = async (inputs: MobilityInputs, language: 
         language: language === 'ar' ? 'ar' : 'en',
         inputs: {
             weekly_commute_days: Number(inputs?.weeklyCommuteDays) || undefined,
+            trip_pattern: inputs?.tripPattern,
+            trip_purpose: inputs?.tripPurpose,
+            trips_per_month: Number(inputs?.tripsPerMonth) || undefined,
             primary_transport: inputs?.primaryTransport,
             return_transport: inputs?.returnTransport,
             transfers: inputs?.transfers,
@@ -817,6 +835,8 @@ export const runMobilityIntelligence = async (inputs: MobilityInputs, language: 
             monthly_spending_band: inputs?.monthlySpending,
             traffic_exposure: inputs?.trafficExposure,
             one_way_distance_km: Number(inputs?.oneWayDistanceKm) || undefined,
+            return_distance_km: Number(inputs?.returnDistanceKm) || undefined,
+            distance_confidence: inputs?.distanceConfidence,
             actual_monthly_cost_egp: Number(inputs?.actualMonthlyCostEgp) || undefined,
             daily_commute_minutes: Number(inputs?.dailyCommuteMinutes) || undefined,
             is_car: inputs?.isCar,
@@ -1062,6 +1082,7 @@ TASK: Perform an advanced lifecycle assessment of the supplied electronic device
 First normalize the device identity from category, brand, model, year, and any OCR evidence. Do not invent an exact model when it was not provided; lower identification_confidence and explain the evidence basis.
 Treat all EGP values as transparent estimates derived from purchase price, age, condition, accessories, and repairability. market_data_status must explicitly say whether the result is user-input-derived, catalog-assisted, or lacks live market verification.
 Assess repairability, remaining useful life, data-security risk, economic value, circular pathway, and urban-mining potential. Recommend recycling only when continued use, repair, refurbishment, donation, or resale is not reasonable.
+Treat a purchase receipt as evidence of purchase date, original price and exact model only. Never treat a water or electricity bill as device evidence. Compare any supplied repair quote with the user-entered purchase price, the estimated residual value, parts availability and the desired remaining-use period. Make the decision hierarchy explicit: keep using, secure repair, refurbish/resell/donate, then certified recycling as a last resort. Where an official repairability score or supported-update period is not supplied, say it is unavailable instead of inventing it.
 DATA: ${inputString}.
 ${langPrompt}
 ${KAIRO_EVIDENCE_RULES}
