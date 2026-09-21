@@ -367,7 +367,7 @@ const TransportImpact: React.FC<TransportImpactProps> = ({ report, setGlobalRepo
                                                 <div className="space-y-3">
                                                     <label className={`block text-[10px] uppercase font-bold tracking-widest mb-2 ${textMuted}`}>{isAr ? 'عدد الرحلات شهريًا' : 'Trips per month'}</label>
                                                     <input type="number" min="1" max="120" className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none ${inputBg}`} value={inputs.tripsPerMonth || 1} onChange={(e) => updateInput('tripsPerMonth', Number(e.target.value))} />
-                                                    <p className={`text-[10px] font-medium ${textMuted}`}>{isAr ? 'عدد الرحلات الفردية التي تخططها شهيديًا' : 'Number of individual trips planned monthly'}</p>
+                                                    <p className={`text-[10px] font-medium ${textMuted}`}>{isAr ? 'عدد الرحلات الفردية التي تخططها شهريًا' : 'Number of individual trips planned monthly'}</p>
                                                 </div>
                                             )}
                                         </div>

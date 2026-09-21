@@ -21,10 +21,9 @@ const indoorMultiplier: Record<string, number> = {
 const vulnerabilityMultiplier: Record<string, number> = {
   general: 1,
   child: 1.15,
-  older: 1.2,
+  'older-adult': 1.2,
   pregnant: 1.15,
-  respiratory: 1.3,
-  cardiovascular: 1.25,
+  'asthma-cardio': 1.3,
 };
 
 const activityMultiplier: Record<string, number> = { low: 0.85, moderate: 1, high: 1.35 };
